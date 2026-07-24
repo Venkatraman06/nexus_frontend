@@ -1,0 +1,1038 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --pmt-font: 'Inter', 'Roboto', 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--pmt-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+  background: var(--pmt-bg);
+  color: var(--pmt-text);
+}
+
+:root,
+[data-theme="light"] {
+  /* Premium modern elegant palette */
+  --pmt-primary:       #1a73e8;
+  --pmt-primary-hover: #1557b0;
+  --pmt-primary-light: #e8f0fe;
+  --pmt-success:       #188038;
+  --pmt-warning:       #e37400;
+  --pmt-danger:        #c5221f;
+  --pmt-danger-bg:     #fce8e6;
+  --pmt-danger-border: #f5c2c0;
+  --pmt-danger-accent: #d96560;
+  --pmt-bg:            #f4f4f5; /* Zinc 100 - cleaner than f8f9fa */
+  --pmt-surface:       #ffffff;
+  --pmt-surface-2:     #f4f4f5;
+  --pmt-border:        #e4e4e7; /* Zinc 200 - softer than dadce0 */
+  --pmt-text:          #09090b; /* Zinc 950 - better contrast than 202124 */
+  --pmt-text-2:        #52525b; /* Zinc 600 */
+  --pmt-text-3:        #71717a; /* Zinc 500 */
+  --pmt-sidebar-bg:    #09090b; /* Pitch black for premium sidebar */
+  --pmt-sidebar-hover: #18181b;
+  --pmt-sidebar-width: 240px;
+  --pmt-board-column:  #f4f4f5;
+  --pmt-header-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm:         0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-md:         0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg:         0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] {
+  --pmt-primary:       #8ab4f8;
+  --pmt-primary-hover: #aecbfa;
+  --pmt-primary-light: #1a2744;
+  --pmt-success:       #81c995;
+  --pmt-warning:       #fdd663;
+  --pmt-danger:        #f28b82;
+  --pmt-danger-bg:     #3c2020;
+  --pmt-danger-border: #5c3434;
+  --pmt-danger-accent: #f28b82;
+  --pmt-bg:            #09090b; /* Zinc 950 - deep black background */
+  --pmt-surface:       #18181b; /* Zinc 900 */
+  --pmt-surface-2:     #27272a; /* Zinc 800 */
+  --pmt-border:        #27272a; /* Zinc 800 */
+  --pmt-text:          #f4f4f5; /* Zinc 100 */
+  --pmt-text-2:        #a1a1aa; /* Zinc 400 */
+  --pmt-text-3:        #71717a; /* Zinc 500 */
+  --pmt-board-column:  #18181b;
+  --pmt-header-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-sm:         0 1px 3px 0 rgba(0,0,0,0.3), 0 1px 2px 0 rgba(0,0,0,0.2);
+  --shadow-md:         0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3);
+  --shadow-lg:         0 10px 15px -3px rgba(0,0,0,0.45), 0 4px 6px -2px rgba(0,0,0,0.3);
+}
+
+::-webkit-scrollbar            { width: 6px; height: 6px; }
+::-webkit-scrollbar-track      { background: transparent; }
+::-webkit-scrollbar-thumb      { background: #dadce0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover{ background: #bdc1c6; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb      { background: #3c4043; }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover{ background: #5f6368; }
+
+.pmt-nav-scroll::-webkit-scrollbar            { width: 4px; }
+.pmt-nav-scroll::-webkit-scrollbar-track      { background: transparent; }
+.pmt-nav-scroll::-webkit-scrollbar-thumb      { background: rgba(255,255,255,0.15); border-radius: 4px; }
+.pmt-nav-scroll::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,0.30); }
+.pmt-nav-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
+
+/* ── Hidden scrollbars for modals and popups (scroll still works) ─────────── */
+.ant-modal-body::-webkit-scrollbar { display: none; }
+.ant-modal-body { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ant-modal::-webkit-scrollbar { display: none; }
+.ant-modal { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ant-popover-inner-content::-webkit-scrollbar { display: none; }
+.ant-popover-inner-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ant-dropdown-menu::-webkit-scrollbar { display: none; }
+.ant-dropdown-menu { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ant-select-dropdown::-webkit-scrollbar { display: none; }
+.ant-select-dropdown { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ant-dropdown::-webkit-scrollbar { display: none; }
+.ant-dropdown { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Generic hidden scrollbar for any scrollable element in modals */
+.ant-modal [class*="scroll"]::-webkit-scrollbar { display: none; }
+.ant-modal [class*="scroll"] { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ant-modal-body [style*="overflow"]::-webkit-scrollbar { display: none; }
+.ant-modal-body [style*="overflow"] { -ms-overflow-style: none; scrollbar-width: none; }
+
+.ant-layout { background: var(--pmt-bg); font-family: var(--pmt-font); }
+
+.ant-table-thead > tr > th {
+  background: var(--pmt-surface-2);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--pmt-text-2);
+  border-bottom: 1px solid var(--pmt-border);
+}
+
+.ant-table-summary,
+.ant-table-summary > tr > td,
+.ant-table-summary > tr > th,
+tfoot > tr > td,
+tfoot > tr > th {
+  background: var(--pmt-surface-2) !important;
+  color: var(--pmt-text) !important;
+  border-top: 1px solid var(--pmt-border) !important;
+}
+
+.ant-table { border-radius: 14px; overflow: hidden; transition: border-color 0.2s ease-in-out; }
+.ant-card  { border-radius: 14px; border: 1px solid var(--pmt-border); box-shadow: var(--shadow-sm); transition: all 0.2s ease-in-out; }
+
+[data-theme="light"] .ant-table-tbody > tr:hover > td { background: var(--pmt-primary-light); }
+[data-theme="dark"]  .ant-table-tbody > tr:hover > td { background: #243044; }
+
+
+
+.ant-card    { border-radius: 14px !important; border: 1px solid var(--pmt-border) !important; box-shadow: var(--shadow-sm) !important; transition: all 0.2s ease-in-out; }
+.ant-btn-primary { font-weight: 500; }
+
+.health-on-track { color: var(--pmt-success); }
+.health-at-risk  { color: var(--pmt-warning); }
+.health-delayed  { color: var(--pmt-danger); }
+
+.page-container { padding: 0; }
+.page-header    { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; }
+.page-title     { font-size: 22px; font-weight: 600; color: var(--pmt-text); margin: 0; letter-spacing: -0.02em; }
+.page-subtitle  { font-size: 13px; color: var(--pmt-text-2); margin: 2px 0 0; font-weight: 400; }
+.stat-card      { border-radius: 14px; border: none; box-shadow: var(--shadow-sm); transition: all 0.2s ease-in-out; }
+
+.table-toolbar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; row-gap: 8px;
+  padding: 14px 16px; border-bottom: 1px solid var(--pmt-border);
+}
+.table-toolbar-title { font-size: 14px; font-weight: 500; color: var(--pmt-text); }
+
+.pmt-header-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--pmt-surface-2);
+  transition: background 0.15s;
+}
+.pmt-header-icon-btn:hover {
+  background: var(--pmt-primary-light);
+}
+
+/* Ant Design typography inherits app font */
+.ant-typography,
+.ant-btn,
+.ant-input,
+.ant-select,
+.ant-table,
+.ant-menu,
+.ant-modal,
+.ant-dropdown-menu,
+.ant-segmented,
+.ant-tabs {
+  font-family: var(--pmt-font) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Modals: keep header/footer fixed, scroll only the body content */
+.ant-modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 96px);
+  overflow: hidden;
+}
+.ant-modal-header,
+.ant-modal-footer {
+  flex: 0 0 auto;
+}
+.ant-modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+/* Kanban boards — see components/common/KanbanBoard.css */
+
+/* Projects list — readable names, no broken word-wrap */
+.projects-table .ant-table-cell {
+  vertical-align: middle;
+}
+
+.projects-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.projects-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.projects-table .ant-table-tbody .ant-typography {
+  margin-bottom: 0;
+}
+
+.projects-table .ant-table-tbody .ant-typography-strong:hover {
+  color: var(--pmt-primary, #1a73e8);
+  text-decoration: underline;
+}
+
+/* ── Skip link (a11y) ─────────────────────────────────────────────────────── */
+.pmt-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10000;
+  padding: 8px 16px;
+  background: var(--pmt-primary);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+  text-decoration: none;
+}
+.pmt-skip-link:focus {
+  left: 0;
+}
+
+/* ── Header icon buttons (accessible) ─────────────────────────────────────── */
+button.pmt-header-icon-btn {
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+
+/* ── Global search (theme-aware) ──────────────────────────────────────────── */
+.pmt-global-search {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+}
+.pmt-global-search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pmt-surface-2);
+  border: 1px solid var(--pmt-border);
+  border-radius: 10px;
+  padding: 7px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pmt-global-search-input-wrap:focus-within {
+  border-color: var(--pmt-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pmt-primary) 20%, transparent);
+}
+.pmt-global-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--pmt-text);
+  width: 100%;
+  min-width: 0;
+}
+.pmt-global-search-input::placeholder {
+  color: var(--pmt-text-3);
+}
+.pmt-global-search-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--pmt-surface);
+  border: 1px solid var(--pmt-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  z-index: 9999;
+  overflow: hidden;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.pmt-global-search-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--pmt-text-2);
+  font-size: 13px;
+}
+
+/* ── Mobile layout ────────────────────────────────────────────────────────── */
+.pmt-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 99;
+}
+.pmt-mobile-backdrop.visible {
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE / MOBILE — PMT
+   Breakpoints:
+     sm:  480px  (small phones)
+     md:  768px  (landscape phone / small tablet)
+     lg:  960px  (tablet / collapsed-sidebar)
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet / large phone (≤960px) ───────────────────────────────────────── */
+@media (max-width: 960px) {
+  /* Sidebar slide-in on mobile */
+  .pmt-app-sider {
+    transform: translateX(-100%);
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .pmt-app-sider.pmt-app-sider--open {
+    transform: translateX(0);
+  }
+  .pmt-app-main {
+    margin-left: 0 !important;
+  }
+
+  /* Header */
+  .pmt-app-header {
+    padding: 0 12px !important;
+  }
+  .pmt-app-content {
+    padding: 12px !important;
+  }
+
+  /* Global search hidden on mobile (shown in sidebar instead) */
+  .pmt-global-search {
+    width: 100%;
+    max-width: 180px;
+  }
+
+  /* Page header — stack title + actions vertically */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .page-header > *:last-child {
+    width: 100%;
+  }
+
+  /* Page title */
+  .page-title {
+    font-size: 18px;
+  }
+
+  /* Stat cards — 2 columns on tablet */
+  .ant-row.stat-row > .ant-col {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  /* Table toolbar — stack */
+  .table-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+  .table-toolbar > *:last-child {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Ant Design table — horizontal scroll */
+  .ant-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ant-table {
+    min-width: 600px;
+  }
+
+  /* Cards — reduce padding */
+  .ant-card-body {
+    padding: 14px !important;
+  }
+
+  /* Modal — full-width on tablet */
+  .ant-modal {
+    max-width: 96vw !important;
+    margin: 12px auto !important;
+  }
+  .ant-modal-content {
+    max-height: calc(100vh - 48px);
+  }
+
+  /* Form rows — stack to single column */
+  .ant-form .ant-row .ant-col-12,
+  .ant-form .ant-row .ant-col-8,
+  .ant-form .ant-row .ant-col-6 {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ant Descriptions — single column */
+  .ant-descriptions-item {
+    display: block;
+    width: 100%;
+  }
+
+  /* Kanban board — horizontal scroll */
+  .pmt-kanban-board {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 16px;
+  }
+
+  /* Tabs — scroll on small screen */
+  .ant-tabs-nav {
+    overflow-x: auto;
+  }
+  .ant-tabs-nav-wrap {
+    overflow: visible !important;
+  }
+
+  /* Segmented control — full width */
+  .ant-segmented {
+    width: 100%;
+  }
+
+  /* Space — wrap on overflow */
+  .ant-space-horizontal {
+    flex-wrap: wrap;
+  }
+
+  /* Drawer — full width on mobile */
+  .ant-drawer-content-wrapper {
+    width: 100% !important;
+    max-width: 400px;
+  }
+
+  /* Dashboard summary cards */
+  .pmt-dashboard-summary .ant-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+/* ── Small phone (≤768px) ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .pmt-app-content {
+    padding: 10px !important;
+  }
+
+  /* Stat cards — 2 per row on phones */
+  .ant-row.stat-row > .ant-col {
+    flex: 0 0 50% !important;
+    max-width: 50% !important;
+  }
+
+  /* Page title */
+  .page-title {
+    font-size: 16px;
+  }
+  .page-subtitle {
+    font-size: 12px;
+  }
+
+  /* Tables: tighter cells */
+  .ant-table-tbody > tr > td,
+  .ant-table-thead > tr > th {
+    padding: 8px 10px !important;
+    font-size: 12px;
+  }
+
+  /* Modal — almost full screen */
+  .ant-modal {
+    max-width: 99vw !important;
+    margin: 4px auto !important;
+    padding: 0 !important;
+  }
+  .ant-modal-content {
+    border-radius: 12px;
+    max-height: calc(100vh - 20px);
+  }
+
+  /* Cards */
+  .ant-card-body {
+    padding: 12px !important;
+  }
+  .ant-card-head {
+    padding: 0 12px !important;
+    min-height: 44px !important;
+  }
+
+  /* Buttons in table actions — shrink */
+  .ant-btn-sm {
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  /* Ant Collapse */
+  .ant-collapse-header {
+    padding: 10px 12px !important;
+  }
+
+  /* Ticket / project detail layout — stack fields */
+  .pmt-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Dashboard cards single-column on phone */
+  .pmt-dashboard-summary .ant-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  /* Kanban — smaller cards */
+  .pmt-kanban-column {
+    min-width: 220px !important;
+    max-width: 260px !important;
+  }
+
+  /* Tabs — icon only possible */
+  .ant-tabs-tab {
+    padding: 8px 10px !important;
+    font-size: 12px;
+  }
+
+  /* Chart containers */
+  .ant-chart-container,
+  div[class*="chart"] {
+    overflow-x: auto;
+  }
+
+  /* Stat number */
+  .ant-statistic-content-value {
+    font-size: 22px !important;
+  }
+
+  /* Drawer */
+  .ant-drawer-content-wrapper {
+    width: 100% !important;
+  }
+
+  /* Filter/search rows in list pages */
+  .pmt-filter-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pmt-filter-row .ant-select,
+  .pmt-filter-row .ant-input,
+  .pmt-filter-row .ant-picker {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  /* Allocation / Employee cards */
+  .ant-list-item {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+
+  /* Space compact */
+  .ant-space {
+    gap: 6px !important;
+  }
+}
+
+/* ── Very small phones (≤480px) ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .pmt-user-name-block {
+    display: none;
+  }
+  .pmt-global-search {
+    max-width: 120px !important;
+  }
+
+  .pmt-app-content {
+    padding: 8px !important;
+  }
+
+  /* Single column for everything */
+  .ant-row.stat-row > .ant-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  .pmt-dashboard-summary .ant-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  /* Tables — very compact */
+  .ant-table-tbody > tr > td,
+  .ant-table-thead > tr > th {
+    padding: 6px 8px !important;
+    font-size: 11px;
+  }
+
+  /* Hide less important table columns on tiny screens */
+  .ant-table-cell.pmt-col-hide-xs {
+    display: none !important;
+  }
+
+  /* Modal — fullscreen */
+  .ant-modal {
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .ant-modal-content {
+    border-radius: 0;
+    min-height: 100vh;
+    max-height: 100vh;
+  }
+
+  /* Title */
+  .page-title {
+    font-size: 15px;
+  }
+
+  /* Header compact */
+  .pmt-app-header {
+    padding: 0 8px !important;
+    height: 56px !important;
+  }
+
+  /* Kanban — single column, scroll */
+  .pmt-kanban-column {
+    min-width: 90vw !important;
+    max-width: 95vw !important;
+  }
+
+  /* Buttons */
+  .ant-btn {
+    font-size: 12px;
+    padding: 0 10px;
+  }
+  .ant-btn-lg {
+    font-size: 14px;
+  }
+
+  /* Notification bell badge */
+  .ant-badge-count {
+    font-size: 10px !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    line-height: 16px !important;
+  }
+
+  /* Stat */
+  .ant-statistic-content-value {
+    font-size: 18px !important;
+  }
+  .ant-statistic-title {
+    font-size: 11px !important;
+  }
+
+  /* Card heads */
+  .ant-card-head-title {
+    font-size: 13px !important;
+  }
+}
+/* ── Login responsive ─────────────────────────────────────────────────────── */
+.pmt-login-page {
+  display: flex;
+  min-height: 100vh;
+  font-family: var(--pmt-font);
+}
+.pmt-login-brand {
+  flex: 0 0 46%;
+  background: #060f1e;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 52px;
+  position: relative;
+  overflow: hidden;
+}
+.pmt-login-form-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--pmt-surface);
+  padding: 48px 40px;
+  position: relative;
+}
+
+@media (max-width: 900px) {
+  .pmt-login-brand {
+    display: none;
+  }
+  .pmt-login-form-panel {
+    flex: 1 1 100%;
+    padding: 32px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pmt-login-brand [style*="animation"] {
+    animation: none !important;
+  }
+}
+
+/* ── Auth card (forgot-password, reset, etc.) ────────────────────────────── */
+@media (max-width: 400px) {
+  .pmt-auth-card {
+    padding: 28px 20px !important;
+  }
+}
+
+/* ── Auth bootstrap ───────────────────────────────────────────────────────── */
+.pmt-auth-bootstrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--pmt-bg);
+}
+
+/* ── Timesheet dark theme ─────────────────────────────────────────────────── */
+[data-theme="dark"] .ts-week-label { color: var(--pmt-text); }
+[data-theme="dark"] .ts-day-card {
+  border-color: var(--pmt-border);
+  background: var(--pmt-surface);
+}
+[data-theme="dark"] .ts-day-card--active {
+  border-color: var(--pmt-primary);
+  background: var(--pmt-surface-2);
+}
+[data-theme="dark"] .ts-day-card--over {
+  background: color-mix(in srgb, var(--pmt-warning) 15%, var(--pmt-surface));
+}
+[data-theme="dark"] .ts-day-name,
+[data-theme="dark"] .ts-day-hours { color: var(--pmt-text-2); }
+[data-theme="dark"] .ts-summary-bar {
+  background: var(--pmt-surface);
+  border-color: var(--pmt-border);
+}
+
+/* Leave status chips — dark mode readability */
+[data-theme="dark"] .emp-leave__status {
+  filter: brightness(1.15);
+}
+
+/* ── Ant Design Charts / G2Plot Tooltip Overrides ─────────────────────── */
+
+/* Outer container: styled rounded box */
+.g2-tooltip {
+  padding: 10px 14px !important;
+  border-radius: 10px !important;
+  font-family: var(--pmt-font) !important;
+}
+
+[data-theme="light"] .g2-tooltip {
+  background: var(--pmt-surface) !important;
+  border: 1px solid var(--pmt-border) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="dark"] .g2-tooltip {
+  background: var(--pmt-surface-2) !important;
+  border: 1px solid var(--pmt-border) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Inner list: remove all borders, backgrounds, padding — content flows directly in outer box */
+.g2-tooltip-list {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.g2-tooltip-list-item {
+  margin: 0 !important;
+  padding: 2px 0 !important;
+  border: none !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12px !important;
+  line-height: 1.6 !important;
+}
+
+[data-theme="light"] .g2-tooltip-title,
+[data-theme="light"] .g2-tooltip-list-item {
+  color: var(--pmt-text) !important;
+}
+
+[data-theme="dark"] .g2-tooltip-title,
+[data-theme="dark"] .g2-tooltip-list-item {
+  color: var(--pmt-text) !important;
+}
+
+.g2-tooltip-list-item .g2-tooltip-marker {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+[data-theme="dark"] .g2-legend-list-item-name,
+[data-theme="dark"] .g2-legend-item-name,
+[data-theme="dark"] .g2-legend-list-item,
+[data-theme="dark"] .g2-legend-item,
+[data-theme="dark"] .g2-legend-title {
+  color: var(--pmt-text) !important;
+}
+
+[data-theme="dark"] .g2-html-annotation,
+[data-theme="dark"] .g2-guide-html {
+  color: var(--pmt-text) !important;
+}
+
+/* Force SVG text elements inside charts to adapt to dark theme text color */
+[data-theme="dark"] div[class*="g2"] svg text,
+[data-theme="dark"] div[class*="chart"] svg text,
+[data-theme="dark"] .antv-chart-container svg text,
+[data-theme="dark"] canvas + svg text,
+[data-theme="dark"] svg[class*="g2"] text,
+[data-theme="dark"] svg[class*="axis"] text,
+[data-theme="dark"] .ant-chart-container text,
+[data-theme="dark"] .ant-charts text,
+[data-theme="dark"] tspan {
+  fill: var(--pmt-text) !important;
+}
+
+/* Specifically fix G2Plot doughnut / pie center statistic text in dark mode */
+[data-theme="dark"] .g2-statistic-title,
+[data-theme="dark"] .g2-statistic-content {
+  color: var(--pmt-text) !important;
+}
+
+/* G2Plot axis labels dark mode */
+[data-theme="dark"] .g2-axis-label text,
+[data-theme="dark"] .g2-axis-title text,
+[data-theme="dark"] .g2-label-text,
+[data-theme="dark"] .g2-axis text,
+[data-theme="dark"] .g2-label,
+[data-theme="dark"] .g2-chart-label {
+  fill: var(--pmt-text) !important;
+  color: var(--pmt-text) !important;
+}
+
+/* G2Plot grid lines for better contrast in dark mode */
+[data-theme="dark"] .g2-axis-line,
+[data-theme="dark"] .g2-grid-line {
+  stroke: var(--pmt-border) !important;
+}
+
+/* Calendar pastel chips in dark mode */
+/* Removed overrides to allow dynamic colors in dark mode */
+/* [data-theme="dark"] .gcal-event-pastel,
+[data-theme="dark"] .gcal-timed-block {
+  background: var(--pmt-surface-2) !important;
+  border-color: var(--pmt-border) !important;
+} */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive & accessibility foundation (site-wide)
+   These are safe, low-specificity defaults that cascade to every page.
+   Page-level fixed widths / column configs still need per-page follow-up.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Never let a stray fixed-width child push the whole page into horizontal
+   scroll — inner elements (tables, code blocks) still scroll internally. */
+html, body, #root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Focus visibility (keyboard nav) ─────────────────────────────────────── */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+.ant-btn:focus-visible,
+.pmt-nav-item:focus-visible,
+.pmt-child-item:focus-visible,
+.pmt-collapsed-item:focus-visible {
+  outline: 2px solid var(--pmt-primary);
+  outline-offset: 2px;
+}
+
+/* ── Tables: scroll horizontally inside their own box, never the page ─────
+   Scope the scroll to .ant-table-container (not .ant-table-wrapper) so the
+   pagination row below the table stays put and never scrolls sideways. */
+.ant-table-wrapper {
+  max-width: 100%;
+}
+.ant-table-wrapper .ant-table-container {
+  overflow-x: auto;
+}
+
+/* ── Pagination: wrap and center instead of overflowing on phones ───────── */
+@media (max-width: 576px) {
+  .ant-table-pagination.ant-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 8px;
+  }
+}
+
+/* ── Drawers: fixed pixel widths (e.g. width={520}) must never exceed the
+   viewport — otherwise part of the panel renders off-screen with no way
+   to reach it. Harmless at desktop widths where it never engages. ───── */
+.ant-drawer-content-wrapper {
+  max-width: 100vw !important;
+}
+
+/* ── Modals: fit small viewports, keep footer actions reachable ─────────── */
+@media (max-width: 576px) {
+  .ant-modal {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px auto !important;
+    top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .ant-modal-content {
+    max-height: calc(100vh - 16px);
+  }
+  .ant-modal-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .ant-modal-footer .ant-btn {
+    flex: 0 0 auto;
+  }
+  .ant-picker-dropdown,
+  .ant-select-dropdown {
+    max-width: calc(100vw - 16px);
+  }
+}
+
+/* ── Forms: multi-column ant Rows collapse to one column on phones ──────── */
+@media (max-width: 576px) {
+  .ant-form .ant-row:not(.pmt-no-stack) > .ant-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+  /* Horizontal-layout Form.Item renders label/control as a Row of two Cols;
+     once stacked, a right-aligned label above the input reads oddly. */
+  .ant-form-horizontal .ant-form-item-label {
+    text-align: left !important;
+  }
+}
+
+/* ── Chips/badges/tags: wrap instead of clipping long labels ─────────────── */
+.ant-tag {
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* ── Touch targets: only on real touchscreens, desktop density unchanged ── */
+@media (hover: none) and (pointer: coarse) {
+  .ant-btn,
+  .pmt-header-icon-btn,
+  .ant-pagination-item,
+  .ant-pagination-item-link,
+  .ant-select-selector,
+  .ant-picker,
+  .pmt-nav-item,
+  .pmt-collapsed-item {
+    min-height: 44px;
+  }
+  .ant-checkbox-wrapper,
+  .ant-radio-wrapper {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ── Cards: equal-height responsive grid opt-in for card layouts ────────── */
+.pmt-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+.pmt-card-grid > .ant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.pmt-card-grid > .ant-card .ant-card-body {
+  flex: 1 1 auto;
+}
+
+/* ── Loading / empty state centering opt-in ──────────────────────────────── */
+.pmt-center-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 200px;
+  padding: 24px 16px;
+  gap: 12px;
+}
+
+
