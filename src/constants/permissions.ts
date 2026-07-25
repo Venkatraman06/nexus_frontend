@@ -138,7 +138,7 @@ export const PERMS = {
   CRM_FOLLOWUP_UPDATE:     "pmt.crm.followup.update",
   CRM_FOLLOWUP_DELETE:     "pmt.crm.followup.delete",
   CRM_FOLLOWUP_TRANSITION: "pmt.crm.followup.transition",
-
+  CRM_LEAD_VIEW:   "pmt.crm.lead.view",
   WORKSPACE_CALENDAR_VIEW:   "pmt.workspace.calendar.view",
 
   // Social Feed
@@ -175,6 +175,7 @@ export const ANY_WORKSPACE_VIEW: PmtPermission[] = [
 export const ANY_CRM_VIEW: PmtPermission[] = [
   PERMS.PROJECT_CLIENT_VIEW,
   PERMS.FINANCE_DOCUMENT_VIEW,
+  PERMS.CRM_LEAD_VIEW,
 ];
 
 /** Any finance view permission (shows Finance menu). */

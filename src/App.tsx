@@ -6,6 +6,7 @@ import { PERMS } from "@/constants/permissions";
 import { get } from "@/services/api";
 import { resolveLandingPath } from "@/utils/access";
 import AppLayout from "@/components/layout/AppLayout";
+import CRMPage from '@/pages/crm/CRMPage'; 
 import RequirePermission from "@/components/common/RequirePermission";
 import LoginPage from "@/pages/auth/LoginPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
@@ -204,6 +205,13 @@ export default function App() {
         <Route path="workspace/followups" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><FollowUpsPage /></RequirePermission>} />
         <Route path="workspace/meetings" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><MeetingsPage /></RequirePermission>} />
         <Route path="workspace/calendar" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><WorkspaceCalendarPage /></RequirePermission>} />
+        <Route path="crm" element={<CRMPage />} />
+<Route path="crm/dashboard" element={<CRMPage />} />
+<Route path="crm/leads" element={<CRMPage />} />
+<Route path="crm/tasks" element={<CRMPage />} />
+<Route path="crm/followups" element={<CRMPage />} />
+<Route path="crm/documents" element={<CRMPage />} />
+<Route path="crm/clients" element={<CRMPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/roles" element={<RequirePermission permission={PERMS.ROLE_VIEW}><RoleManagementPage /></RequirePermission>} />
         <Route path="settings/roles/:roleId" element={<RequirePermission permission={PERMS.ROLE_VIEW}><RoleDetailPage /></RequirePermission>} />

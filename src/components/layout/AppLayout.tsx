@@ -6,6 +6,7 @@ import ThemeToggle from "@/components/common/ThemeToggle";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import WorkspaceCalendarModal from "@/pages/workspace/WorkspaceCalendarModal";
 import DailyDueNotification from "@/components/common/DailyDueNotification";
+import { ContactsOutlined } from "@ant-design/icons";
 import {
   DashboardOutlined, ProjectOutlined, TeamOutlined, ApartmentOutlined,
   BarChartOutlined, UserOutlined, LogoutOutlined, MenuFoldOutlined,
@@ -116,15 +117,16 @@ const NAV_ITEMS_WITHOUT_DASHBOARD: NavItem[] = [
     ],
   },
   {
-    key: "/crm",
-    icon: <ShopOutlined />,
-    label: "CRM",
-    anyOf: ANY_CRM_VIEW,
-    children: [
-      { key: "/clients",             icon: <BankOutlined />,       label: "Client",     permission: PERMS.PROJECT_CLIENT_VIEW },
-      { key: "/finance/documents",   icon: <FileTextOutlined />,   label: "Quotation",  permission: PERMS.FINANCE_DOCUMENT_VIEW },
-    ],
-  },
+  key: "/crm",
+  icon: <ShopOutlined />,
+  label: "CRM",
+  anyOf: ANY_CRM_VIEW,
+  children: [
+    { key: "/crm/dashboard",     icon: <ContactsOutlined />, label: "Lead Management", permission: PERMS.CRM_LEAD_VIEW },
+    { key: "/clients",           icon: <BankOutlined />,     label: "Client",          permission: PERMS.PROJECT_CLIENT_VIEW },
+    { key: "/finance/documents", icon: <FileTextOutlined />, label: "Quotation",       permission: PERMS.FINANCE_DOCUMENT_VIEW },
+  ],
+},
   {
     key: "/finance",
     icon: <DollarOutlined />,
