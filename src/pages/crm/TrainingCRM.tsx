@@ -13,6 +13,8 @@ import { useToast } from '@/context/ToastContext';
 import ClientManagement from './ClientManagement';
 import { get, post, patch, del } from "@/services/api";
 import EmployeeSearchDropdown from './EmployeeSearchDropdown';
+import ClientChatPanel from './ClientChatPanel';
+import EmployeeMultiSelectDropdown from './EmployeeMultiSelectDropdown';
 
 interface Lead {
   id: number;
@@ -353,7 +355,9 @@ const TimeField = ({
   const handleOpen = () => {
     if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      setCoords({ top: rect.bottom + 8, left: rect.left });
+      // Anchor the picker to the input's top edge so it expands upward and
+      // remains fully visible inside the follow-up modal.
+      setCoords({ top: rect.top - 8, left: rect.left });
     }
     setOpen(o => !o);
   };
@@ -372,6 +376,7 @@ const TimeField = ({
       {open && (
         <div style={{
           position: 'fixed', top: coords.top, left: coords.left, zIndex: 99999,
+          transform: 'translateY(-100%)',
           background: 'var(--color-surface)', border: '1.5px solid var(--color-border)',
           borderRadius: '16px', padding: '18px', boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
         }}>
@@ -531,7 +536,7 @@ const TrainingCRM: React.FC = () => {
   const [draggedActivityId, setDraggedActivityId] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<ActivityType | null>(null);
   const [showNotifications, setShowNotifications] = useState(false);
-
+  const [showChat, setShowChat] = useState(false);
   const [activityCategoryFilter, setActivityCategoryFilter] = useState<'ALL' | ActivityType>('ALL');
   const [activitySearch, setActivitySearch] = useState('');
 
@@ -688,7 +693,8 @@ useEffect(() => { fetchLeads(); fetchActivities(); fetchLeadTasks(); fetchDocs()
   lead: Lead;
   onSubmit: (data: {
     business_category: string; deal_title: string; deal_description: string;
-    deal_amount: string; deal_date_from: string; deal_date_to: string; assigned_to: string;
+    deal_amount: string; deal_date_from: string; deal_date_to: string; assigned_employee_ids: string[];
+    assigned_employee_names: string[];
   }) => void;
   onClose: () => void;
 }) => {
@@ -699,19 +705,22 @@ useEffect(() => { fetchLeads(); fetchActivities(); fetchLeadTasks(); fetchDocs()
   const [amount, setAmount] = useState(lead.expected_deal_value || '');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
+ const [assignedEmployeeIds, setAssignedEmployeeIds] = useState<string[]>([]);
+const [assignedEmployeeNames, setAssignedEmployeeNames] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!businessCategory || !title || !amount || !dateFrom || !dateTo || !assignedTo) {
-      addToast('Please fill required fields: Category, Title, Amount, Date From, Date To, Assigned To', 'error');
-      return;
-    }
-    onSubmit({
-      business_category: businessCategory, deal_title: title, deal_description: description,
-      deal_amount: amount, deal_date_from: dateFrom, deal_date_to: dateTo, assigned_to: assignedTo,
-    });
-  };
+  e.preventDefault();
+  if (!businessCategory || !title || !amount || !dateFrom || !dateTo || assignedEmployeeIds.length === 0) {
+    addToast('Please fill required fields: Category, Title, Amount, Date From, Date To, Assigned To', 'error');
+    return;
+  }
+  onSubmit({
+    business_category: businessCategory, deal_title: title, deal_description: description,
+    deal_amount: amount, deal_date_from: dateFrom, deal_date_to: dateTo,
+    assigned_employee_ids: assignedEmployeeIds,
+    assigned_employee_names: assignedEmployeeNames,
+  });
+};
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -755,9 +764,15 @@ useEffect(() => { fetchLeads(); fetchActivities(); fetchLeadTasks(); fetchDocs()
       </div>
 
       <div>
-        <label style={fieldLabelStyle}>Assigned To<Req /></label>
-        <EmployeeSearchDropdown value={assignedTo} onChange={(id) => setAssignedTo(id)} />
-      </div>
+  <label style={fieldLabelStyle}>Assigned To<Req /></label>
+  <EmployeeMultiSelectDropdown
+  value={assignedEmployeeIds}
+  onChange={(ids, employees) => {
+    setAssignedEmployeeIds(ids);
+    setAssignedEmployeeNames(employees.map(e => e.full_name));
+  }}
+/>
+</div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
         <button type="button" onClick={onClose} style={{ padding: '9px 18px', color: 'var(--color-text-muted)', fontWeight: 600, cursor: 'pointer', borderRadius: '10px', border: '1.5px solid var(--color-border)', background: 'transparent' }}>Cancel</button>
@@ -784,7 +799,7 @@ useEffect(() => { fetchLeads(); fetchActivities(); fetchLeadTasks(); fetchDocs()
   openModal(
     <ClientConversionForm
       lead={lead}
-      onSubmit={(extra: { business_category: string; deal_title: string; deal_description: string; deal_amount: string; deal_date_from: string; deal_date_to: string; assigned_to: string; }) => handleConfirmConvertToClient(id, extra)}
+    onSubmit={(extra: { business_category: string; deal_title: string; deal_description: string; deal_amount: string; deal_date_from: string; deal_date_to: string; assigned_employee_ids: string[]; assigned_employee_names: string[]; }) => handleConfirmConvertToClient(id, extra)}
       onClose={closeModal}
     />,
     `Convert to Client: ${lead.name}`
@@ -793,7 +808,8 @@ useEffect(() => { fetchLeads(); fetchActivities(); fetchLeadTasks(); fetchDocs()
 
 const handleConfirmConvertToClient = async (id: number, extra: {
   business_category: string; deal_title: string; deal_description: string;
-  deal_amount: string; deal_date_from: string; deal_date_to: string; assigned_to: string;
+  deal_amount: string; deal_date_from: string; deal_date_to: string;
+  assigned_employee_ids: string[]; assigned_employee_names: string[];
 }) => {
   const prevLeads = leads;
   setLeads(leads.map(l => l.id === id ? { ...l, status: 'WON' } : l));
@@ -1075,7 +1091,6 @@ const handleConfirmConvertToClient = async (id: number, extra: {
 
   // Lead Contacts panel now driven by whether they've been toggled into Client (status WON)
   const contactClients = leads.filter(l => l.status === 'WON' && l.contact_person && l.contact_person.trim() !== '');
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', height: '100%' }}>
       <HoverZoomStyles />
@@ -1103,6 +1118,7 @@ const handleConfirmConvertToClient = async (id: number, extra: {
             {showNotifications && (
               <div style={{ position: 'absolute', top: '48px', right: 0, width: '320px', maxHeight: '400px', overflowY: 'auto', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '14px', boxShadow: 'var(--shadow-xl)', zIndex: 50, padding: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              
                   <span style={{ fontSize: '13px', fontWeight: 'bold' }}>🔔 Reminders</span>
                   <button onClick={() => setShowNotifications(false)} style={{ ...iconBtnStyle, color: 'var(--color-text-muted)' }}><X size={14} /></button>
                 </div>
@@ -1145,9 +1161,15 @@ const handleConfirmConvertToClient = async (id: number, extra: {
               </div>
             )}
           </div>
+
+          <button
+            onClick={() => setShowChat(true)}
+            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '10px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-main)', boxShadow: 'var(--shadow-sm)' }}
+          >
+            <MessageCircle size={18} />
+          </button>
         </div>
       </div>
-
       {/* ── Tab Navigation ── */}
       <div style={{
         display: 'grid',
@@ -1758,8 +1780,77 @@ const handleConfirmConvertToClient = async (id: number, extra: {
       {lead.phone && <span>{lead.phone}</span>}
     </div>
     <div style={{ display: 'flex', gap: '6px', marginTop: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '8px' }}>
-      <button onClick={() => openModal(<div style={{ display: 'flex', flexDirection: 'column', gap: '14px', minWidth: '340px' }}>
+      <button
+  onClick={() => openModal(
+    <LeadClientDetailView
+      lead={lead}
+      onEdit={(data) => handleEditLead(lead.id, data)}
+      onDelete={() => handleDeleteLead(lead.id)}
+      onClose={closeModal}
+    />,
+    `Client: ${lead.contact_person}`
+  )}
+  style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: 'rgba(37,99,235,0.1)', color: 'var(--color-secondary)', fontWeight: 700, cursor: 'pointer' }}
+>
+  View Details
+</button>
+    </div>
+  </div>
+))}
+              </div>
+            </div>
+          )}
+          <ClientManagement />
+        </div>
+      )}
+      {showChat && <ClientChatPanel onClose={() => setShowChat(false)} />}
+    </div>
+  );
+};
 
+// ── Lead→Client detail view with Edit + Delete ────────────────────────────
+const LeadClientDetailView = ({
+  lead, onEdit, onDelete, onClose,
+}: {
+  lead: Lead;
+  onEdit: (data: Partial<Lead>) => void;
+  onDelete: () => void;
+  onClose: () => void;
+}) => {
+  const [editing, setEditing] = useState(false);
+
+  if (editing) {
+    return (
+      <LeadForm
+        onSubmit={(data) => { onEdit(data); setEditing(false); }}
+        onClose={() => setEditing(false)}
+        initialData={lead}
+        isEdit
+      />
+    );
+  }
+
+  const [employeeMap, setEmployeeMap] = useState<Map<string, string>>(new Map());
+
+useEffect(() => {
+  get<Array<{ id: string; full_name: string }>>('/employees/simple-dropdown/')
+    .then(data => setEmployeeMap(new Map(data.map(e => [e.id, e.full_name]))))
+    .catch(() => {});
+}, []);
+
+const rawIds: string[] =
+  (lead as any).assigned_employee_ids ||
+  (Array.isArray((lead as any).assigned_to) ? (lead as any).assigned_to : []);
+
+const assignedNames: string =
+  rawIds.length > 0
+    ? rawIds.map((id: string) => employeeMap.get(id) || id).join(', ')
+    : (lead as any).assigned_employee_names?.join(', ') ||
+      (lead as any).assigned_to_name ||
+      '—';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', minWidth: '340px', maxWidth: '520px' }}>
       <div style={{ padding: '12px', background: 'rgba(16,185,129,0.06)', borderRadius: '10px', border: '1px solid rgba(16,185,129,0.2)' }}>
         <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#10B981' }}>Converted Client</span>
         <h3 style={{ margin: '4px 0 0', fontSize: '16px', fontWeight: 800 }}>{lead.name}</h3>
@@ -1767,24 +1858,41 @@ const handleConfirmConvertToClient = async (id: number, extra: {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
-        <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Contact Person</span><p style={{ margin: '2px 0', fontWeight: 600 }}>{lead.contact_person}</p></div>
-        <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Designation</span><p style={{ margin: '2px 0', fontWeight: 600 }}>{lead.designation || '—'}</p></div>
-        <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Email</span><p style={{ margin: '2px 0', color: 'var(--color-secondary)' }}>{lead.email || '—'}</p></div>
-        <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Phone</span><p style={{ margin: '2px 0' }}>{lead.phone || '—'}</p></div>
+        {[
+          { label: 'Contact Person', val: lead.contact_person },
+          { label: 'Designation', val: lead.designation || '—' },
+          { label: 'Email', val: lead.email || '—' },
+          { label: 'Phone', val: lead.phone || '—' },
+        ].map(({ label, val }) => (
+          <div key={label}>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>{label}</span>
+            <p style={{ margin: '2px 0', fontWeight: 600, color: label === 'Email' ? 'var(--color-secondary)' : 'var(--color-text-main)' }}>{val}</p>
+          </div>
+        ))}
       </div>
 
       <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <span style={{ fontSize: '12px', fontWeight: 800 }}>Deal Details</span>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
-          <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Business Category</span><p style={{ margin: '2px 0', fontWeight: 600 }}>{(lead as any).business_category || '—'}</p></div>
-          <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Deal Title</span><p style={{ margin: '2px 0', fontWeight: 600 }}>{(lead as any).deal_title || '—'}</p></div>
-          <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Final Amount</span><p style={{ margin: '2px 0', fontWeight: 800, color: '#10B981' }}>{(lead as any).deal_amount ? `$${parseFloat((lead as any).deal_amount).toLocaleString()}` : '—'}</p></div>
-          <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Assigned To</span><p style={{ margin: '2px 0', fontWeight: 600 }}>{(lead as any).assigned_to_name || (lead as any).assigned_to || '—'}</p></div>
-          <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Date From</span><p style={{ margin: '2px 0' }}>{(lead as any).deal_date_from || '—'}</p></div>
-          <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Date To</span><p style={{ margin: '2px 0' }}>{(lead as any).deal_date_to || '—'}</p></div>
+          {[
+            { label: 'Business Category', val: (lead as any).business_category || '—' },
+            { label: 'Deal Title', val: (lead as any).deal_title || '—' },
+            { label: 'Final Amount', val: (lead as any).deal_amount ? `$${parseFloat((lead as any).deal_amount).toLocaleString()}` : '—', green: true },
+            { label: 'Assigned To', val: assignedNames },
+            { label: 'Date From', val: (lead as any).deal_date_from || '—' },
+            { label: 'Date To', val: (lead as any).deal_date_to || '—' },
+          ].map(({ label, val, green }) => (
+            <div key={label}>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>{label}</span>
+              <p style={{ margin: '2px 0', fontWeight: green ? 800 : 600, color: green ? '#10B981' : 'var(--color-text-main)' }}>{val}</p>
+            </div>
+          ))}
         </div>
         {(lead as any).deal_description && (
-          <div><span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Description</span><p style={{ margin: '4px 0', fontSize: '13px', lineHeight: 1.5 }}>{(lead as any).deal_description}</p></div>
+          <div>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase' }}>Description</span>
+            <p style={{ margin: '4px 0', fontSize: '13px', lineHeight: 1.5 }}>{(lead as any).deal_description}</p>
+          </div>
         )}
       </div>
 
@@ -1795,21 +1903,25 @@ const handleConfirmConvertToClient = async (id: number, extra: {
         </div>
       )}
 
-    </div>, `Client: ${lead.contact_person}`)} style={{ padding: '8px 14px', borderRadius: '10px', border: 'none', background: 'rgba(37,99,235,0.1)', color: 'var(--color-secondary)', fontWeight: 700, cursor: 'pointer' }}>
-        View Details
-      </button>
-    </div>
-  </div>
-))}
-              </div>
-            </div>
-          )}
-          <ClientManagement />
-        </div>
-      )}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '12px' }}>
+        <button
+          onClick={() => setEditing(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 16px', background: 'linear-gradient(135deg,#2563EB,#7C3AED)', color: 'white', border: 'none', borderRadius: '9px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+        >
+          <Pencil size={13} /> Edit Lead
+        </button>
+        <button
+          onClick={onDelete}
+          style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '8px 14px', borderRadius: '9px', border: '1px solid #EF444444', background: '#EF44441A', color: '#EF4444', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+        >
+          <Trash2 size={13} /> Delete
+        </button>
+      </div>
     </div>
   );
 };
+
+
 // ── Lead Form ─────────────────────────────────────────────────────────────
 const LeadForm = ({ onSubmit, onClose, initialData, isEdit }: { onSubmit: (data: Partial<Lead>) => void; onClose: () => void; initialData?: Partial<Lead>; isEdit?: boolean }) => {
   const { addToast } = useToast();
@@ -2337,6 +2449,7 @@ const LeadDetailsView = ({
           })}
         </div>
       </div>
+     
     </div>
   );
 };
