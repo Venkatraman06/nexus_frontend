@@ -1,20 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   Plus, Search, Mail, Phone, Star
 } from 'lucide-react';
 import styles from './ModulePlaceholder.module.css';
 import { useModal } from '@/context/ModalContext';
 import { useToast } from '@/context/ToastContext';
-
-
-const API_URL = 'http://127.0.0.1:8000/pmt/api/v1';
+import { del, get, patch, post } from '@/services/api';
+import { useAnyPermission, usePermission } from '@/hooks/usePermission';
+import { PERMS } from '@/constants/permissions';
 
 // Client type used locally in this component
 interface Client {
   deal_date_from?: string;
   deal_date_to?: string;
-  assigned_to?: string;
+  assigned_to?: string | string[];
   assigned_to_name?: string;
+  assigned_to_names?: string[];
+  assigned_employee_ids?: string[];
+  assigned_employee_names?: string[];
+  assigned_employees?: Array<{ full_name?: string; name?: string; email?: string } | string>;
   deal_description?: string;
   business_category?: string;
   deal_title?: string;
@@ -32,26 +36,92 @@ interface Client {
   notes?: string;
 }
 
+type ClientPayload = Pick<Client,
+  'name' | 'company' | 'college' | 'contact_person' | 'phone' | 'whatsapp' |
+  'email' | 'relationship_score' | 'status' | 'notes' | 'business_category' |
+  'deal_title' | 'deal_amount' | 'deal_date_from' | 'deal_date_to' | 'deal_description'
+>;
+
+const editableFields: (keyof ClientPayload)[] = [
+  'name', 'company', 'college', 'contact_person', 'phone', 'whatsapp', 'email',
+  'relationship_score', 'status', 'notes', 'business_category', 'deal_title',
+  'deal_amount', 'deal_date_from', 'deal_date_to', 'deal_description',
+];
+
+const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
+
+const assignedEmployeesText = (client: Client, employeeNames: Map<string, string> = new Map()) => {
+  if (client.assigned_employee_names?.length) return client.assigned_employee_names.join(', ');
+  if (client.assigned_to_names?.length) return client.assigned_to_names.join(', ');
+  if (client.assigned_employees?.length) {
+    return client.assigned_employees
+      .map(employee => typeof employee === 'string' ? employeeNames.get(employee) || employee : employee.full_name || employee.name || employee.email)
+      .filter(Boolean)
+      .join(', ');
+  }
+  if (client.assigned_to_name) return client.assigned_to_name;
+  const assignedIds = client.assigned_employee_ids || (Array.isArray(client.assigned_to) ? client.assigned_to : []);
+  if (assignedIds.length) return assignedIds.map(id => employeeNames.get(id) || id).join(', ');
+  return typeof client.assigned_to === 'string' ? client.assigned_to : '';
+};
+
+const toPayload = (data: Partial<Client>): Partial<ClientPayload> => {
+  const payload: Partial<ClientPayload> = {};
+  editableFields.forEach((field) => {
+    if (field in data) payload[field] = data[field] as never;
+  });
+  payload.name = text(payload.name);
+  payload.company = text(payload.company);
+  payload.contact_person = text(payload.contact_person);
+  payload.email = text(payload.email);
+  payload.phone = text(payload.phone);
+  payload.whatsapp = text(payload.whatsapp);
+  return payload;
+};
+
+const changedPayload = (original: Client, updated: Partial<Client>): Partial<ClientPayload> => {
+  const payload = toPayload(updated);
+  return Object.fromEntries(
+    Object.entries(payload).filter(([field, value]) => value !== original[field as keyof Client])
+  ) as Partial<ClientPayload>;
+};
+
+const isValidClient = (value: unknown): value is Client => {
+  if (!value || typeof value !== 'object') return false;
+  const client = value as Partial<Client>;
+  return Number.isFinite(client.id) && typeof client.name === 'string' &&
+    typeof client.company === 'string' && typeof client.contact_person === 'string' &&
+    Number.isFinite(client.relationship_score);
+};
+
 const ClientManagement: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [employeeNames, setEmployeeNames] = useState<Map<string, string>>(new Map());
+  const fetchRequest = useRef(0);
   const { openModal, closeModal } = useModal();
   const { addToast } = useToast();
+  const canCreate = useAnyPermission([PERMS.PROJECT_CLIENT_CREATE, PERMS.FINANCE_DOCUMENT_CREATE]);
+  const canUpdate = usePermission(PERMS.PROJECT_CLIENT_UPDATE);
+  const canDelete = usePermission(PERMS.PROJECT_CLIENT_DELETE);
 
-   const fetchClients = async () => {
+  const fetchClients = async () => {
+    const requestId = ++fetchRequest.current;
+    setIsLoading(true);
+    setLoadError(false);
     try {
-      const token = localStorage.getItem('ACCESS_TOKEN');
-      const response = await fetch(`${API_URL}/clients/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setClients(data);
-      } else {
-        setClients([]);
-      }
-    } catch (e) {
-      setClients([]);
+      const data = await get<unknown>('/clients/');
+      if (requestId !== fetchRequest.current) return;
+      setClients(Array.isArray(data) ? data.filter(isValidClient) : []);
+    } catch {
+      if (requestId !== fetchRequest.current) return;
+      setLoadError(true);
+    } finally {
+      if (requestId === fetchRequest.current) setIsLoading(false);
     }
   };
 
@@ -60,96 +130,82 @@ const ClientManagement: React.FC = () => {
     fetchClients();
   }, []);
 
+  useEffect(() => {
+    get<Array<{ id: string; full_name: string }>>('/employees/simple-dropdown/')
+      .then(employees => setEmployeeNames(new Map(employees.map(employee => [employee.id, employee.full_name]))))
+      .catch(() => setEmployeeNames(new Map()));
+  }, []);
+
   const handleCreateClient = async (data: Partial<Client>) => {
+    if (!canCreate || isSaving) return;
+    const payload = toPayload(data);
+    if (!payload.name || !payload.contact_person) {
+      addToast('Client name and contact person are required.', 'error');
+      return;
+    }
+    setIsSaving(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/clients/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        addToast('Client created successfully!', 'success');
-        fetchClients();
-        closeModal();
-      } else {
-        const mockNew: Client = {
-          id: clients.length + 1,
-          name: data.name || 'New Client',
-          company: data.company || '',
-          college: data.college || '',
-          contact_person: data.contact_person || '',
-          phone: data.phone || '',
-          whatsapp: data.whatsapp || '',
-          email: data.email || '',
-          relationship_score: Number(data.relationship_score) || 80,
-          status: data.status || 'Active',
-          notes: data.notes || '',
-          deal_date_from: undefined,
-          deal_date_to: undefined,
-          assigned_to: undefined,
-          assigned_to_name: undefined,
-          deal_description: undefined,
-          business_category: undefined,
-          deal_title: undefined,
-          deal_amount: undefined
-        };
-        setClients([mockNew, ...clients]);
-        addToast('Client created successfully (Mock mode)!', 'success');
-        closeModal();
-      }
-    } catch (e) {
+      await post<Client>('/clients/', payload);
+      addToast('Client created successfully!', 'success');
+      await fetchClients();
+      closeModal();
+    } catch {
       addToast('Error saving client', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleEditClient = async (id: number, data: Partial<Client>) => {
+    if (!canUpdate || isSaving) return;
+    const original = clients.find(client => client.id === id);
+    if (!original) {
+      addToast('This client is no longer available. Refresh and try again.', 'error');
+      return;
+    }
+    const payload = changedPayload(original, data);
+    if (!payload.name || !payload.contact_person) {
+      addToast('Client name and contact person are required.', 'error');
+      return;
+    }
+    if (Object.keys(payload).length === 0) {
+      closeModal();
+      return;
+    }
+    setIsSaving(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/clients/${id}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        addToast('Client updated successfully!', 'success');
-        fetchClients();
-        closeModal();
-      } else {
-        addToast('Failed to update client on backend', 'error');
-      }
+      await patch<Client>(`/clients/${id}/`, payload);
+      addToast('Client updated successfully!', 'success');
+      await fetchClients();
+      closeModal();
     } catch {
-      addToast('Error updating client - check backend is running on port 8000', 'error');
+      addToast('Unable to update client. Please try again.', 'error');
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleDeleteClient = async (id: number) => {
-    if (!window.confirm('Delete this client? This cannot be undone.')) return;
+  const handleDeleteClient = async (client: Client) => {
+    if (!canDelete || deletingId !== null) return;
+    if (!window.confirm(`Delete client "${client.name}"? This cannot be undone.`)) return;
+    setDeletingId(client.id);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/clients/${id}/`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (response.ok || response.status === 204) {
-        addToast('Client deleted', 'success');
-        setClients(clients.filter(c => c.id !== id));
-        closeModal();
-      } else {
-        addToast('Failed to delete client on backend', 'error');
-      }
+      await del(`/clients/${client.id}/`);
+      addToast('Client deleted', 'success');
+      setClients(currentClients => currentClients.filter(currentClient => currentClient.id !== client.id));
+      closeModal();
     } catch {
-      addToast('Error deleting client - check backend is running on port 8000', 'error');
+      addToast('Unable to delete client. Please try again.', 'error');
+    } finally {
+      setDeletingId(null);
     }
   };
 
+  const normalizedSearch = search.trim().toLowerCase();
   const filtered = clients.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) || 
-    c.company.toLowerCase().includes(search.toLowerCase()) ||
-    c.contact_person.toLowerCase().includes(search.toLowerCase())
+    c.name.toLowerCase().includes(normalizedSearch) || 
+    c.company.toLowerCase().includes(normalizedSearch) ||
+    c.contact_person.toLowerCase().includes(normalizedSearch)
   );
 
   return (
@@ -159,15 +215,16 @@ const ClientManagement: React.FC = () => {
           <h1 className={styles.title}>Client CRM</h1>
           <p className={styles.subtitle}>Track business accounts, relationship scores, and communication history.</p>
         </div>
-        <button className={styles.btnPrimary} onClick={() => openModal(<ClientForm onSubmit={handleCreateClient} onClose={closeModal} />, 'Add Account Client')}>
+        {canCreate && <button className={styles.btnPrimary} onClick={() => openModal(<ClientForm onSubmit={handleCreateClient} onClose={closeModal} isSaving={isSaving} />, 'Add Account Client')}>
           <Plus size={16} /> New Client
-        </button>
+        </button>}
       </div>
 
       <div style={{ position: 'relative', width: '100%' }}>
         <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
         <input 
           type="text" 
+          aria-label="Search clients"
           placeholder="Search accounts, companies, contact persons..." 
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -175,13 +232,19 @@ const ClientManagement: React.FC = () => {
         />
       </div>
 
+      {loadError && (
+        <div role="alert" className="glass-panel" style={{ padding: '1rem', border: '1px solid #EF4444' }}>
+          Unable to load clients. <button type="button" onClick={() => void fetchClients()}>Try again</button>
+        </div>
+      )}
+
+      {isLoading ? <p aria-live="polite">Loading clients…</p> : !loadError && (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
         {filtered.map(client => (
           <div
             key={client.id}
             className="glass-panel"
-            onClick={() => openModal(<ClientDetailView client={client} onEdit={handleEditClient} onDelete={handleDeleteClient} />, `Client Account Profile: ${client.name}`)}
-            style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '10px', border: '1px solid var(--color-border)', cursor: 'pointer', transition: 'box-shadow 0.15s, transform 0.15s' }}
+            style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '10px', border: '1px solid var(--color-border)', transition: 'box-shadow 0.15s, transform 0.15s' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.10)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
           >
@@ -217,33 +280,40 @@ const ClientManagement: React.FC = () => {
 
             <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
               <button
-                onClick={(e) => { e.stopPropagation(); openModal(<ClientDetailView client={client} onEdit={handleEditClient} onDelete={handleDeleteClient} />, `Client Account Profile: ${client.name}`); }}
+                onClick={() => openModal(<ClientDetailView client={client} employeeNames={employeeNames} onEdit={handleEditClient} onDelete={handleDeleteClient} canUpdate={canUpdate} canDelete={canDelete} isSaving={isSaving} isDeleting={deletingId === client.id} />, `Client Account Profile: ${client.name}`)}
                 style={{ flex: 1, padding: '8px', background: 'rgba(37,99,235,0.1)', color: 'var(--color-secondary)', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
               >
                 View Profile
               </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); openModal(<ClientEditForm client={client} onSubmit={(data) => handleEditClient(client.id, data)} onClose={closeModal} />, `Edit: ${client.name}`); }}
+              {canUpdate && <button
+                  onClick={() => openModal(<ClientEditForm client={client} onSubmit={(data) => handleEditClient(client.id, data)} onClose={closeModal} isSaving={isSaving} />, `Edit: ${client.name}`)}
                 style={{ padding: '8px 12px', background: 'rgba(124,58,237,0.1)', color: '#7C3AED', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
               >
                 Edit
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); handleDeleteClient(client.id); }}
+              </button>}
+              {canDelete && <button
+                type="button"
+                disabled={deletingId !== null}
+                onClick={() => handleDeleteClient(client)}
                 style={{ padding: '8px 12px', background: '#EF44441A', color: '#EF4444', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
               >
-                Delete
-              </button>
+                {deletingId === client.id ? 'Deleting…' : 'Delete'}
+              </button>}
             </div>
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 };
 
 // Form to add client
-const ClientForm = ({ onSubmit, onClose }: { onSubmit: (data: Partial<Client>) => void; onClose: () => void }) => {
+const ClientForm = ({ onSubmit, onClose, isSaving }: {
+  onSubmit: (data: Partial<Client>) => void;
+  onClose: () => void;
+  isSaving: boolean;
+}) => {
   const [formData, setFormData] = useState<Partial<Client>>({
     name: '', company: '', college: '', contact_person: '',
     phone: '', whatsapp: '', email: '', relationship_score: 90,
@@ -289,8 +359,8 @@ const ClientForm = ({ onSubmit, onClose }: { onSubmit: (data: Partial<Client>) =
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
-        <button type="button" onClick={onClose} style={{ padding: '8px 16px', color: 'var(--color-text-muted)', fontWeight: '600' }}>Cancel</button>
-        <button type="submit" style={{ padding: '8px 16px', background: 'var(--color-secondary)', color: 'white', borderRadius: '8px', fontWeight: '600' }}>Save Client</button>
+        <button type="button" onClick={onClose} disabled={isSaving} style={{ padding: '8px 16px', color: 'var(--color-text-muted)', fontWeight: '600' }}>Cancel</button>
+        <button type="submit" disabled={isSaving} style={{ padding: '8px 16px', background: 'var(--color-secondary)', color: 'white', borderRadius: '8px', fontWeight: '600' }}>{isSaving ? 'Saving…' : 'Save Client'}</button>
       </div>
     </form>
   );
@@ -298,17 +368,23 @@ const ClientForm = ({ onSubmit, onClose }: { onSubmit: (data: Partial<Client>) =
 
 // Client Details drawer View
 const ClientDetailView = ({
-  client, onEdit, onDelete,
+  client, employeeNames, onEdit, onDelete, canUpdate, canDelete, isSaving, isDeleting,
 }: {
   client: Client;
+  employeeNames: Map<string, string>;
   onEdit: (id: number, data: Partial<Client>) => void;
-  onDelete: (id: number) => void;
+  onDelete: (client: Client) => void;
+  canUpdate: boolean;
+  canDelete: boolean;
+  isSaving: boolean;
+  isDeleting: boolean;
 }) => {
   const [editing, setEditing] = useState(false);
   useModal();
+  const assignedTo = assignedEmployeesText(client, employeeNames) || '—';
 
   if (editing) {
-    return <ClientEditForm client={client} onSubmit={(data) => onEdit(client.id, data)} onClose={() => setEditing(false)} />;
+    return <ClientEditForm client={client} onSubmit={(data) => onEdit(client.id, data)} onClose={() => setEditing(false)} isSaving={isSaving} />;
   }
 
   return (
@@ -325,7 +401,7 @@ const ClientDetailView = ({
         <div><strong>Relationship Score:</strong> {client.relationship_score}%</div>
       </div>
 
-      {(client.business_category || client.deal_title) && (
+      {(client.business_category || client.deal_title || assignedTo !== '—') && (
         <div className="glass-panel" style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px', border: '1px solid var(--color-border)', fontSize: '13px' }}>
           <h4 style={{ fontWeight: 'bold', fontSize: '14px', margin: 0 }}>Deal Details</h4>
           {client.business_category && <div><strong>Category:</strong> {client.business_category}</div>}
@@ -333,7 +409,7 @@ const ClientDetailView = ({
           {client.deal_description && <div><strong>Description:</strong> {client.deal_description}</div>}
           {client.deal_amount && <div><strong>Amount:</strong> ${Number(client.deal_amount).toLocaleString()}</div>}
           {(client.deal_date_from || client.deal_date_to) && <div><strong>Duration:</strong> {client.deal_date_from} → {client.deal_date_to}</div>}
-          {client.assigned_to_name && <div><strong>Assigned To:</strong> {client.assigned_to_name}</div>}
+          <div><strong>Assigned To:</strong> {assignedTo}</div>
         </div>
       )}
 
@@ -347,15 +423,19 @@ const ClientDetailView = ({
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
         <button
           onClick={() => setEditing(true)}
-          style={{ padding: '8px 16px', background: 'var(--color-secondary)', color: 'white', borderRadius: '8px', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '13px' }}
+          disabled={isSaving || !canUpdate}
+          title={canUpdate ? 'Edit client' : 'You do not have permission to edit clients'}
+          style={{ padding: '8px 16px', background: 'var(--color-secondary)', color: 'white', borderRadius: '8px', fontWeight: 700, border: 'none', cursor: canUpdate ? 'pointer' : 'not-allowed', opacity: canUpdate ? 1 : 0.55, fontSize: '13px' }}
         >
           Edit
         </button>
         <button
-          onClick={() => onDelete(client.id)}
-          style={{ padding: '8px 16px', background: '#EF44441A', color: '#EF4444', borderRadius: '8px', fontWeight: 700, border: '1px solid #EF444444', cursor: 'pointer', fontSize: '13px' }}
+          onClick={() => onDelete(client)}
+          disabled={isDeleting || !canDelete}
+          title={canDelete ? 'Delete client' : 'You do not have permission to delete clients'}
+          style={{ padding: '8px 16px', background: '#EF44441A', color: '#EF4444', borderRadius: '8px', fontWeight: 700, border: '1px solid #EF444444', cursor: canDelete ? 'pointer' : 'not-allowed', opacity: canDelete ? 1 : 0.55, fontSize: '13px' }}
         >
-          Delete
+          {isDeleting ? 'Deleting…' : 'Delete'}
         </button>
       </div>
     </div>
@@ -364,11 +444,12 @@ const ClientDetailView = ({
 
 // Edit form for an existing client
 const ClientEditForm = ({
-  client, onSubmit, onClose,
+  client, onSubmit, onClose, isSaving,
 }: {
   client: Client;
   onSubmit: (data: Partial<Client>) => void;
   onClose: () => void;
+  isSaving: boolean;
 }) => {
   const [formData, setFormData] = useState<Partial<Client>>({ ...client });
 
@@ -451,8 +532,8 @@ const ClientEditForm = ({
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
-        <button type="button" onClick={onClose} style={{ padding: '8px 16px', color: 'var(--color-text-muted)', fontWeight: 600, border: '1.5px solid var(--color-border)', borderRadius: '8px', background: 'transparent', cursor: 'pointer' }}>Cancel</button>
-        <button type="submit" style={{ padding: '8px 16px', background: 'var(--color-secondary)', color: 'white', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>Save Changes</button>
+        <button type="button" onClick={onClose} disabled={isSaving} style={{ padding: '8px 16px', color: 'var(--color-text-muted)', fontWeight: 600, border: '1.5px solid var(--color-border)', borderRadius: '8px', background: 'transparent', cursor: 'pointer' }}>Cancel</button>
+        <button type="submit" disabled={isSaving} style={{ padding: '8px 16px', background: 'var(--color-secondary)', color: 'white', borderRadius: '8px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>{isSaving ? 'Saving…' : 'Save Changes'}</button>
       </div>
     </form>
   );
