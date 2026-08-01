@@ -124,6 +124,7 @@ const NAV_ITEMS_WITHOUT_DASHBOARD: NavItem[] = [
   children: [
     { key: "/crm/dashboard",     icon: <ContactsOutlined />, label: "Lead Management", permission: PERMS.CRM_LEAD_VIEW },
     { key: "/clients",           icon: <BankOutlined />,     label: "Client",          permission: PERMS.PROJECT_CLIENT_VIEW },
+    { key: "/sales/opportunities", icon: <DollarOutlined />, label: "Sales",           permission: PERMS.CRM_LEAD_VIEW },
     { key: "/finance/documents", icon: <FileTextOutlined />, label: "Quotation",       permission: PERMS.FINANCE_DOCUMENT_VIEW },
   ],
 },
