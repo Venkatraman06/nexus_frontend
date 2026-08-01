@@ -814,7 +814,8 @@ const handleConfirmConvertToClient = async (id: number, extra: {
   const prevLeads = leads;
   setLeads(leads.map(l => l.id === id ? { ...l, status: 'WON' } : l));
   try {
-    await patch(`/leads/${id}/`, { status: 'WON', ...extra });
+    const { assigned_employee_names, ...backendPayload } = extra;
+await patch(`/leads/${id}/`, { status: 'WON', ...backendPayload });
     addToast('Converted to Client!', 'success');
     fetchLeads();
     closeModal();

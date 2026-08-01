@@ -23,7 +23,7 @@ interface Client {
   business_category?: string;
   deal_title?: string;
   deal_amount?: number | string;
-  id: number;
+  id: number | string;
   name: string;
   company: string;
   college?: string;
@@ -89,9 +89,11 @@ const changedPayload = (original: Client, updated: Partial<Client>): Partial<Cli
 const isValidClient = (value: unknown): value is Client => {
   if (!value || typeof value !== 'object') return false;
   const client = value as Partial<Client>;
-  return Number.isFinite(client.id) && typeof client.name === 'string' &&
-    typeof client.company === 'string' && typeof client.contact_person === 'string' &&
-    Number.isFinite(client.relationship_score);
+  return (client.id !== null && client.id !== undefined) &&
+    typeof client.name === 'string' &&
+    typeof client.company === 'string' &&
+    typeof client.contact_person === 'string' &&
+    typeof client.relationship_score === 'number';
 };
 
 const ClientManagement: React.FC = () => {
@@ -100,7 +102,7 @@ const ClientManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | string | null>(null);
   const [employeeNames, setEmployeeNames] = useState<Map<string, string>>(new Map());
   const fetchRequest = useRef(0);
   const { openModal, closeModal } = useModal();
@@ -156,7 +158,7 @@ const ClientManagement: React.FC = () => {
     }
   };
 
-  const handleEditClient = async (id: number, data: Partial<Client>) => {
+  const handleEditClient = async (id: number | string, data: Partial<Client>) => {
     if (!canUpdate || isSaving) return;
     const original = clients.find(client => client.id === id);
     if (!original) {
@@ -372,7 +374,7 @@ const ClientDetailView = ({
 }: {
   client: Client;
   employeeNames: Map<string, string>;
-  onEdit: (id: number, data: Partial<Client>) => void;
+  onEdit: (id: number | string, data: Partial<Client>) => void;
   onDelete: (client: Client) => void;
   canUpdate: boolean;
   canDelete: boolean;
