@@ -231,18 +231,16 @@ const SalesCRM: React.FC = () => {
     try {
       const data = await get<any>('/clients/');
       const list = Array.isArray(data) ? data : (data?.results ?? []);
-      if (list.length) {
-        const mapped = list.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '' }));
-        setClients(mapped);
-        setClientRecords(list.map((c: any): ClientRecord => ({
-          id: c.id,
-          name: c.name,
-          email: c.email || '',
-          status: c.status || 'Active',
-          relationshipScore: typeof c.relationship_score === 'number' ? c.relationship_score : parseFloat(c.relationship_score) || 0,
-          createdAt: c.created_at || '',
-        })));
-      }
+      const mapped = list.map((c: any) => ({ id: c.id, name: c.name, email: c.email || '' }));
+      setClients(mapped);
+      setClientRecords(list.map((c: any): ClientRecord => ({
+        id: c.id,
+        name: c.name,
+        email: c.email || '',
+        status: c.status || 'Active',
+        relationshipScore: typeof c.relationship_score === 'number' ? c.relationship_score : parseFloat(c.relationship_score) || 80,
+        createdAt: c.created_at || '',
+      })));
     } catch {
       // Quiet
     }
@@ -428,11 +426,31 @@ const SalesCRM: React.FC = () => {
   const activePipelineValue = [...activeDeals, ...negotiationDeals].reduce((sum, d) => sum + parseFloat(d.expectedValue || '0'), 0);
   const quotationsSentCount = quotes.filter(q => q.sentAt).length;
 
-  const totalClients = clientRecords.length;
-  const activeClientsCount = clientRecords.filter(c => c.status === 'Active').length;
-  const inactiveClientsCount = clientRecords.filter(c => c.status !== 'Active').length;
+  const effectiveClientRecords = React.useMemo(() => {
+    const records: ClientRecord[] = [...clientRecords];
+    deals.forEach(d => {
+      if (d.clientName) {
+        const exists = records.some(r => r.name.toLowerCase() === d.clientName.toLowerCase());
+        if (!exists) {
+          records.push({
+            id: d.clientId || d.id,
+            name: d.clientName,
+            email: '',
+            status: 'Active',
+            relationshipScore: 80,
+            createdAt: d.createdAt || new Date().toISOString(),
+          });
+        }
+      }
+    });
+    return records;
+  }, [clientRecords, deals]);
+
+  const totalClients = effectiveClientRecords.length;
+  const activeClientsCount = effectiveClientRecords.filter(c => c.status === 'Active').length;
+  const inactiveClientsCount = effectiveClientRecords.filter(c => c.status !== 'Active').length;
   const avgRelationshipScore = totalClients > 0
-    ? Math.round(clientRecords.reduce((sum, c) => sum + c.relationshipScore, 0) / totalClients)
+    ? Math.round(effectiveClientRecords.reduce((sum, c) => sum + (c.relationshipScore || 80), 0) / totalClients)
     : 0;
   const clientStatusMax = Math.max(activeClientsCount, inactiveClientsCount, 1);
 
@@ -443,7 +461,7 @@ const SalesCRM: React.FC = () => {
 
   interface SalesActivityItem { id: string; type: string; description: string; date: string; clientName: string }
   const salesActivityFeed: SalesActivityItem[] = [
-    ...clientRecords.map((c): SalesActivityItem => ({
+    ...effectiveClientRecords.map((c): SalesActivityItem => ({
       id: `client-${c.id}`, type: 'CLIENT', description: `New client onboarded: ${c.name}`, date: c.createdAt, clientName: c.name
     })),
     ...deals.map((d): SalesActivityItem => ({
@@ -802,7 +820,7 @@ const SalesCRM: React.FC = () => {
                         <div className={opStyles.cardTopRow}>
                           <div className={opStyles.avatar}>{getInitials(d.clientName || d.trainingCategoryName || d.title)}</div>
                           <div className={opStyles.cardTitleWrap}>
-                            <span className={opStyles.cardTitle}>{d.title}</span>
+                            <span className={opStyles.cardTitle}>{(d.title && isNaN(Number(d.title))) ? d.title : (d.clientName ? `${d.clientName} Opportunity` : 'Business Opportunity')}</span>
                             <span className={opStyles.cardClient}>{d.clientName || (d.trainingCategoryName ? `Category: ${d.trainingCategoryName}` : 'No client linked')}</span>
                           </div>
                         </div>
@@ -1235,7 +1253,8 @@ const EditDealForm = ({ deal, clients, categories, onSubmit, onClose }: {
   onSubmit: (data: { title: string; client: string; trainingCategoryId: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => void;
   onClose: () => void;
 }) => {
-  const [title, setTitle] = useState(deal.title);
+  const initialTitle = (deal.title && isNaN(Number(deal.title))) ? deal.title : (deal.clientName ? `${deal.clientName} Opportunity` : 'Business Opportunity');
+  const [title, setTitle] = useState(initialTitle);
   const [clientId, setClientId] = useState(deal.clientId ? String(deal.clientId) : '');
   const [trainingCategoryId, setTrainingCategoryId] = useState(deal.trainingCategoryId ? String(deal.trainingCategoryId) : '');
   const [description, setDescription] = useState(deal.description);
@@ -1251,10 +1270,10 @@ const EditDealForm = ({ deal, clients, categories, onSubmit, onClose }: {
   return (
     <form onSubmit={handleSubmit} className="sales-modal-form">
       <div className="sales-form-group">
-        <label className="sales-form-label">Deal Title *</label>
+        <label className="sales-form-label">Deal / Opportunity Title *</label>
         <div className="sales-input-wrap">
           <span className="sales-input-icon"><User size={18} /></span>
-          <input required type="text" value={title} onChange={e => setTitle(e.target.value)} />
+          <input required type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. AI Research Contract" />
         </div>
       </div>
       <div className="sales-form-grid">
@@ -1401,7 +1420,7 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
           {opportunity && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ color: 'var(--pmt-text-2)', fontSize: '13px' }}>Opportunity</span>
-              <span style={{ fontSize: '13.5px', color: 'var(--pmt-text)' }}>{opportunity.title}</span>
+              <span style={{ fontSize: '13.5px', color: 'var(--pmt-text)' }}>{(opportunity.title && isNaN(Number(opportunity.title))) ? opportunity.title : (opportunity.trainingCategoryName || `${selectedClient?.name} Opportunity`)}</span>
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--pmt-border)', paddingTop: '10px', marginTop: '2px' }}>
@@ -1436,7 +1455,7 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
       </div>
 
       <div className="sales-form-group">
-        <label className="sales-form-label">Select Business / Opportunity</label>
+        <label className="sales-form-label">Select Business / Opportunity Type</label>
         <div className="sales-input-wrap">
           <span className="sales-input-icon"><Briefcase size={18} /></span>
           <select
@@ -1450,16 +1469,19 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
             disabled={clientDeals.length === 0}
           >
             {clientDeals.length === 0 && <option value="">No specific opportunity linked</option>}
-            {clientDeals.map(d => (
-              <option key={String(d.id)} value={String(d.id)}>
-                {d.title} — ₹{(parseFloat(d.expectedValue) || 0).toLocaleString('en-IN')}
-              </option>
-            ))}
+            {clientDeals.map(d => {
+              const displayLabel = (d.title && isNaN(Number(d.title))) ? d.title : (d.trainingCategoryName || (d.clientName ? `${d.clientName} Opportunity` : 'General Opportunity'));
+              return (
+                <option key={String(d.id)} value={String(d.id)}>
+                  {displayLabel} — ₹{(parseFloat(d.expectedValue) || 0).toLocaleString('en-IN')}
+                </option>
+              );
+            })}
           </select>
         </div>
         {clientDeals.length > 1 && (
           <span style={{ display: 'block', fontSize: '11px', color: 'var(--pmt-text-3)', marginTop: '4px' }}>
-            This client has {clientDeals.length} opportunities — choose which one to quote.
+            This client has {clientDeals.length} opportunities — choose which business type to quote.
           </span>
         )}
       </div>
