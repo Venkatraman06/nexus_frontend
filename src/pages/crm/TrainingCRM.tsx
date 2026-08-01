@@ -17,6 +17,8 @@ import ClientChatPanel from './ClientChatPanel';
 import EmployeeMultiSelectDropdown from './EmployeeMultiSelectDropdown';
 
 interface Lead {
+  assigned_to: any;
+  assigned_to_name: any;
   id: number;
   name: string;
   company: string;
@@ -1820,6 +1822,74 @@ const LeadClientDetailView = ({
 }) => {
   const [editing, setEditing] = useState(false);
 
+  const assignedNames =
+    (lead as any).assigned_employee_names?.length
+      ? (lead as any).assigned_employee_names.join(', ')
+      : (lead as any).assigned_employees?.length
+        ? (lead as any).assigned_employees.map((e: any) => e.full_name).filter(Boolean).join(', ')
+        : lead.assigned_to_name || lead.assigned_to || '—';
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadAssigned = async () => {
+      try {
+        // 1) Fetch clients and match against this lead
+        const clientData = await get<any>('/clients/');
+        const clientList = Array.isArray(clientData)
+          ? clientData
+          : (clientData?.data?.results ?? clientData?.results ?? []);
+
+        const matched = clientList.find((c: any) =>
+          c.name === lead.name || c.contact_person === lead.contact_person
+        );
+
+        // 2) Build an employee id -> name lookup, same as ClientManagement.tsx
+        let employeeNames = new Map<string, string>();
+        try {
+          const employees = await get<Array<{ id: string; full_name: string }>>('/employees/simple-dropdown/');
+          employeeNames = new Map(employees.map(e => [e.id, e.full_name]));
+        } catch {
+          // fall back to empty map — we'll just show raw ids if lookup fails
+        }
+
+        if (cancelled) return;
+
+        if (!matched) { assignedNames('—'); return; }
+
+        // 3) Use the same resilient resolver used in ClientManagement.tsx,
+        // which handles assigned_employee_names, assigned_to_names,
+        // assigned_employees (objects or ids), assigned_to_name, and
+        // assigned_employee_ids / assigned_to (array of ids) — in that order.
+        const names =
+          (matched.assigned_employee_names?.length && matched.assigned_employee_names.join(', ')) ||
+          (matched.assigned_to_names?.length && matched.assigned_to_names.join(', ')) ||
+          (matched.assigned_employees?.length &&
+            matched.assigned_employees
+              .map((emp: any) =>
+                typeof emp === 'string'
+                  ? employeeNames.get(emp) || emp
+                  : emp.full_name || emp.name || emp.email
+              )
+              .filter(Boolean)
+              .join(', ')) ||
+          matched.assigned_to_name ||
+          ((matched.assigned_employee_ids || (Array.isArray(matched.assigned_to) ? matched.assigned_to : []))?.length &&
+            (matched.assigned_employee_ids || matched.assigned_to)
+              .map((id: string) => employeeNames.get(id) || id)
+              .join(', ')) ||
+          (typeof matched.assigned_to === 'string' ? matched.assigned_to : '');
+
+        assignedNames(names || '—');
+      } catch {
+        if (!cancelled) assignedNames('—');
+      }
+    };
+
+    loadAssigned();
+    return () => { cancelled = true; };
+  }, [lead.name, lead.contact_person]);
+
   if (editing) {
     return (
       <LeadForm
@@ -1830,25 +1900,6 @@ const LeadClientDetailView = ({
       />
     );
   }
-
-  const [employeeMap, setEmployeeMap] = useState<Map<string, string>>(new Map());
-
-useEffect(() => {
-  get<Array<{ id: string; full_name: string }>>('/employees/simple-dropdown/')
-    .then(data => setEmployeeMap(new Map(data.map(e => [e.id, e.full_name]))))
-    .catch(() => {});
-}, []);
-
-const rawIds: string[] =
-  (lead as any).assigned_employee_ids ||
-  (Array.isArray((lead as any).assigned_to) ? (lead as any).assigned_to : []);
-
-const assignedNames: string =
-  rawIds.length > 0
-    ? rawIds.map((id: string) => employeeMap.get(id) || id).join(', ')
-    : (lead as any).assigned_employee_names?.join(', ') ||
-      (lead as any).assigned_to_name ||
-      '—';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', minWidth: '340px', maxWidth: '520px' }}>
@@ -1921,7 +1972,6 @@ const assignedNames: string =
     </div>
   );
 };
-
 
 // ── Lead Form ─────────────────────────────────────────────────────────────
 const LeadForm = ({ onSubmit, onClose, initialData, isEdit }: { onSubmit: (data: Partial<Lead>) => void; onClose: () => void; initialData?: Partial<Lead>; isEdit?: boolean }) => {
