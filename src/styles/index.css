@@ -1035,4 +1035,142 @@ input:focus-visible,
   gap: 12px;
 }
 
+/* ── Sales Forms & Modals Theme & Responsive Styling ─────────────────────── */
+.sales-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.sales-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sales-form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pmt-text, #09090b);
+}
+
+.sales-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--pmt-border, #e4e4e7);
+  background: var(--pmt-surface, #ffffff);
+  color: var(--pmt-text, #09090b);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+
+.sales-input-wrap:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.sales-input-icon {
+  color: var(--pmt-text-3, #71717a);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sales-input-wrap input,
+.sales-input-wrap select,
+.sales-textarea {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--pmt-text, #09090b);
+}
+
+.sales-textarea {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--pmt-border, #e4e4e7);
+  background: var(--pmt-surface, #ffffff);
+  resize: vertical;
+}
+
+.sales-input-wrap select option,
+select option {
+  background: var(--pmt-surface, #ffffff);
+  color: var(--pmt-text, #09090b);
+}
+
+.sales-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .sales-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.sales-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--pmt-border, #e4e4e7);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+}
+
+.sales-btn-cancel {
+  padding: 9px 18px;
+  border-radius: 9px;
+  border: 1px solid var(--pmt-border, #e4e4e7);
+  background: var(--pmt-surface-2, #f4f4f5);
+  color: var(--pmt-text, #09090b);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sales-btn-cancel:hover {
+  background: var(--pmt-border, #e4e4e7);
+}
+
+.sales-btn-submit {
+  padding: 9px 20px;
+  border-radius: 9px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #ffffff !important;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.sales-btn-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.sales-btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 
