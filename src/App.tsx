@@ -54,6 +54,7 @@ import MeetingsPage from "@/pages/workspace/MeetingsPage";
 import WorkspaceDashboardPage from "@/pages/workspace/WorkspaceDashboardPage";
 import ExecutiveDashboardPage from "@/pages/dashboard/ExecutiveDashboardPage";
 import SalesPage from "@/pages/sales/SalesPage";
+import CRMPage from "@/pages/crm/CRMPage";
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token       = useAuthStore((s) => s.token);
   const user        = useAuthStore((s) => s.user);
@@ -225,6 +226,10 @@ export default function App() {
         <Route path="sales/quotes" element={<SalesPage />} />
         <Route path="sales/proposals" element={<SalesPage />} />
         <Route path="sales/documents" element={<SalesPage />} />
+        <Route path="crm" element={<CRMPage />} />
+        <Route path="crm/leads" element={<CRMPage />} />
+        <Route path="crm/clients" element={<CRMPage />} />
+        <Route path="crm/documents" element={<CRMPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/roles" element={<RequirePermission permission={PERMS.ROLE_VIEW}><RoleManagementPage /></RequirePermission>} />
         <Route path="settings/roles/:roleId" element={<RequirePermission permission={PERMS.ROLE_VIEW}><RoleDetailPage /></RequirePermission>} />
