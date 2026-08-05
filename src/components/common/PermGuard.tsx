@@ -1,12 +1,12 @@
 import React from "react";
 import { useAuthStore } from "@/store/auth";
-import type { PmtPermission } from "@/constants/permissions";
+import type { BmsPermission } from "@/constants/permissions";
 import { hasAllPermissions, hasAnyPermission, hasPermission } from "@/utils/access";
 
 interface Props {
-  permission?: PmtPermission;
-  anyOf?: PmtPermission[];
-  allOf?: PmtPermission[];
+  permission?: BmsPermission;
+  anyOf?: BmsPermission[];
+  allOf?: BmsPermission[];
   fallback?: React.ReactNode;
   children: React.ReactNode;
 }
@@ -14,11 +14,11 @@ interface Props {
 /**
  * Renders children only when the current user has the required permission(s).
  *
- *   <PermGuard permission="pmt.project.create">
+ *   <PermGuard permission="bms.project.create">
  *     <Button>Add Project</Button>
  *   </PermGuard>
  *
- *   <PermGuard anyOf={["pmt.project.update", "pmt.project.delete"]}>
+ *   <PermGuard anyOf={["bms.project.update", "bms.project.delete"]}>
  *     …
  *   </PermGuard>
  */

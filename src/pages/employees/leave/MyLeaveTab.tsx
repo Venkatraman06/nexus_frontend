@@ -86,7 +86,7 @@ function CreateLeaveTypeModal({
       width={480}
       destroyOnClose
     >
-      <Text style={{ display: "block", marginBottom: 16, fontSize: 13, color: "var(--pmt-text-2)" }}>
+      <Text style={{ display: "block", marginBottom: 16, fontSize: 13, color: "var(--bms-text-2)" }}>
         Create a custom leave type. It will be added to the system and automatically
         assigned to you with a default balance.
       </Text>
@@ -208,7 +208,7 @@ export default function MyLeaveTab() {
       dataIndex: "reason",
       key: "reason",
       ellipsis: true,
-      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text>,
+      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text>,
     },
     {
       title: "Status",
@@ -264,11 +264,11 @@ export default function MyLeaveTab() {
           balances.map((b) => (
             <Col xs={24} sm={12} md={8} lg={6} key={b.leave_type_id}>
               <Card size="small" style={{ borderRadius: 10 }}>
-                <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{b.leave_type_name}</Text>
+                <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{b.leave_type_name}</Text>
                 <div style={{ fontSize: 22, fontWeight: 700, color: b.leave_type_color, margin: "4px 0" }}>
                   {b.remaining_days}d
                 </div>
-                <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+                <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
                   {b.used_days} used of {b.total_days}
                 </Text>
                 <Progress

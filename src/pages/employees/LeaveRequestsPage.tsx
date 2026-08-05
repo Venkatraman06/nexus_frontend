@@ -62,17 +62,17 @@
 //     <div style={{
 //       flex: 1,
 //       // ✅ FIX: was background: "#fff", border: "1px solid #eaecf0"
-//       background: "var(--pmt-surface)",
+//       background: "var(--bms-surface)",
 //       borderRadius: 12,
-//       border: "1px solid var(--pmt-border)",
+//       border: "1px solid var(--bms-border)",
 //       padding: "18px 22px",
 //       minWidth: 160,
 //     }}>
 //       {/* ✅ FIX: was color: "#6b7280" */}
-//       <Text style={{ fontSize: 13, color: "var(--pmt-text-2)", display: "block", marginBottom: 4 }}>{label}</Text>
-//       <div style={{ fontSize: 28, fontWeight: 700, color: accent ?? "var(--pmt-text)", lineHeight: 1.2 }}>{value}</div>
+//       <Text style={{ fontSize: 13, color: "var(--bms-text-2)", display: "block", marginBottom: 4 }}>{label}</Text>
+//       <div style={{ fontSize: 28, fontWeight: 700, color: accent ?? "var(--bms-text)", lineHeight: 1.2 }}>{value}</div>
 //       {/* ✅ FIX: was color: "#9ca3af" */}
-//       {sub && <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>{sub}</Text>}
+//       {sub && <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>{sub}</Text>}
 //     </div>
 //   );
 // }
@@ -115,11 +115,11 @@
 //       {/* Request details */}
 //       <div style={{
 //         // ✅ FIX: was background: "#f9fafb", border: "1px solid #f3f4f6"
-//         background: "var(--pmt-surface-2)",
+//         background: "var(--bms-surface-2)",
 //         borderRadius: 10,
 //         padding: "12px 16px",
 //         marginBottom: 20,
-//         border: "1px solid var(--pmt-border)",
+//         border: "1px solid var(--bms-border)",
 //         display: "grid",
 //         gridTemplateColumns: "1fr 1fr",
 //         gap: "8px 16px",
@@ -134,15 +134,15 @@
 //         ].map(({ label, value }) => (
 //           <div key={label}>
 //             {/* ✅ FIX: was color: "#9ca3af" / "#111827" */}
-//             <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{label}</Text>
-//             <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pmt-text)" }}>{value}</div>
+//             <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{label}</Text>
+//             <div style={{ fontSize: 13, fontWeight: 500, color: "var(--bms-text)" }}>{value}</div>
 //           </div>
 //         ))}
 //         {record.reason && (
 //           <div style={{ gridColumn: "1 / -1" }}>
-//             <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Reason</Text>
+//             <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Reason</Text>
 //             {/* ✅ FIX: was color: "#374151" */}
-//             <div style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>{record.reason}</div>
+//             <div style={{ fontSize: 13, color: "var(--bms-text-2)" }}>{record.reason}</div>
 //           </div>
 //         )}
 //       </div>
@@ -221,8 +221,8 @@
 //       render: (v: string, r: LeaveRequestRow) => (
 //         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
 //           <div style={{ width: 6, height: 6, borderRadius: "50%", background: r.color, flexShrink: 0 }} />
-//           {/* ✅ FIX: was no color set, inherits correctly via var(--pmt-text) from antd */}
-//           <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>{v}</Text>
+//           {/* ✅ FIX: was no color set, inherits correctly via var(--bms-text) from antd */}
+//           <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>{v}</Text>
 //         </div>
 //       ),
 //     },
@@ -230,13 +230,13 @@
 //       title: "FROM",
 //       dataIndex: "start_date",
 //       key: "start_date",
-//       render: (v: string) => <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>{v}</Text>,
+//       render: (v: string) => <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>{v}</Text>,
 //     },
 //     {
 //       title: "TO",
 //       dataIndex: "end_date",
 //       key: "end_date",
-//       render: (v: string) => <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>{v}</Text>,
+//       render: (v: string) => <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>{v}</Text>,
 //     },
 //     {
 //       title: "DAYS",
@@ -253,7 +253,7 @@
 //       key: "reason",
 //       ellipsis: true,
 //       // ✅ FIX: was color: "#6b7280"
-//       render: (v: string) => <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text>,
+//       render: (v: string) => <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text>,
 //     },
 //     {
 //       title: "STATUS",
@@ -277,7 +277,7 @@
 //       dataIndex: "created_at",
 //       key: "created_at",
 //       // ✅ FIX: was color: "#6b7280"
-//       render: (v: string) => <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v}</Text>,
+//       render: (v: string) => <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v}</Text>,
 //     },
 //     {
 //       title: "ACTIONS",
@@ -319,9 +319,9 @@
 //       {/* Header */}
 //       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
 //         <div>
-//           <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>Leave Requests</Title>
+//           <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>Leave Requests</Title>
 //           {/* ✅ FIX: was color: "#6b7280" */}
-//           <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>Manage employee leave applications</Text>
+//           <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>Manage employee leave applications</Text>
 //         </div>
 //         <Space>
 //           <Select
@@ -357,9 +357,9 @@
 //       {/* Table */}
 //       <div style={{
 //         // ✅ FIX: was background: "#fff", border: "1px solid #eaecf0"
-//         background: "var(--pmt-surface)",
+//         background: "var(--bms-surface)",
 //         borderRadius: 12,
-//         border: "1px solid var(--pmt-border)",
+//         border: "1px solid var(--bms-border)",
 //         overflow: "hidden",
 //       }}>
 //         <Table
@@ -399,7 +399,7 @@ import {
 } from "antd";
 import {
   FilterOutlined, ReloadOutlined, MedicineBoxOutlined, UserAddOutlined,
-  UserOutlined, TeamOutlined, AuditOutlined,
+  UserOutlined, TeamOutlined, AuditOutlined, CheckOutlined
 } from "@ant-design/icons";
 import { get, post, del } from "@/services/api";
 import PermGuard from "@/components/common/PermGuard";
@@ -470,56 +470,16 @@ function SummaryCard({ label, value, sub, accent }: {
   return (
     <div style={{
       flex: 1,
-      background: "var(--pmt-surface)",
+      background: "var(--bms-surface)",
       borderRadius: 12,
-      border: "1px solid var(--pmt-border)",
+      border: "1px solid var(--bms-border)",
       padding: "18px 22px",
       minWidth: 160,
     }}>
-      <Text style={{ fontSize: 13, color: "var(--pmt-text-2)", display: "block", marginBottom: 4 }}>{label}</Text>
-      <div style={{ fontSize: 28, fontWeight: 700, color: accent ?? "var(--pmt-text)", lineHeight: 1.2 }}>{value}</div>
-      {sub && <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>{sub}</Text>}
+      <Text style={{ fontSize: 13, color: "var(--bms-text-2)", display: "block", marginBottom: 4 }}>{label}</Text>
+      <div style={{ fontSize: 28, fontWeight: 700, color: accent ?? "var(--bms-text)", lineHeight: 1.2 }}>{value}</div>
+      {sub && <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>{sub}</Text>}
     </div>
-  );
-}
-
-// ── Acknowledge modal (project team) ─────────────────────────────────────────
-function AckModal({ open, record, onClose, onDone }: {
-  open: boolean;
-  record: LeaveRequestRow | null;
-  onClose: () => void;
-  onDone: () => void;
-}) {
-  const [form] = Form.useForm();
-  const mutation = useMutation({
-    mutationFn: ({ id, remarks }: { id: string; remarks: string }) =>
-      post(`/leave/requests/${id}/ack/`, { remarks }),
-    onSuccess: () => {
-      message.success("Leave acknowledged — sent to reporting manager for final approval");
-      form.resetFields();
-      onDone();
-    },
-    onError: (e: any) => message.error(e?.response?.data?.detail ?? "Failed to acknowledge"),
-  });
-
-  if (!record) return null;
-
-  return (
-    <Modal title="Acknowledge Leave Request" open={open} onCancel={onClose} footer={null} width={480}>
-      <Text style={{ display: "block", marginBottom: 12, fontSize: 13, color: "var(--pmt-text-2)" }}>
-        Confirm you have noted {record.employee}&apos;s leave ({record.days_count} day(s)).
-        The request will then go to their reporting manager for final approval.
-      </Text>
-      <Form form={form} layout="vertical" onFinish={(v) => mutation.mutate({ id: record.id, remarks: v.remarks || "" })}>
-        <Form.Item name="remarks" label="Note (optional)">
-          <Input.TextArea rows={2} placeholder="Optional note for the manager…" />
-        </Form.Item>
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button type="primary" htmlType="submit" loading={mutation.isPending}>Acknowledge</Button>
-        </div>
-      </Form>
-    </Modal>
   );
 }
 
@@ -540,7 +500,10 @@ function ReviewModal({ open, record, onClose, onDone }: {
       form.resetFields();
       onDone();
     },
-    onError: () => message.error("Failed to update leave request"),
+    onError: (e: any) => {
+      const msg = e?.response?.data?.detail || e?.response?.data?.message || (typeof e?.response?.data === "string" ? e.response.data : "Failed to update leave request");
+      message.error(msg);
+    },
   });
 
   if (!record) return null;
@@ -550,7 +513,7 @@ function ReviewModal({ open, record, onClose, onDone }: {
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: "50%", background: record.color }} />
-          <span>Final Approval — Leave Request</span>
+          <span>Review Leave Request</span>
           {record.is_emergency && (
             <Tag color="error" style={{ fontSize: 11 }}>🚨 Emergency</Tag>
           )}
@@ -563,11 +526,11 @@ function ReviewModal({ open, record, onClose, onDone }: {
     >
       {/* Request details */}
       <div style={{
-        background: "var(--pmt-surface-2)",
+        background: "var(--bms-surface-2)",
         borderRadius: 10,
         padding: "12px 16px",
         marginBottom: 16,
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
         gap: "8px 16px",
@@ -582,20 +545,20 @@ function ReviewModal({ open, record, onClose, onDone }: {
           { label: "Applied On", value: record.created_at },
         ].map(({ label, value }) => (
           <div key={label}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{label}</Text>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pmt-text)" }}>{value}</div>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{label}</Text>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--bms-text)" }}>{value}</div>
           </div>
         ))}
         {record.reason && (
           <div style={{ gridColumn: "1 / -1" }}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Reason</Text>
-            <div style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>{record.reason}</div>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Reason</Text>
+            <div style={{ fontSize: 13, color: "var(--bms-text-2)" }}>{record.reason}</div>
           </div>
         )}
         {record.emergency_note && (
           <div style={{ gridColumn: "1 / -1" }}>
             <Text style={{ fontSize: 11, color: "#dc2626" }}>Emergency Note</Text>
-            <div style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>{record.emergency_note}</div>
+            <div style={{ fontSize: 13, color: "var(--bms-text-2)" }}>{record.emergency_note}</div>
           </div>
         )}
       </div>
@@ -611,16 +574,34 @@ function ReviewModal({ open, record, onClose, onDone }: {
             <MedicineBoxOutlined style={{ color: record.exempt_from_balance ? "#059669" : "#d97706" }} />
             <Text style={{ fontSize: 13, fontWeight: 600, color: record.exempt_from_balance ? "#059669" : "#d97706" }}>
               {record.exempt_from_balance
-                ? "Medical certificate uploaded — balance will NOT be deducted on approval"
-                : "No medical certificate — balance WILL be deducted on approval"}
+                ? "Proof uploaded — balance will NOT be deducted on approval"
+                : "No proof — balance WILL be deducted on approval"}
             </Text>
           </div>
           {record.medical_certificate && (
             <a href={record.medical_certificate} target="_blank" rel="noreferrer"
               style={{ fontSize: 12, display: "block", marginTop: 4 }}>
-              View Certificate ↗
+              View Proof ↗
             </a>
           )}
+        </div>
+      )}
+
+      {/* Document info for non-emergency leaves */}
+      {!record.is_emergency && record.medical_certificate && (
+        <div style={{
+          padding: "10px 14px", borderRadius: 8, marginBottom: 16,
+          background: "#f0f8ff", border: "1px solid #bae0ff",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Text style={{ fontSize: 13, fontWeight: 600, color: "#0958d9" }}>
+              Document Attached
+            </Text>
+            <a href={record.medical_certificate} target="_blank" rel="noreferrer"
+              style={{ fontSize: 12, fontWeight: 600, color: "#1677ff" }}>
+              View Document ↗
+            </a>
+          </div>
         </div>
       )}
 
@@ -778,7 +759,7 @@ function AssignLeaveModal({ open, onClose, onDone }: { open: boolean; onClose: (
           <Form.Item name="carry_forward" valuePropName="checked" initialValue={false}>
             <Checkbox>Carry forward unused leave from last financial year (if the leave type's policy allows it)</Checkbox>
           </Form.Item>
-          <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
+          <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>
             Assignment applies to the current financial year. If an employee already has this leave type assigned for this FY, they'll be skipped.
           </Text>
         </Form>
@@ -819,11 +800,11 @@ function AssignLeaveModal({ open, onClose, onDone }: { open: boolean; onClose: (
               />
             );
           })()}
-          <div style={{ marginTop: 12, maxHeight: 260, overflowY: "auto", border: "1px solid var(--pmt-border)", borderRadius: 8 }}>
+          <div style={{ marginTop: 12, maxHeight: 260, overflowY: "auto", border: "1px solid var(--bms-border)", borderRadius: 8 }}>
             {results.results.map((r) => (
               <div key={r.employee_id} style={{
                 display: "flex", justifyContent: "space-between", gap: 12,
-                padding: "8px 12px", borderBottom: "1px solid var(--pmt-border)", fontSize: 12,
+                padding: "8px 12px", borderBottom: "1px solid var(--bms-border)", fontSize: 12,
               }}>
                 <Text style={{ fontWeight: 600 }}>{r.employee_name ?? r.employee_id}</Text>
                 <Tag color={r.status === "assigned" ? "success" : r.status === "duplicate" ? "default" : "error"} style={{ margin: 0 }}>
@@ -845,7 +826,6 @@ function HRLeaveAdminPanel() {
   const initialStatus = searchParams.get("status") ?? undefined;
   const [statusFilter, setStatusFilter] = useState<string | undefined>(initialStatus || undefined);
   const [reviewRecord, setReviewRecord] = useState<LeaveRequestRow | null>(null);
-  const [ackRecord, setAckRecord] = useState<LeaveRequestRow | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
 
   const { data, isLoading } = useQuery<AdminLeaveResponse>({
@@ -886,26 +866,11 @@ function HRLeaveAdminPanel() {
             width: 6, height: 6, borderRadius: "50%",
             background: r.color, flexShrink: 0,
           }} />
-          <Text style={{ fontSize: 13, color: "var(--pmt-text)", whiteSpace: "nowrap" }}>
+          <Text style={{ fontSize: 13, color: "var(--bms-text)", whiteSpace: "nowrap" }}>
             {r.leave_type}
           </Text>
-          {/* FIX: emergency badge now shows because is_emergency is returned from backend */}
-          {r.is_emergency && (
-            <Tooltip title={
-              r.exempt_from_balance
-                ? "Emergency leave with certificate — balance exempt"
-                : "Emergency leave — balance will be deducted"
-            }>
-              <Tag
-                color="error"
-                style={{ fontSize: 10, margin: 0, padding: "0 4px", lineHeight: "16px", cursor: "help" }}
-              >
-                🚨 Emergency
-              </Tag>
-            </Tooltip>
-          )}
           {r.is_emergency && r.medical_certificate && (
-            <Tooltip title="Medical certificate uploaded">
+            <Tooltip title="Proof uploaded">
               <MedicineBoxOutlined style={{ color: "#059669", fontSize: 13 }} />
             </Tooltip>
           )}
@@ -916,13 +881,13 @@ function HRLeaveAdminPanel() {
       title: "FROM",
       dataIndex: "start_date",
       key: "start_date",
-      render: (v: string) => <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>{v}</Text>,
+      render: (v: string) => <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>{v}</Text>,
     },
     {
       title: "TO",
       dataIndex: "end_date",
       key: "end_date",
-      render: (v: string) => <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>{v}</Text>,
+      render: (v: string) => <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>{v}</Text>,
     },
     {
       title: "DAYS",
@@ -944,7 +909,7 @@ function HRLeaveAdminPanel() {
       key: "reason",
       ellipsis: true,
       render: (v: string) => (
-        <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text>
+        <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text>
       ),
     },
     {
@@ -969,7 +934,7 @@ function HRLeaveAdminPanel() {
       dataIndex: "created_at",
       key: "created_at",
       render: (v: string) => (
-        <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v}</Text>
+        <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v}</Text>
       ),
     },
     {
@@ -978,25 +943,15 @@ function HRLeaveAdminPanel() {
       width: 120,
       render: (_: any, record: LeaveRequestRow) => (
         <Space size={4}>
-          {record.can_ack && (
+          {record.can_approve && (
             <Button
               size="small"
-              style={{ fontSize: 12, borderRadius: 4, borderColor: "#2563eb", color: "#2563eb" }}
-              onClick={() => setAckRecord(record)}
+              type="primary"
+              style={{ fontSize: 12, borderRadius: 4 }}
+              onClick={() => setReviewRecord(record)}
             >
-              Acknowledge
+              Approve / Reject
             </Button>
-          )}
-          {record.can_approve && (
-            <PermGuard permission={PERMS.HRMS_LEAVE_APPROVE}>
-              <Button
-                size="small"
-                style={{ fontSize: 12, borderRadius: 4, borderColor: "#1677ff", color: "#1677ff" }}
-                onClick={() => setReviewRecord(record)}
-              >
-                Approve
-              </Button>
-            </PermGuard>
           )}
           <PermGuard permission={PERMS.HRMS_LEAVE_MANAGE}>
             <Popconfirm
@@ -1018,8 +973,8 @@ function HRLeaveAdminPanel() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", rowGap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>All Employee Requests</Title>
-          <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>HR view — all leave applications across the organisation</Text>
+          <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>All Employee Requests</Title>
+          <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>HR view — all leave applications across the organisation</Text>
         </div>
         <Space wrap>
           <Select
@@ -1030,9 +985,7 @@ function HRLeaveAdminPanel() {
             onChange={setStatusFilter}
             suffixIcon={<FilterOutlined />}
           >
-            <Select.Option value="PENDING_PROJECT_ACK">Awaiting Project Ack</Select.Option>
-            <Select.Option value="PENDING_MANAGER">Awaiting Manager</Select.Option>
-            <Select.Option value="PENDING">Pending (legacy)</Select.Option>
+            <Select.Option value="PENDING">Pending</Select.Option>
             <Select.Option value="APPROVED">Approved</Select.Option>
             <Select.Option value="REJECTED">Rejected</Select.Option>
             <Select.Option value="CANCELLED">Cancelled</Select.Option>
@@ -1053,7 +1006,7 @@ function HRLeaveAdminPanel() {
 
       {/* Summary cards */}
       <div style={{ display: "flex", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
-        <SummaryCard label="Pending" value={summary.pending} sub={`${summary.pending_ack ?? 0} ack · ${summary.pending_manager ?? 0} manager`} accent="#d97706" />
+        <SummaryCard label="Pending" value={summary.pending} sub="Awaiting approval" accent="#d97706" />
         <SummaryCard label="Approved"      value={summary.approved}      accent="#059669" />
         <SummaryCard label="Rejected"      value={summary.rejected}      accent="#dc2626" />
         <SummaryCard label="Days Approved" value={summary.days_approved} accent="#1677ff" />
@@ -1061,9 +1014,9 @@ function HRLeaveAdminPanel() {
 
       {/* Table */}
       <div style={{
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
         borderRadius: 12,
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         overflow: "hidden",
       }}>
         <Table
@@ -1089,20 +1042,10 @@ function HRLeaveAdminPanel() {
 
       {/* * footnote for exempt leaves */}
       {rows.some((r) => r.exempt_from_balance) && (
-        <div style={{ marginTop: 8, fontSize: 12, color: "var(--pmt-text-3)" }}>
-          * Days marked with * are emergency leaves with medical certificate — balance is not deducted on approval.
+        <div style={{ marginTop: 8, fontSize: 12, color: "var(--bms-text-3)" }}>
+          * Days marked with * are emergency leaves with proof — balance is not deducted on approval.
         </div>
       )}
-
-      <AckModal
-        open={!!ackRecord}
-        record={ackRecord}
-        onClose={() => setAckRecord(null)}
-        onDone={() => {
-          setAckRecord(null);
-          queryClient.invalidateQueries({ queryKey: ["leave-admin-requests"] });
-        }}
-      />
 
       {/* Review modal */}
       <ReviewModal
@@ -1185,8 +1128,8 @@ export default function LeaveRequestsPage() {
   return (
     <div>
       <div style={{ marginBottom: 20 }}>
-        <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>Leave Management</Title>
-        <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>
+        <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>Leave Management</Title>
+        <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>
           Apply and track your leave, review your team&apos;s requests, and manage approvals by reporting line.
         </Text>
       </div>

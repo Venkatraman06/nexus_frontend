@@ -66,7 +66,7 @@ export function LeaveSection({
             <div key={r.id} className="emp-leave__request">
               <div>
                 <Text style={{ fontSize: 12, fontWeight: 500 }}>{r.leave_type}</Text>
-                <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+                <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
                   {r.start_date} → {r.end_date} ({r.days_count}d)
                 </div>
               </div>
@@ -199,20 +199,28 @@ export function ApplyLeaveModal({
       is_emergency: false,
     }),
     onSuccess: () => {
-      message.success("Leave request submitted — HR will review it shortly");
+      message.success("Leave request submitted — your Reporting Manager will review it");
       regularForm.resetFields();
       onSuccess();
     },
     onError: (e: any) => {
       const data = e?.response?.data;
-      const detail =
-        data?.detail ??
-        data?.errors?.non_field_errors?.[0] ??
-        data?.non_field_errors?.[0] ??
-        Object.entries(data?.errors ?? data ?? {})
-          .map(([k, v]: any) => `${k}: ${Array.isArray(v) ? v[0] : v}`)
-          .join(", ") ??
-        "Failed to submit leave request";
+      let detail = "Failed to submit leave request";
+      if (typeof data === "string") {
+        detail = data.includes("<!DOCTYPE") || data.includes("<html") ? "Server error occurred while processing your request." : data;
+      } else if (data) {
+        detail =
+          data?.detail ??
+          data?.errors?.non_field_errors?.[0] ??
+          data?.non_field_errors?.[0] ??
+          Object.entries(data?.errors ?? data ?? {})
+            .map(([k, v]: any) => {
+              if (Array.isArray(v)) return `${k}: ${v[0]}`;
+              if (typeof v === "object" && v !== null) return `${k}: ${JSON.stringify(v)}`;
+              return `${k}: ${v}`;
+            })
+            .join(", ");
+      }
       if (
         detail.includes("contains no working") ||
         detail.includes("no working days") ||
@@ -249,21 +257,29 @@ export function ApplyLeaveModal({
       });
     },
     onSuccess: () => {
-      message.success("Emergency leave submitted — HR will be notified immediately");
+      message.success("Emergency leave requested — your Reporting Manager will review it");
       emergencyForm.resetFields();
       setFileList([]);
       onSuccess();
     },
     onError: (e: any) => {
       const data   = e?.response?.data;
-      const detail =
-        data?.detail ??
-        data?.errors?.non_field_errors?.[0] ??
-        data?.non_field_errors?.[0] ??
-        Object.entries(data?.errors ?? data ?? {})
-          .map(([k, v]: any) => `${k}: ${Array.isArray(v) ? v[0] : v}`)
-          .join(", ") ??
-        "Failed to submit leave request";
+      let detail = "Failed to submit leave request";
+      if (typeof data === "string") {
+        detail = data.includes("<!DOCTYPE") || data.includes("<html") ? "Server error occurred while processing your request." : data;
+      } else if (data) {
+        detail =
+          data?.detail ??
+          data?.errors?.non_field_errors?.[0] ??
+          data?.non_field_errors?.[0] ??
+          Object.entries(data?.errors ?? data ?? {})
+            .map(([k, v]: any) => {
+              if (Array.isArray(v)) return `${k}: ${v[0]}`;
+              if (typeof v === "object" && v !== null) return `${k}: ${JSON.stringify(v)}`;
+              return `${k}: ${v}`;
+            })
+            .join(", ");
+      }
       if (
         detail.includes("no working days") ||
         detail.includes("weekend") ||
@@ -304,16 +320,16 @@ export function ApplyLeaveModal({
         {/* ── Mode tabs ── */}
         <div style={{
           display: "flex", gap: 0, marginBottom: 20, marginTop: 4,
-          borderRadius: 10, overflow: "hidden", border: "1px solid var(--pmt-border)",
+          borderRadius: 10, overflow: "hidden", border: "1px solid var(--bms-border)",
         }}>
           <button
             onClick={() => setMode("regular")}
             style={{
               flex: 1, padding: "9px 0", border: "none", cursor: "pointer",
               fontSize: 13, fontWeight: 600, transition: "all 0.15s",
-              background: mode === "regular" ? "#7c3aed" : "var(--pmt-surface-2)",
-              color:      mode === "regular" ? "#fff"    : "var(--pmt-text-2)",
-              borderRight: "1px solid var(--pmt-border)",
+              background: mode === "regular" ? "#7c3aed" : "var(--bms-surface-2)",
+              color:      mode === "regular" ? "#fff"    : "var(--bms-text-2)",
+              borderRight: "1px solid var(--bms-border)",
             }}
           >
             <WalletOutlined style={{ marginRight: 6 }} />
@@ -324,7 +340,7 @@ export function ApplyLeaveModal({
             style={{
               flex: 1, padding: "9px 0", border: "none", cursor: "pointer",
               fontSize: 13, fontWeight: 600, transition: "all 0.15s",
-              background: mode === "emergency" ? "#dc2626" : "var(--pmt-surface-2)",
+              background: mode === "emergency" ? "#dc2626" : "var(--bms-surface-2)",
               color:      mode === "emergency" ? "#fff"    : "#dc2626",
             }}
           >
@@ -386,7 +402,7 @@ export function ApplyLeaveModal({
                   <Text style={{ fontSize: 12 }}>Balance — {selectedBalance.leave_type_name}</Text>
                 </div>
                 <div style={{ display: "flex", gap: 14 }}>
-                  <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
+                  <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>
                     Used <b>{selectedBalance.used_days}</b> / <b>{selectedBalance.total_days}</b>
                   </Text>
                   <Text style={{ fontSize: 12, fontWeight: 700,
@@ -426,8 +442,8 @@ export function ApplyLeaveModal({
             message={<Text style={{ fontSize: 13, fontWeight: 600, color: "#991b1b" }}>Emergency Leave</Text>}
             description={
               <Text style={{ fontSize: 12, color: "#7f1d1d" }}>
-                For unforeseen medical or personal crises. HR will review your request immediately.
-                A medical certificate speeds up approval. Balance deduction is at HR's discretion.
+                For unforeseen medical or personal crises. Your Reporting Manager will review your request immediately.
+                Proof speeds up approval.
               </Text>
             }
           />
@@ -457,7 +473,7 @@ export function ApplyLeaveModal({
               name="medical_certificate"
               label={
                 <span>
-                  Medical Certificate
+                  Proof
                   <Text style={{ fontSize: 11, color: "#9ca3af", marginLeft: 6, fontWeight: 400 }}>
                     optional but recommended
                   </Text>
@@ -486,7 +502,7 @@ export function ApplyLeaveModal({
               <Button type="primary" htmlType="submit" loading={emergencyMutation.isPending}
                 icon={<MedicineBoxOutlined />}
                 style={{ background: "#dc2626", borderColor: "#dc2626" }}>
-                Submit Emergency Leave
+                Request Emergency Leave
               </Button>
             </div>
           </Form>
@@ -534,7 +550,7 @@ export function PayslipWidget({
   const downloadPayslip = async (id: string, monthName: string, year: number) => {
     setDownloading(id);
     try {
-      const res = await fetch(`/pmt/api/v1/payroll/my/${id}/payslip-pdf/`, {
+      const res = await fetch(`/bms/api/v1/payroll/my/${id}/payslip-pdf/`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("kc_access_token") ?? ""}` },
       });
       if (!res.ok) {
@@ -579,10 +595,10 @@ export function PayslipWidget({
             </div>
             <div style={{ flex: 1 }}>
               <Text strong style={{ fontSize: 13 }}>{r.month_name} {r.year}</Text>
-              <div style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>
+              <div style={{ fontSize: 12, color: "var(--bms-text-2)" }}>
                 Net:{" "}
                 {amountVisible ? (
-                  <span style={{ fontWeight: 700, color: "var(--pmt-primary)" }}>
+                  <span style={{ fontWeight: 700, color: "var(--bms-primary)" }}>
                     ₹{r.net_salary.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 ) : (

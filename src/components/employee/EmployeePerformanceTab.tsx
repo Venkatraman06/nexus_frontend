@@ -172,7 +172,7 @@ function CompletionFlagList({ markers }: {
 }) {
   if (!markers.length) return null;
   return (
-    <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--pmt-border)" }}>
+    <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--bms-border)" }}>
       <Text strong style={{ fontSize: 13, display: "block", marginBottom: 10 }}>
         Completed ticket flags
       </Text>
@@ -189,16 +189,16 @@ function CompletionFlagList({ markers }: {
                   {meta.icon}
                 </span>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--pmt-text)" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--bms-text)" }}>
                     {m.ticket}
                   </div>
                   <div style={{
-                    fontSize: 11, color: "var(--pmt-text-3)",
+                    fontSize: 11, color: "var(--bms-text-3)",
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
                     {m.title}
                   </div>
-                  <div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginTop: 4 }}>
+                  <div style={{ fontSize: 11, color: "var(--bms-text-3)", marginTop: 4 }}>
                     {m.period} · {fmtHours(m.logged)} logged
                   </div>
                 </div>
@@ -329,7 +329,7 @@ function PerformanceChartView({ data, period }: { data: EmployeePerformance; per
           />
 
           {monthlyAvgItems.length > 0 && (
-            <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--pmt-border)" }}>
+            <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--bms-border)" }}>
               <Text type="secondary" style={{ fontSize: 11, display: "block", marginBottom: 8, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 Monthly average (per active week)
               </Text>
@@ -405,7 +405,7 @@ function PerformanceChartView({ data, period }: { data: EmployeePerformance; per
             }}
           />
           <div style={{
-            marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--pmt-border)",
+            marginTop: 14, paddingTop: 14, borderTop: "1px solid var(--bms-border)",
             display: "flex", flexWrap: "wrap", gap: 8,
           }}>
             {(data.ticket_bars ?? []).map((t) => (

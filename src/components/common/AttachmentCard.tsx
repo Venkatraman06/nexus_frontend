@@ -77,8 +77,8 @@ export default function AttachmentCard({ attachment, mine }: { attachment: Attac
           display: "flex", alignItems: "center", gap: 8,
           width: 220, maxWidth: "100%", padding: "8px 8px 8px 10px",
           borderRadius: 8, cursor: clean ? "pointer" : "default",
-          border: `1px solid ${mine ? "rgba(255,255,255,0.35)" : "var(--pmt-border, #e5e7eb)"}`,
-          background: mine ? "rgba(255,255,255,0.12)" : "var(--pmt-surface, #fff)",
+          border: `1px solid ${mine ? "rgba(255,255,255,0.35)" : "var(--bms-border, #e5e7eb)"}`,
+          background: mine ? "rgba(255,255,255,0.12)" : "var(--bms-surface, #fff)",
         }}
       >
         {isImage && clean ? (
@@ -94,7 +94,7 @@ export default function AttachmentCard({ attachment, mine }: { attachment: Attac
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{
             fontSize: 12.5, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden",
-            textOverflow: "ellipsis", color: mine ? "#fff" : "var(--pmt-text, #1f2937)",
+            textOverflow: "ellipsis", color: mine ? "#fff" : "var(--bms-text, #1f2937)",
           }}>
             {original_filename}
           </div>

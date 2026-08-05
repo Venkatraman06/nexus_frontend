@@ -132,7 +132,7 @@ export default function WeeklyHoursTrendChart({
       </div>
       <div className="pmo-trend-chart__footer">
         <Text type="secondary" style={{ fontSize: 12 }}>Team avg utilization</Text>
-        <Text strong style={{ fontSize: 13, color: utilizationPct >= 70 ? "#059669" : "var(--pmt-text)" }}>
+        <Text strong style={{ fontSize: 13, color: utilizationPct >= 70 ? "#059669" : "var(--bms-text)" }}>
           {utilizationPct}%
         </Text>
       </div>

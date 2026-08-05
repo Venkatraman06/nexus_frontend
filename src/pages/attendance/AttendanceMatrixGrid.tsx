@@ -53,7 +53,10 @@ function MatrixCell({
   onClick: () => void;
 }) {
   const isFuture = date.isAfter(dayjs(), "day");
-  const status = row?.status ?? (date.day() === 0 || date.day() === 6 ? "WEEKEND" : "NOT_MARKED");
+  let status = row?.status ?? (date.day() === 0 || date.day() === 6 ? "WEEKEND" : "NOT_MARKED");
+  if (status === "NOT_MARKED" && date.isBefore(dayjs(), "day")) {
+    status = "ABSENT";
+  }
   const cfg = STATUS_CELL[status] ?? STATUS_CELL.NOT_MARKED;
   const label = STATUS_STYLE[status]?.label ?? status;
 
@@ -61,13 +64,13 @@ function MatrixCell({
     ? `${label}${row.check_in ? ` · In ${row.check_in}` : ""}${row.check_out ? ` · Out ${row.check_out}` : ""}`
     : isFuture ? "Future date" : label;
 
-  const bg = isFuture && !cfg.code ? "var(--pmt-surface-2)" : cfg.bg;
+  const bg = isFuture && !cfg.code ? "var(--bms-surface-2)" : cfg.bg;
   const showCorner = row?.status === "WFH";
   const showLateCorner = row?.status === "PRESENT" && row.check_in && row.check_in > "09:30";
 
   return (
     <td
-      className="pmt-att-matrix-cell"
+      className="bms-att-matrix-cell"
       style={{ background: bg }}
       onClick={onClick}
       title={tooltip}
@@ -81,18 +84,18 @@ function MatrixCell({
       }}
     >
       {cfg.code && (
-        <span className="pmt-att-matrix-cell-code" style={{ color: cfg.textColor }}>
+        <span className="bms-att-matrix-cell-code" style={{ color: cfg.textColor }}>
           {cfg.code}
         </span>
       )}
       {cfg.showInfo && (
-        <span className="pmt-att-matrix-cell-info" aria-hidden>i</span>
+        <span className="bms-att-matrix-cell-info" aria-hidden>i</span>
       )}
       {showCorner && (
-        <span className="pmt-att-matrix-cell-corner pmt-att-matrix-cell-corner--wfh" aria-hidden />
+        <span className="bms-att-matrix-cell-corner bms-att-matrix-cell-corner--wfh" aria-hidden title="Work-From-Home day" />
       )}
       {showLateCorner && (
-        <span className="pmt-att-matrix-cell-corner pmt-att-matrix-cell-corner--late" aria-hidden />
+        <span className="bms-att-matrix-cell-corner bms-att-matrix-cell-corner--late" aria-hidden title="Late check in" />
       )}
     </td>
   );
@@ -117,7 +120,7 @@ export default function AttendanceMatrixGrid({
 
   if (loading) {
     return (
-      <div className="pmt-att-matrix-empty">
+      <div className="bms-att-matrix-empty">
         <Spin size="large" />
       </div>
     );
@@ -125,30 +128,30 @@ export default function AttendanceMatrixGrid({
 
   if (rows.length === 0) {
     return (
-      <div className="pmt-att-matrix-empty">
+      <div className="bms-att-matrix-empty">
         <Text type="secondary">No employees match your search for {month.format("MMMM YYYY")}.</Text>
       </div>
     );
   }
 
   return (
-    <div className="pmt-att-matrix-scroll">
-      <table className="pmt-att-matrix">
+    <div className="bms-att-matrix-scroll">
+      <table className="bms-att-matrix">
         <thead>
           <tr>
-            <th className="pmt-att-matrix-sticky" rowSpan={2} style={{ textAlign: "left", paddingLeft: 12 }}>
-              <span className="pmt-att-matrix-section-label">Employee name</span>
+            <th className="bms-att-matrix-sticky" rowSpan={2} style={{ textAlign: "left", paddingLeft: 12 }}>
+              <span className="bms-att-matrix-section-label">Employee name</span>
             </th>
-            <th className="pmt-att-matrix-sticky-2" rowSpan={2}>P</th>
+            <th className="bms-att-matrix-sticky-2" rowSpan={2}>P</th>
             <th colSpan={days.length} style={{ textAlign: "left", paddingLeft: 8 }}>
-              <span className="pmt-att-matrix-section-label">Attendance</span>
+              <span className="bms-att-matrix-section-label">Attendance</span>
             </th>
           </tr>
           <tr>
             {days.map((d) => (
-              <th key={d.format("YYYY-MM-DD")} className="pmt-att-matrix-day-head">
-                <span className="pmt-att-matrix-day-num">{d.format("DD")}</span>
-                <span className="pmt-att-matrix-day-dow">{d.format("ddd")}</span>
+              <th key={d.format("YYYY-MM-DD")} className="bms-att-matrix-day-head">
+                <span className="bms-att-matrix-day-num">{d.format("DD")}</span>
+                <span className="bms-att-matrix-day-dow">{d.format("ddd")}</span>
               </th>
             ))}
           </tr>
@@ -156,16 +159,15 @@ export default function AttendanceMatrixGrid({
         <tbody>
           {rows.map((emp) => (
             <tr key={emp.employee_id}>
-              <td className="pmt-att-matrix-sticky">
-                <div className="pmt-att-matrix-emp-name">
-                  {emp.employee_name}{" "}
-                  <span className="pmt-att-matrix-emp-code">#{emp.employee_code}</span>
+              <td className="bms-att-matrix-sticky">
+                <div className="bms-att-matrix-emp-name">
+                  {emp.employee_name}
                 </div>
                 {emp.department && (
-                  <div className="pmt-att-matrix-emp-meta">{emp.department}</div>
+                  <div className="bms-att-matrix-emp-meta">{emp.department}</div>
                 )}
               </td>
-              <td className="pmt-att-matrix-sticky-2">{emp.presentCount}</td>
+              <td className="bms-att-matrix-sticky-2">{emp.presentCount}</td>
               {days.map((d) => {
                 const iso = d.format("YYYY-MM-DD");
                 const dayRow = emp.dayStatus.get(iso);

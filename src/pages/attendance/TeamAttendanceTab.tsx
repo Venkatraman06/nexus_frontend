@@ -102,16 +102,18 @@ export default function TeamAttendanceTab() {
     staleTime: 30_000,
   });
 
-  // Monthly report for the selected month (PM sees own; CEO sees all)
-  const { data: monthlyReport } = useQuery<MonthlyReport | null>({
-    queryKey: ["attendance-monthly-report", month.year(), month.month() + 1, user?.id],
-    queryFn: () => get("/attendance/monthly-report/", {
+  // Monthly reports for the selected month (PM gets only their own; CEO gets all)
+  const { data: monthlyReports = [] } = useQuery<MonthlyReport[]>({
+    queryKey: ["attendance-monthly-reports", month.year(), month.month() + 1, user?.id],
+    queryFn: () => get("/attendance/monthly-report/list/", {
       year: month.year(),
       month: month.month() + 1,
-    }).then((d: any) => d ?? null),
+    }).then((d: any) => d ?? []),
     enabled: isPM || isCEO,
     staleTime: 30_000,
   });
+
+  const monthlyReport = monthlyReports.length > 0 ? monthlyReports[0] : null;
 
   // PM submits their team attendance to CEO
   const submitMutation = useMutation({
@@ -121,7 +123,7 @@ export default function TeamAttendanceTab() {
     }),
     onSuccess: () => {
       message.success(`Team attendance report for ${month.format("MMMM YYYY")} sent to the CEO (Chandra Prakash) for approval.`);
-      qc.invalidateQueries({ queryKey: ["attendance-monthly-report"] });
+      qc.invalidateQueries({ queryKey: ["attendance-monthly-reports"] });
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.detail || "Failed to submit report.");
@@ -134,14 +136,16 @@ export default function TeamAttendanceTab() {
       post(`/attendance/monthly-report/${id}/review/`, { action, ceo_remarks: remarks }),
     onSuccess: (_data, vars) => {
       const approved = vars.action === "APPROVE";
+      const report = monthlyReports.find(r => r.id === vars.id);
+      const managerName = report?.reporting_manager || "The reporting manager";
       message.success(
         approved
-          ? "Report approved. The reporting manager (Karthik Sankar) has been notified."
-          : "Report rejected. The reporting manager has been notified with your remarks.",
+          ? `Report approved. ${managerName} has been notified.`
+          : `Report rejected. ${managerName} has been notified with your remarks.`,
       );
       setReviewOpen(false);
       setCeoRemarks("");
-      qc.invalidateQueries({ queryKey: ["attendance-monthly-report"] });
+      qc.invalidateQueries({ queryKey: ["attendance-monthly-reports"] });
     },
     onError: (err: any) => {
       message.error(err?.response?.data?.detail || "Action failed.");
@@ -165,19 +169,20 @@ export default function TeamAttendanceTab() {
     setDrawerOpen(true);
   };
 
-  // PM can submit if: isPM, not CEO, and no report yet for this month
-  const canSubmit = isPM && !isCEO && !monthlyReport;
-  const isPending = monthlyReport?.status === "PENDING";
-  const isRejected = monthlyReport?.status === "REJECTED_BY_CEO";
+  // PM can submit if: isPM, not CEO, and no report yet OR report was rejected
+  const canSubmit = isPM && !isCEO && (!monthlyReport || monthlyReport.status === "REJECTED_BY_CEO");
   const isApproved = monthlyReport?.status === "APPROVED_BY_CEO";
+
+  const selectedReviewReport = monthlyReports.find(r => r.id === reviewReportId);
+  const reviewManagerName = selectedReviewReport?.reporting_manager || "the reporting manager";
 
   return (
     <>
       {/* ── PM: Report Status Banner ─────────────────────────────────────── */}
-      {(isPM || isCEO) && monthlyReport && (
+      {!isCEO && monthlyReport && (
         <Alert
           style={{ marginBottom: 12, borderRadius: 8 }}
-          type={isApproved ? "success" : isRejected ? "error" : "warning"}
+          type={monthlyReport.status === "APPROVED_BY_CEO" ? "success" : monthlyReport.status === "REJECTED_BY_CEO" ? "error" : "warning"}
           showIcon
           icon={<FileTextOutlined />}
           message={
@@ -196,73 +201,124 @@ export default function TeamAttendanceTab() {
               )}
 
               {/* CEO rejection reason shown to PM */}
-              {isRejected && monthlyReport.ceo_remarks && (
-                <div style={{ marginTop: 6, padding: "6px 10px", background: "var(--pmt-danger-bg)", borderRadius: 6 }}>
+              {monthlyReport.status === "REJECTED_BY_CEO" && monthlyReport.ceo_remarks && (
+                <div style={{ marginTop: 6, padding: "6px 10px", background: "var(--bms-danger-bg)", borderRadius: 6 }}>
                   <strong>CEO Remarks:</strong> {monthlyReport.ceo_remarks}
                 </div>
-              )}
-
-              {/* CEO: Approve / Reject buttons */}
-              {isCEO && isPending && (
-                <Space style={{ marginTop: 8 }}>
-                  <Button
-                    size="small"
-                    type="primary"
-                    icon={<CheckCircleOutlined />}
-                    onClick={() => {
-                      setReviewReportId(monthlyReport.id);
-                      setReviewAction("APPROVE");
-                      setReviewOpen(true);
-                    }}
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    size="small"
-                    danger
-                    icon={<CloseCircleOutlined />}
-                    onClick={() => {
-                      setReviewReportId(monthlyReport.id);
-                      setReviewAction("REJECT");
-                      setReviewOpen(true);
-                    }}
-                  >
-                    Reject
-                  </Button>
-                </Space>
               )}
             </div>
           }
         />
       )}
 
+      {/* ── CEO: Attendance Reports list ─────────────────────────────────── */}
+      {isCEO && monthlyReports.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 12 }}>
+          {monthlyReports.map((report) => {
+            const reportApproved = report.status === "APPROVED_BY_CEO";
+            const reportRejected = report.status === "REJECTED_BY_CEO";
+            const reportPending = report.status === "PENDING";
+            return (
+              <Alert
+                key={report.id}
+                style={{ borderRadius: 8 }}
+                type={reportApproved ? "success" : reportRejected ? "error" : "warning"}
+                showIcon
+                icon={<FileTextOutlined />}
+                message={
+                  <span style={{ fontWeight: 600 }}>
+                    {month.format("MMMM YYYY")} Attendance Report from <strong>{report.reporting_manager}</strong>:{" "}
+                    <Tag color={STATUS_COLOR[report.status]}>{report.status_label}</Tag>
+                  </span>
+                }
+                description={
+                  <div style={{ marginTop: 4, fontSize: 12 }}>
+                    <div>
+                      Team Size: <strong>{report.summary_data.total_team}</strong> · 
+                      Present: <strong style={{ color: "#22c55e" }}>{report.summary_data.present}</strong> · 
+                      Absent: <strong style={{ color: "#ef4444" }}>{report.summary_data.absent}</strong> · 
+                      WFH: <strong style={{ color: "#3b82f6" }}>{report.summary_data.wfh}</strong> · 
+                      Leave: <strong style={{ color: "#7c3aed" }}>{report.summary_data.on_leave}</strong>
+                    </div>
+                    
+                    {report.reviewed_by && (
+                      <div style={{ marginTop: 2 }}>Reviewed by <strong>{report.reviewed_by}</strong>.</div>
+                    )}
+                    {reportRejected && report.ceo_remarks && (
+                      <div style={{ marginTop: 6, padding: "6px 10px", background: "var(--bms-danger-bg)", borderRadius: 6 }}>
+                        <strong>Rejection Reason:</strong> {report.ceo_remarks}
+                      </div>
+                    )}
+                    {reportApproved && report.ceo_remarks && (
+                      <div style={{ marginTop: 6, padding: "6px 10px", background: "var(--bms-success-bg)", borderRadius: 6 }}>
+                        <strong>Remarks:</strong> {report.ceo_remarks}
+                      </div>
+                    )}
+
+                    {reportPending && (
+                      <Space style={{ marginTop: 8 }}>
+                        <Button
+                          size="small"
+                          type="primary"
+                          icon={<CheckCircleOutlined />}
+                          onClick={() => {
+                            setReviewReportId(report.id);
+                            setReviewAction("APPROVE");
+                            setReviewOpen(true);
+                          }}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="small"
+                          danger
+                          icon={<CloseCircleOutlined />}
+                          onClick={() => {
+                            setReviewReportId(report.id);
+                            setReviewAction("REJECT");
+                            setReviewOpen(true);
+                          }}
+                        >
+                          Reject
+                        </Button>
+                      </Space>
+                    )}
+                  </div>
+                }
+              />
+            );
+          })}
+        </div>
+      )}
+
       {/* ── CEO: Approved Summary Cards ──────────────────────────────────── */}
-      {isCEO && isApproved && monthlyReport?.summary_data && (
+      {isCEO && monthlyReports.filter(r => r.status === "APPROVED_BY_CEO").map(report => (
         <Card
+          key={report.id}
           size="small"
-          style={{ marginBottom: 12, borderRadius: 8, border: "1px solid var(--pmt-border)" }}
+          style={{ marginBottom: 12, borderRadius: 8, border: "1px solid var(--bms-border)" }}
           title={
             <span style={{ fontSize: 13, fontWeight: 600 }}>
-              <FileTextOutlined style={{ marginRight: 6, color: "var(--pmt-primary)" }} />
+              <FileTextOutlined style={{ marginRight: 6, color: "var(--bms-primary)" }} />
               {month.format("MMMM YYYY")} — Approved Attendance Summary
-              {monthlyReport.summary_data.manager_name && (
-                <span style={{ fontWeight: 400, color: "var(--pmt-text-2)", marginLeft: 8 }}>
-                  · {monthlyReport.summary_data.manager_name}'s Team
+              {report.summary_data.manager_name && (
+                <span style={{ fontWeight: 400, color: "var(--bms-text-2)", marginLeft: 8 }}>
+                  · {report.summary_data.manager_name}'s Team
                 </span>
               )}
             </span>
           }
         >
           <Space size={24} wrap>
-            <Statistic title="Team Size"   value={monthlyReport.summary_data.total_team}  />
-            <Statistic title="Present"     value={monthlyReport.summary_data.present}      valueStyle={{ color: "#22c55e" }} />
-            <Statistic title="Absent"      value={monthlyReport.summary_data.absent}       valueStyle={{ color: "#ef4444" }} />
-            <Statistic title="WFH"         value={monthlyReport.summary_data.wfh}          valueStyle={{ color: "#3b82f6" }} />
-            <Statistic title="Half Day"    value={monthlyReport.summary_data.half_day}     valueStyle={{ color: "#f59e0b" }} />
-            <Statistic title="On Leave"    value={monthlyReport.summary_data.on_leave}     valueStyle={{ color: "#7c3aed" }} />
+            <Statistic title="Team Size"   value={report.summary_data.total_team}  />
+            <Statistic title="Present"     value={report.summary_data.present}      valueStyle={{ color: "#22c55e" }} />
+            <Statistic title="Absent"      value={report.summary_data.absent}       valueStyle={{ color: "#ef4444" }} />
+            <Statistic title="WFH"         value={report.summary_data.wfh}          valueStyle={{ color: "#3b82f6" }} />
+            <Statistic title="Half Day"    value={report.summary_data.half_day}     valueStyle={{ color: "#f59e0b" }} />
+            <Statistic title="On Leave"    value={report.summary_data.on_leave}     valueStyle={{ color: "#7c3aed" }} />
           </Space>
         </Card>
-      )}
+      ))}
 
       <div style={{
         display: "flex",
@@ -272,7 +328,7 @@ export default function TeamAttendanceTab() {
         flexWrap: "wrap",
         gap: 12,
       }}>
-        <span style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>
+        <span style={{ fontSize: 13, color: "var(--bms-text-2)" }}>
           {canHrAttendance
             ? "All employees — monthly attendance matrix."
             : `Your reporting line (${teamMeta?.direct_count ?? 0} direct, ${teamMeta?.indirect_count ?? 0} indirect).`}
@@ -287,14 +343,14 @@ export default function TeamAttendanceTab() {
               onClick={() => {
                 Modal.confirm({
                   title: `Submit ${month.format("MMMM YYYY")} Team Attendance to CEO?`,
-                  icon: <TeamOutlined style={{ color: "var(--pmt-primary)" }} />,
+                  icon: <TeamOutlined style={{ color: "var(--bms-primary)" }} />,
                   content: (
                     <div>
                       <p>
                         You are submitting the <strong>{month.format("MMMM YYYY")}</strong> attendance
                         report for your team to the <strong>CEO (Chandra Prakash)</strong> for approval.
                       </p>
-                      <p style={{ color: "var(--pmt-text-2)", fontSize: 12 }}>
+                      <p style={{ color: "var(--bms-text-2)", fontSize: 12 }}>
                         The CEO will be notified and can approve or reject. You will be informed of the decision.
                       </p>
                     </div>
@@ -316,11 +372,11 @@ export default function TeamAttendanceTab() {
         </Space>
       </div>
 
-      <div className="pmt-att-matrix-card">
-        <div className="pmt-att-matrix-toolbar">
+      <div className="bms-att-matrix-card">
+        <div className="bms-att-matrix-toolbar">
           <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 280 }}>
             <Input
-              prefix={<SearchOutlined style={{ color: "var(--pmt-text-3)" }} />}
+              prefix={<SearchOutlined style={{ color: "var(--bms-text-3)" }} />}
               placeholder="Enter Emp. Name or ID"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -384,14 +440,14 @@ export default function TeamAttendanceTab() {
           <Alert
             type="success"
             showIcon
-            message="Approving this report will notify the Reporting Manager (Karthik Sankar)."
+            message={`Approving this report will notify the Reporting Manager (${reviewManagerName}).`}
             style={{ marginBottom: 12, borderRadius: 8 }}
           />
         ) : (
           <Alert
             type="error"
             showIcon
-            message="The reporting manager (Karthik Sankar) will be notified of the rejection and your remarks."
+            message={`The reporting manager (${reviewManagerName}) will be notified of the rejection and your remarks.`}
             style={{ marginBottom: 12, borderRadius: 8 }}
           />
         )}

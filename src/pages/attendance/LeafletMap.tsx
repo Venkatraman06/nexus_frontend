@@ -100,7 +100,7 @@ export default function LeafletMap({ points }: Props) {
   return (
     <div
       ref={containerRef}
-      style={{ height: 380, width: "100%", borderRadius: 8, overflow: "hidden", border: "1px solid var(--pmt-border)" }}
+      style={{ height: 380, width: "100%", borderRadius: 8, overflow: "hidden", border: "1px solid var(--bms-border)" }}
     />
   );
 }

@@ -34,7 +34,7 @@ const { Panel } = Collapse;
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Client {
   id: string; name: string; code: string;
-  contact_email: string; contact_person: string;
+  contact_email: string; contact_person: string; contact_designation: string;
   phone: string; address: string; is_active: boolean;
   pan_number: string; gst_number: string;
   category: string | null; category_name: string;
@@ -188,7 +188,7 @@ function GeoPickerField({
       {/* Search box */}
       <div style={{ position: "relative", marginBottom: 10 }}>
         <Input
-          prefix={<EnvironmentOutlined style={{ color: "var(--pmt-text-3)" }} />}
+          prefix={<EnvironmentOutlined style={{ color: "var(--bms-text-3)" }} />}
           placeholder="Search address or place…"
           value={query}
           onChange={(e) => handleInput(e.target.value)}
@@ -198,8 +198,8 @@ function GeoPickerField({
         {results.length > 0 && (
           <div style={{
             position: "absolute", top: "100%", left: 0, right: 0, zIndex: 9999,
-            background: "var(--pmt-surface)",
-            border: "1px solid var(--pmt-border)",
+            background: "var(--bms-surface)",
+            border: "1px solid var(--bms-border)",
             borderRadius: 8,
             boxShadow: "var(--shadow-md)",
             maxHeight: 200, overflowY: "auto",
@@ -210,12 +210,12 @@ function GeoPickerField({
                 onClick={() => applyLocation(parseFloat(r.lat), parseFloat(r.lon), r.display_name)}
                 style={{
                   padding: "8px 12px", cursor: "pointer", fontSize: 13,
-                  color: "var(--pmt-text)",
-                  borderBottom: "1px solid var(--pmt-border)",
+                  color: "var(--bms-text)",
+                  borderBottom: "1px solid var(--bms-border)",
                   transition: "background 0.15s",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--pmt-surface-2)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--pmt-surface)")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bms-surface-2)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "var(--bms-surface)")}
               >
                 <EnvironmentOutlined style={{ color: "#1677ff", marginRight: 6 }} />
                 {r.display_name}
@@ -226,7 +226,7 @@ function GeoPickerField({
       </div>
 
       {/* Leaflet map */}
-      <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--pmt-border)", height: 220 }}>
+      <div style={{ borderRadius: 8, overflow: "hidden", border: "1px solid var(--bms-border)", height: 220 }}>
         <MapContainer
           center={[20.5937, 78.9629]}
           zoom={5}
@@ -249,7 +249,7 @@ function GeoPickerField({
         </MapContainer>
       </div>
 
-      <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", marginTop: 4, display: "block" }}>
+      <Text style={{ fontSize: 11, color: "var(--bms-text-3)", marginTop: 4, display: "block" }}>
         Search above or click the map to pin the location
       </Text>
     </div>
@@ -350,6 +350,7 @@ export default function ClientPage() {
       code:              client.code,
       category:          client.category ?? undefined,
       contact_person:    client.contact_person,
+      contact_designation: client.contact_designation,
       contact_email:     client.contact_email,
       phone:             client.phone,
       pan_number:        client.pan_number || undefined,
@@ -397,7 +398,7 @@ export default function ClientPage() {
   const columns = [
     {
       title: "Name", dataIndex: "name", key: "name",
-      render: (v: string) => <Text strong style={{ color: "var(--pmt-text)" }}>{v}</Text>,
+      render: (v: string) => <Text strong style={{ color: "var(--bms-text)" }}>{v}</Text>,
     },
     {
       title: "Code", dataIndex: "code", key: "code",
@@ -407,21 +408,21 @@ export default function ClientPage() {
       title: "Category", dataIndex: "category_name", key: "category_name",
       render: (v: string) => v
         ? <Tag color="geekblue">{v}</Tag>
-        : <Text style={{ color: "var(--pmt-text-3)" }}>—</Text>,
+        : <Text style={{ color: "var(--bms-text-3)" }}>—</Text>,
     },
     {
       title: "Contact", dataIndex: "contact_person", key: "contact_person",
-      render: (v: string) => <span style={{ color: "var(--pmt-text)" }}>{v || "—"}</span>,
+      render: (v: string) => <span style={{ color: "var(--bms-text)" }}>{v || "—"}</span>,
     },
     {
       title: "Email", dataIndex: "contact_email", key: "contact_email",
-      render: (v: string) => <span style={{ color: "var(--pmt-text-2)" }}>{v || "—"}</span>,
+      render: (v: string) => <span style={{ color: "var(--bms-text-2)" }}>{v || "—"}</span>,
     },
     {
       title: "PAN", dataIndex: "pan_number", key: "pan_number",
       render: (v: string) => v
-        ? <Text style={{ fontFamily: "monospace", fontSize: 12, color: "var(--pmt-text)" }}>{v}</Text>
-        : <Text style={{ color: "var(--pmt-text-3)" }}>—</Text>,
+        ? <Text style={{ fontFamily: "monospace", fontSize: 12, color: "var(--bms-text)" }}>{v}</Text>
+        : <Text style={{ color: "var(--bms-text-3)" }}>—</Text>,
     },
     {
       title: "Status", dataIndex: "is_active", key: "is_active", width: 90,
@@ -437,7 +438,7 @@ export default function ClientPage() {
     {
       title: "Created", dataIndex: "created_at", key: "created_at",
       render: (v: string) => (
-        <span style={{ color: "var(--pmt-text-2)" }}>{dayjs(v).format("DD-MM-YYYY")}</span>
+        <span style={{ color: "var(--bms-text-2)" }}>{dayjs(v).format("DD-MM-YYYY")}</span>
       ),
     },
     ...(canUpdate || canDelete ? [{
@@ -487,16 +488,16 @@ export default function ClientPage() {
 
       {/* Table card */}
       <div style={{
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
         borderRadius: 12,
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         boxShadow: "var(--shadow-sm)",
       }}>
         <div className="table-toolbar">
           <Text className="table-toolbar-title">Client List ({data?.count ?? 0})</Text>
           <Space wrap>
             <Input
-              prefix={<SearchOutlined style={{ color: "var(--pmt-text-3)" }} />}
+              prefix={<SearchOutlined style={{ color: "var(--bms-text-3)" }} />}
               placeholder="Search clients…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -520,15 +521,15 @@ export default function ClientPage() {
         {showFilters && (
           <div style={{
             padding: "12px 16px",
-            background: "var(--pmt-surface-2, #f8fafc)",
-            borderBottom: "1px solid var(--pmt-border)",
+            background: "var(--bms-surface-2, #f8fafc)",
+            borderBottom: "1px solid var(--bms-border)",
             display: "flex",
             flexWrap: "wrap",
             gap: 16,
             alignItems: "center",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 13, color: "var(--pmt-text-2)", fontWeight: 500 }}>Category:</span>
+              <span style={{ fontSize: 13, color: "var(--bms-text-2)", fontWeight: 500 }}>Category:</span>
               <Select
                 placeholder="All Categories"
                 value={categoryFilter || undefined}
@@ -543,7 +544,7 @@ export default function ClientPage() {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 13, color: "var(--pmt-text-2)", fontWeight: 500 }}>Contact Person:</span>
+              <span style={{ fontSize: 13, color: "var(--bms-text-2)", fontWeight: 500 }}>Contact Person:</span>
               <Input
                 placeholder="Search contact person…"
                 value={contactFilter}
@@ -639,6 +640,10 @@ export default function ClientPage() {
               <Input placeholder="Primary contact name" />
             </Form.Item>
 
+            <Form.Item name="contact_designation" label="Designation" tooltip="Contact person's role or designation">
+              <Input placeholder="e.g. Manager" />
+            </Form.Item>
+
             <Form.Item
               name="contact_email"
               label="Contact Email"
@@ -666,7 +671,7 @@ export default function ClientPage() {
             )}
             style={{
               marginBottom: 12,
-              border: "1px solid var(--pmt-border)",
+              border: "1px solid var(--bms-border)",
               borderRadius: 8,
             }}
           >
@@ -676,10 +681,10 @@ export default function ClientPage() {
               header={
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <SafetyCertificateOutlined style={{ color: "#7c3aed", fontSize: 14 }} />
-                  <span style={{ fontWeight: 500, fontSize: 13, color: "var(--pmt-text)" }}>
+                  <span style={{ fontWeight: 500, fontSize: 13, color: "var(--bms-text)" }}>
                     Business Details
                   </span>
-                  <span style={{ fontSize: 11, color: "var(--pmt-text-3)", marginLeft: 4 }}>
+                  <span style={{ fontSize: 11, color: "var(--bms-text-3)", marginLeft: 4 }}>
                     PAN · GST
                   </span>
                 </div>
@@ -730,10 +735,10 @@ export default function ClientPage() {
               header={
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <EnvironmentOutlined style={{ color: "#059669", fontSize: 14 }} />
-                  <span style={{ fontWeight: 500, fontSize: 13, color: "var(--pmt-text)" }}>
+                  <span style={{ fontWeight: 500, fontSize: 13, color: "var(--bms-text)" }}>
                     Location
                   </span>
-                  <span style={{ fontSize: 11, color: "var(--pmt-text-3)", marginLeft: 4 }}>
+                  <span style={{ fontSize: 11, color: "var(--bms-text-3)", marginLeft: 4 }}>
                     Map pin · Lat/Lng
                   </span>
                 </div>

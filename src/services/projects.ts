@@ -83,6 +83,8 @@ export const projectsApi = {
   generateCode: (businessTypeId?: string) =>
     get<{ code: string }>(`${ENDPOINTS.PROJECTS}generate-code/`, businessTypeId ? { business_type_id: businessTypeId } : {}),
   clientDropdown: () => get<ClientDropdownItem[]>(`${ENDPOINTS.CLIENTS}dropdown/`),
+  createClient: (data: { name: string; contact_person?: string; contact_email?: string; code?: string }) =>
+    post<ClientDropdownItem>(ENDPOINTS.CLIENTS, data),
   transition: (id: string, destinationState: string, comments?: string, managerId?: string) =>
     post<{
       message: string;

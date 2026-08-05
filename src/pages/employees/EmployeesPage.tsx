@@ -39,8 +39,26 @@ const PAGE_SIZE = 15;
 function initials(name: string) {
   return initialsFromName(name);
 }
-function toTitleCase(name: string) {
-  return name.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+function toTitleCase(str: string | null | undefined): string {
+  if (!str) return "";
+  return str
+    .trim()
+    .split(/\s+/)
+    .map((word) => {
+      const clean = word.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      if (clean === "it") return word.replace(/it/i, "IT");
+      if (clean === "hr") return word.replace(/hr/i, "HR");
+      if (clean === "hrms") return word.replace(/hrms/i, "HRMS");
+      if (clean === "ceo") return word.replace(/ceo/i, "CEO");
+      if (clean === "cto") return word.replace(/cto/i, "CTO");
+      if (clean === "cfo") return word.replace(/cfo/i, "CFO");
+      if (clean === "coo") return word.replace(/coo/i, "COO");
+      if (clean === "pmo") return word.replace(/pmo/i, "PMO");
+      if (clean === "qa") return word.replace(/qa/i, "QA");
+      if (clean === "ui" || clean === "ux") return word.toUpperCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
 }
 
 const DEPT_TAG_COLORS: Record<string, string> = {};
@@ -98,22 +116,22 @@ function EmployeeCard({ emp, onClick, canManage, canUpdate, canDelete, onViewSum
   const rawName   = emp.full_name || emp.username;
   const name      = toTitleCase(rawName);
   const color     = avatarColor(rawName);
-  const dept      = emp.department_name || emp.department || "";
-  const desig     = emp.designation_name || emp.designation || "";
+  const dept      = toTitleCase(emp.department_name || emp.department || "");
+  const desig     = toTitleCase(emp.designation_name || emp.designation || "");
   const statusKey = (emp.status || "ACTIVE").toUpperCase();
   const ss        = STATUS_STYLE[statusKey] ?? STATUS_STYLE.ACTIVE;
-  const group     = emp.keycloak_group || "";
-  const empType   = emp.employment_type_name || "";
+  const group     = toTitleCase(emp.keycloak_group || "");
+  const empType   = toTitleCase(emp.employment_type_name || "");
 
   return (
     <div
       onClick={onClick}
       style={{
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
         borderRadius: 14,
         padding: "22px 20px 16px",
         cursor: "pointer",
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
         transition: "box-shadow 0.18s, transform 0.18s",
         display: "flex",
@@ -144,27 +162,27 @@ function EmployeeCard({ emp, onClick, canManage, canUpdate, canDelete, onViewSum
         </div>
       )}
 
-      <div style={{ fontSize: 17, fontWeight: 700, color: "var(--pmt-text)", marginBottom: 4 }}>{name}</div>
+      <div style={{ fontSize: 17, fontWeight: 700, color: "var(--bms-text)", marginBottom: 4 }}>{name}</div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
-        {desig && <span style={{ fontSize: 12.5, color: "var(--pmt-text-3)" }}>{desig}</span>}
+        {desig && <span style={{ fontSize: 12.5, color: "var(--bms-text-3)" }}>{desig}</span>}
         {dept && (
           <>
-            {desig && <span style={{ color: "var(--pmt-text-3)", fontSize: 11 }}>·</span>}
+            {desig && <span style={{ color: "var(--bms-text-3)", fontSize: 11 }}>·</span>}
             <span style={{
               fontSize: 11, fontWeight: 600, color: "#ffffff",
               background: deptTagColor(dept), padding: "2px 9px", borderRadius: 20,
               border: `1px solid ${deptTagColor(dept)}`,
             }}>
-              {dept.toLowerCase()}
+              {dept}
             </span>
           </>
         )}
         {(empType || group) && (
           <span style={{
-            fontSize: 10, fontWeight: 600, color: "var(--pmt-text-3)",
-            background: "var(--pmt-surface-2)", padding: "1px 7px", borderRadius: 20,
-            border: "1px solid var(--pmt-border)",
+            fontSize: 10, fontWeight: 600, color: "var(--bms-text-3)",
+            background: "var(--bms-surface-2)", padding: "1px 7px", borderRadius: 20,
+            border: "1px solid var(--bms-border)",
           }}>
             {empType || group}
           </span>
@@ -174,21 +192,21 @@ function EmployeeCard({ emp, onClick, canManage, canUpdate, canDelete, onViewSum
       <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 16 }}>
         {emp.email && (
           <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
-            <MailOutlined style={{ fontSize: 12, color: "var(--pmt-text-3)", flexShrink: 0 }} />
-            <span style={{ fontSize: 12.5, color: "var(--pmt-text-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <MailOutlined style={{ fontSize: 12, color: "var(--bms-text-3)", flexShrink: 0 }} />
+            <span style={{ fontSize: 12.5, color: "var(--bms-text-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {emp.email}
             </span>
           </div>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <ClockCircleOutlined style={{ fontSize: 12, color: "var(--pmt-text-3)", flexShrink: 0 }} />
-          <span style={{ fontSize: 12.5, color: "var(--pmt-text-3)" }}>
+          <ClockCircleOutlined style={{ fontSize: 12, color: "var(--bms-text-3)", flexShrink: 0 }} />
+          <span style={{ fontSize: 12.5, color: "var(--bms-text-3)" }}>
             {emp.shift_applicable ? "shift applicable" : "general shift"}
           </span>
         </div>
       </div>
 
-      <div style={{ borderTop: "1px solid var(--pmt-border)", marginBottom: 12 }} />
+      <div style={{ borderTop: "1px solid var(--bms-border)", marginBottom: 12 }} />
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
         <span style={{
@@ -244,7 +262,7 @@ function EmployeeCard({ emp, onClick, canManage, canUpdate, canDelete, onViewSum
             </Tooltip>
           )}
           {emp.employee_code && (
-            <span style={{ fontSize: 12.5, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>
+            <span style={{ fontSize: 12.5, color: "var(--bms-text-3)", fontFamily: "monospace" }}>
               {emp.employee_code}
             </span>
           )}
@@ -294,8 +312,8 @@ function EmployeeTable({ employees, isLoading, onView, canManage, canUpdate, can
               </Avatar>
             )}
             <div>
-              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--pmt-text)", lineHeight: 1.3 }}>{name}</div>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{emp.email}</div>
+              <div style={{ fontWeight: 600, fontSize: 13, color: "var(--bms-text)", lineHeight: 1.3 }}>{name}</div>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{emp.email}</div>
             </div>
           </div>
         );
@@ -312,14 +330,14 @@ function EmployeeTable({ employees, isLoading, onView, canManage, canUpdate, can
       title: "Designation",
       key: "designation",
       width: 180,
-      render: (_: any, emp: Employee) => emp.designation_name || emp.designation || "—",
+      render: (_: any, emp: Employee) => toTitleCase(emp.designation_name || emp.designation) || "—",
     },
     {
       title: "Department",
       key: "department",
       width: 140,
       render: (_: any, emp: Employee) => {
-        const dept = emp.department_name || emp.department || "";
+        const dept = toTitleCase(emp.department_name || emp.department || "");
         if (!dept) return "—";
         const tone = deptTagStyle(dept);
         return (
@@ -334,7 +352,7 @@ function EmployeeTable({ employees, isLoading, onView, canManage, canUpdate, can
       dataIndex: "keycloak_group",
       key: "group",
       width: 120,
-      render: (v: string) => v ? <Tag color="purple" style={{ fontSize: 11 }}>{v}</Tag> : "—",
+      render: (v: string) => v ? <Tag color="purple" style={{ fontSize: 11 }}>{toTitleCase(v)}</Tag> : "—",
     },
     {
       title: "Type",
@@ -496,7 +514,7 @@ function EmployeeDrawer({ open, onClose, allEmployees }: { open: boolean; onClos
   const dd  = (arr: any[]) => arr.map((d) => ({ value: d.id, label: d.name }));
   const ff  = (input: string, opt: any) => (opt?.label as string)?.toLowerCase().includes(input.toLowerCase());
   const sec = (label: string) => (
-    <><Typography.Text strong style={{ fontSize: 13, color: "var(--pmt-text-3)" }}>{label}</Typography.Text><Divider style={{ margin: "8px 0 16px" }} /></>
+    <><Typography.Text strong style={{ fontSize: 13, color: "var(--bms-text-3)" }}>{label}</Typography.Text><Divider style={{ margin: "8px 0 16px" }} /></>
   );
 
   return (
@@ -568,7 +586,7 @@ function EmployeeDrawer({ open, onClose, allEmployees }: { open: boolean; onClos
         </Row>
         <Row gutter={16}>
           <Col span={12}><Form.Item name="prior_experience" label="Prior Experience (yrs)"><InputNumber style={{ width: "100%" }} min={0} precision={1} /></Form.Item></Col>
-          <Col span={12}><Form.Item name="total_experience" label="Total Experience (yrs)"><InputNumber style={{ width: "100%", background: "var(--pmt-surface-2)" }} disabled /></Form.Item></Col>
+          <Col span={12}><Form.Item name="total_experience" label="Total Experience (yrs)"><InputNumber style={{ width: "100%", background: "var(--bms-surface-2)" }} disabled /></Form.Item></Col>
         </Row>
 
         {sec("Shift")}
@@ -656,7 +674,7 @@ function EmployeeSummaryModal({ open, onClose, employee }: {
       destroyOnClose
     >
       <Space style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>Month</Text>
+        <Text style={{ fontSize: 13, color: "var(--bms-text-2)" }}>Month</Text>
         <DatePicker
           picker="month" value={month} onChange={(d) => d && setMonth(d)}
           format="MMM YYYY" allowClear={false}
@@ -686,7 +704,7 @@ function EmployeeSummaryModal({ open, onClose, employee }: {
                   background: color + "12", border: `1px solid ${color}30`,
                 }}>
                   <div style={{ fontSize: 20, fontWeight: 700, color }}>{value}</div>
-                  <div style={{ fontSize: 11, color: "var(--pmt-text-2)" }}>{label}</div>
+                  <div style={{ fontSize: 11, color: "var(--bms-text-2)" }}>{label}</div>
                 </div>
               </Col>
             ))}
@@ -708,7 +726,7 @@ function EmployeeSummaryModal({ open, onClose, employee }: {
                 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: b.leave_type_color, flexShrink: 0 }} />
                   <Text style={{ fontSize: 12, flex: 1, minWidth: 100 }}>{b.leave_type_name}</Text>
-                  <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+                  <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
                     Used {b.used_days}/{b.total_days}
                   </Text>
                   <Text style={{ fontSize: 12, fontWeight: 700, color: b.leave_type_color, minWidth: 50, textAlign: "right" }}>
@@ -762,6 +780,7 @@ export default function EmployeesPage() {
     queryFn: () => employeeApi.listPaged({
       page,
       page_size: PAGE_SIZE,
+      ordering: "employee_code",
       ...(divisionFilter ? { department_ref: divisionFilter } : {}),
     }),
     enabled: viewMode !== "org",
@@ -826,12 +845,12 @@ export default function EmployeesPage() {
   const handleDivisionChange = (v: string | null) => { setDivisionFilter(v); setPage(1); };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--pmt-bg)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bms-bg)" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--pmt-text)" }}>Employees</div>
-          <Text style={{ fontSize: 13, color: "var(--pmt-text-3)" }}>Team by division</Text>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--bms-text)" }}>Employees</div>
+          <Text style={{ fontSize: 13, color: "var(--bms-text-3)" }}>Team by division</Text>
         </div>
         <Space wrap>
           <Segmented
@@ -919,11 +938,11 @@ export default function EmployeesPage() {
           {/* Filter Row Card */}
           <Card
             bodyStyle={{ padding: "12px 16px" }}
-            style={{ borderRadius: 10, border: "1px solid var(--pmt-border)", marginBottom: 16, background: "var(--pmt-surface)" }}
+            style={{ borderRadius: 10, border: "1px solid var(--bms-border)", marginBottom: 16, background: "var(--bms-surface)" }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
               <Space wrap size={12} style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 13, color: "var(--pmt-text-2)", marginRight: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontWeight: 600, fontSize: 13, color: "var(--bms-text-2)", marginRight: 4 }}>
                   <FilterOutlined style={{ color: "#1677ff" }} /> Filters:
                 </div>
                 <Select
@@ -987,11 +1006,11 @@ export default function EmployeesPage() {
           </Card>
 
           {filteredTableEmployees.length === 0 ? (
-            <Card style={{ borderRadius: 10, border: "1px solid var(--pmt-border)", textAlign: "center", padding: "40px 0", marginBottom: 16 }}>
+            <Card style={{ borderRadius: 10, border: "1px solid var(--bms-border)", textAlign: "center", padding: "40px 0", marginBottom: 16 }}>
               <Empty description="No employees match the selected filters" />
             </Card>
           ) : (
-            <Card bodyStyle={{ padding: 0 }} style={{ borderRadius: 10, border: "1px solid var(--pmt-border)" }}>
+            <Card bodyStyle={{ padding: 0 }} style={{ borderRadius: 10, border: "1px solid var(--bms-border)" }}>
               <EmployeeTable
                 employees={filteredTableEmployees}
                 isLoading={isLoading}

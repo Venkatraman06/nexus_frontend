@@ -785,8 +785,8 @@ function EmploymentTab({ emp, editing, onStopEdit, form }: {
           column={{ xs: 1, sm: 2 }}
           size="small"
           // ✅ was: background: "#f8fafc", color: "#5a6a7e" / "#1a2332"
-          labelStyle={{ background: "var(--pmt-surface-2)", fontWeight: 600, width: 180, color: "var(--pmt-text-3)", fontSize: 13 }}
-          contentStyle={{ fontSize: 13, color: "var(--pmt-text)" }}
+          labelStyle={{ background: "var(--bms-surface-2)", fontWeight: 600, width: 180, color: "var(--bms-text-3)", fontSize: 13 }}
+          contentStyle={{ fontSize: 13, color: "var(--bms-text)" }}
         >
           <Descriptions.Item label="Employee Code">
             {emp.employee_code ? <Text code>{emp.employee_code}</Text> : "—"}
@@ -878,7 +878,7 @@ function EmploymentTab({ emp, editing, onStopEdit, form }: {
   return (
     <Form form={form} layout="vertical" style={{ marginTop: 8 }} onValuesChange={onValuesChange}>
       {/* ✅ was: color: "#5a6a7e" */}
-      <Text strong style={{ fontSize: 13, color: "var(--pmt-text-3)" }}>Position</Text>
+      <Text strong style={{ fontSize: 13, color: "var(--bms-text-3)" }}>Position</Text>
       <Divider style={{ margin: "8px 0 16px" }} />
       <Row gutter={16}>
         <Col span={12}>
@@ -935,7 +935,7 @@ function EmploymentTab({ emp, editing, onStopEdit, form }: {
         <Col span={12}>
           <Form.Item name="total_experience" label="Total Experience (yrs)" tooltip="Auto-calculated: tenure + prior">
             {/* ✅ was: background: "#f8fafc" */}
-            <Input type="number" placeholder="5.5" disabled style={{ background: "var(--pmt-surface-2)" }} />
+            <Input type="number" placeholder="5.5" disabled style={{ background: "var(--bms-surface-2)" }} />
           </Form.Item>
         </Col>
       </Row>
@@ -957,7 +957,7 @@ function EmploymentTab({ emp, editing, onStopEdit, form }: {
         </Col>
       </Row>
 
-      <Text strong style={{ fontSize: 13, color: "var(--pmt-text-3)" }}>Role</Text>
+      <Text strong style={{ fontSize: 13, color: "var(--bms-text-3)" }}>Role</Text>
       <Divider style={{ margin: "8px 0 16px" }} />
       <Row gutter={16}>
         <Col span={12}>
@@ -976,7 +976,7 @@ function EmploymentTab({ emp, editing, onStopEdit, form }: {
         </Col>
       </Row>
 
-      <Text strong style={{ fontSize: 13, color: "var(--pmt-text-3)" }}>Shift</Text>
+      <Text strong style={{ fontSize: 13, color: "var(--bms-text-3)" }}>Shift</Text>
       <Divider style={{ margin: "8px 0 16px" }} />
       <Row gutter={16}>
         <Col span={12}>
@@ -1049,8 +1049,8 @@ function ProfileTab({ emp, editing, form }: { emp: EmployeeDetail; editing: bool
           column={{ xs: 1, sm: 2 }}
           size="small"
           // ✅ was: background: "#f8fafc", color: "#5a6a7e" / "#1a2332"
-          labelStyle={{ background: "var(--pmt-surface-2)", fontWeight: 600, width: 180, color: "var(--pmt-text-3)", fontSize: 13 }}
-          contentStyle={{ fontSize: 13, color: "var(--pmt-text)" }}
+          labelStyle={{ background: "var(--bms-surface-2)", fontWeight: 600, width: 180, color: "var(--bms-text-3)", fontSize: 13 }}
+          contentStyle={{ fontSize: 13, color: "var(--bms-text)" }}
         >
           <Descriptions.Item label="First Name">{emp.first_name || "—"}</Descriptions.Item>
           <Descriptions.Item label="Last Name">{emp.last_name || "—"}</Descriptions.Item>
@@ -1144,8 +1144,8 @@ function MiscTab({ emp }: { emp: EmployeeDetail }) {
           size="small"
           title={<Text strong style={{ fontSize: 13 }}>Account Info</Text>}
           // ✅ was: background: "#f8fafc", color: "#5a6a7e" / "#1a2332"
-          labelStyle={{ background: "var(--pmt-surface-2)", fontWeight: 600, width: 180, color: "var(--pmt-text-3)", fontSize: 13 }}
-          contentStyle={{ fontSize: 13, color: "var(--pmt-text)" }}
+          labelStyle={{ background: "var(--bms-surface-2)", fontWeight: 600, width: 180, color: "var(--bms-text-3)", fontSize: 13 }}
+          contentStyle={{ fontSize: 13, color: "var(--bms-text)" }}
         >
           <Descriptions.Item label="Created At">
             {emp.created_at ? dayjs(emp.created_at).format("DD MMM YYYY HH:mm") : "—"}
@@ -1318,14 +1318,14 @@ export default function EmployeeDetailPage() {
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate("/employees")}
             // ✅ was: color: "#8c9ab0"
-            style={{ paddingLeft: 0, color: "var(--pmt-text-3)", fontSize: 13 }}
+            style={{ paddingLeft: 0, color: "var(--bms-text-3)", fontSize: 13 }}
           >
             Employees
           </Button>
           {/* ✅ was: color: "#bcc5d3" */}
-          <Text style={{ color: "var(--pmt-border)" }}>/</Text>
+          <Text style={{ color: "var(--bms-border)" }}>/</Text>
           {/* ✅ was: color: "#1a2332" */}
-          <Text style={{ fontSize: 13, color: "var(--pmt-text)", fontWeight: 600 }}>
+          <Text style={{ fontSize: 13, color: "var(--bms-text)", fontWeight: 600 }}>
             {emp.full_name || emp.username}
           </Text>
         </Space>
@@ -1336,8 +1336,8 @@ export default function EmployeeDetailPage() {
         style={{
           borderRadius: 12, marginBottom: 20,
           // ✅ was: border: "#e8edf3", background: hardcoded gradient
-          border: "1px solid var(--pmt-border)",
-          background: "var(--pmt-surface)",
+          border: "1px solid var(--bms-border)",
+          background: "var(--bms-surface)",
           boxShadow: "0 2px 12px rgba(22,119,255,0.06)",
         }}
         styles={{ body: { padding: "0" } }}
@@ -1371,7 +1371,7 @@ export default function EmployeeDetailPage() {
   : emp.status === "ON_LEAVE" ? "#f59e0b"
   : emp.status === "RESIGNED" ? "#ef4444"
   : "#9ca3af",
-border: "2px solid var(--pmt-surface)",
+border: "2px solid var(--bms-surface)",
             }} />
           </div>
 
@@ -1380,7 +1380,7 @@ border: "2px solid var(--pmt-surface)",
             {/* Name + status */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
               {/* ✅ was: color: "#0f172a" */}
-              <Title level={4} style={{ margin: 0, color: "var(--pmt-text)", fontWeight: 700, letterSpacing: -0.3 }}>
+              <Title level={4} style={{ margin: 0, color: "var(--bms-text)", fontWeight: 700, letterSpacing: -0.3 }}>
                 {emp.full_name || emp.username}
               </Title>
               <span style={{
@@ -1410,28 +1410,28 @@ border: "2px solid var(--pmt-surface)",
                   fontSize: 11, fontFamily: "monospace", fontWeight: 700,
                   padding: "2px 8px", borderRadius: 6,
                   // ✅ was: background: "#f1f5f9", color: "#475569", border: "#e2e8f0"
-                  background: "var(--pmt-surface-2)", color: "var(--pmt-text-2)",
-                  border: "1px solid var(--pmt-border)",
+                  background: "var(--bms-surface-2)", color: "var(--bms-text-2)",
+                  border: "1px solid var(--bms-border)",
                 }}>
                   {emp.employee_code}
                 </span>
               )}
               {emp.designation_name && (
                 // ✅ was: color: "#334155"
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--pmt-text)" }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--bms-text)" }}>
                   {emp.designation_name}
                 </span>
               )}
               {emp.department_name && (
                 <>
                   {/* ✅ was: color: "#cbd5e1" */}
-                  <span style={{ color: "var(--pmt-border)", fontSize: 14 }}>·</span>
+                  <span style={{ color: "var(--bms-border)", fontSize: 14 }}>·</span>
                   <span style={{
                     fontSize: 12, fontWeight: 500,
                     padding: "2px 10px", borderRadius: 20,
                     // ✅ was: background: "#eff6ff", color: "#1d4ed8", border: "#bfdbfe"
-                    background: "var(--pmt-surface-2)", color: "var(--pmt-text-2)",
-                    border: "1px solid var(--pmt-border)",
+                    background: "var(--bms-surface-2)", color: "var(--bms-text-2)",
+                    border: "1px solid var(--bms-border)",
                   }}>
                     {emp.department_name}
                   </span>
@@ -1442,12 +1442,12 @@ border: "2px solid var(--pmt-surface)",
             {/* Contact row */}
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
               {emp.email && (
-                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--pmt-text-3)" }}>
-                  <MailOutlined style={{ fontSize: 12, color: "var(--pmt-text-3)" }} />
+                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--bms-text-3)" }}>
+                  <MailOutlined style={{ fontSize: 12, color: "var(--bms-text-3)" }} />
                   <Tooltip title="Copy email">
                     <CopyOutlined
                       style={{
-                        fontSize: 11, color: "var(--pmt-text-3)", cursor: "pointer",
+                        fontSize: 11, color: "var(--bms-text-3)", cursor: "pointer",
                         opacity: 0.5, transition: "opacity 0.15s ease",
                       }}
                       className="email-copy-btn"
@@ -1465,19 +1465,19 @@ border: "2px solid var(--pmt-surface)",
                 </span>
               )}
               {emp.phone_number && (
-                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--pmt-text-3)" }}>
-                  <PhoneOutlined style={{ fontSize: 12, color: "var(--pmt-text-3)" }} />
+                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--bms-text-3)" }}>
+                  <PhoneOutlined style={{ fontSize: 12, color: "var(--bms-text-3)" }} />
                   {emp.phone_number}
                 </span>
               )}
               {emp.location_name && (
-                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--pmt-text-3)" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--bms-text-3)" }}>
                   <span style={{ fontSize: 12 }}>📍</span>
                   {emp.location_name}
                 </span>
               )}
               {emp.joining_date && (
-                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--pmt-text-3)" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "var(--bms-text-3)" }}>
                   <span>📅</span>
                   Joined {dayjs(emp.joining_date).format("DD MMM YYYY")}
                 </span>
@@ -1492,9 +1492,9 @@ border: "2px solid var(--pmt-surface)",
                 <Tag style={{
                   borderRadius: 20, fontWeight: 600, fontSize: 13,
                   padding: "4px 14px",
-                  background: "var(--pmt-primary-alpha, #1677ff1a)",
-                  color: "var(--pmt-primary, #1677ff)",
-                  border: "1px solid var(--pmt-primary-border, #1677ff33)",
+                  background: "var(--bms-primary-alpha, #1677ff1a)",
+                  color: "var(--bms-primary, #1677ff)",
+                  border: "1px solid var(--bms-primary-border, #1677ff33)",
                 }}>
                   {emp.keycloak_group}
                 </Tag>
@@ -1528,7 +1528,7 @@ border: "2px solid var(--pmt-surface)",
       {/* Detail tabs card */}
       {/* ✅ was: border: "#e8edf3" */}
       <Card
-        style={{ borderRadius: 10, border: "1px solid var(--pmt-border)" }}
+        style={{ borderRadius: 10, border: "1px solid var(--bms-border)" }}
         styles={{ body: { padding: "0 24px 24px" } }}
       >
         <Tabs

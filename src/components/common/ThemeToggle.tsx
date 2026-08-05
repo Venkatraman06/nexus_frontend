@@ -25,7 +25,7 @@ export default function ThemeToggle() {
           fontWeight: 500,
         }}
       >
-        <span className="pmt-theme-toggle-label">{label}</span>
+        <span className="bms-theme-toggle-label">{label}</span>
       </Button>
     </Tooltip>
   );

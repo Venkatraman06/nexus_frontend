@@ -12,14 +12,16 @@ import {
   PartitionOutlined,
   ProjectOutlined,
   TeamOutlined,
+  CheckSquareOutlined,
+  CreditCardOutlined,
 } from "@ant-design/icons";
-import { PERMS, type PmtPermission } from "@/constants/permissions";
+import { PERMS, type BmsPermission } from "@/constants/permissions";
 
 export interface MasterItemDef {
   key: string;
   label: string;
   description: string;
-  permission: PmtPermission;
+  permission: BmsPermission;
   icon: ReactNode;
   accent: string;
 }
@@ -51,9 +53,10 @@ export const MASTER_CATEGORIES: MasterCategoryDef[] = [
   },
   {
     key: "policy",
-    title: "Policy & Leave",
+    title: "Policy & Expenses",
     items: [
       { key: "leave-type", label: "Leave Policy", description: "Types & balances", permission: PERMS.MASTER_HRMS_VIEW, icon: <FileTextOutlined />, accent: "#ec4899" },
+      { key: "reimbursement", label: "Reimbursement Workflow", description: "Configure reviewer & approver employee mappings", permission: PERMS.CRM_EXPENSE_VIEW, icon: <CreditCardOutlined />, accent: "#8b5cf6" },
     ],
   },
   {
@@ -79,6 +82,13 @@ export const MASTER_CATEGORIES: MasterCategoryDef[] = [
     ],
   },
   {
+    key: "workspace",
+    title: "Workspace",
+    items: [
+      { key: "followup-type", label: "Follow-up Type", description: "Follow-up categories & modes", permission: PERMS.MASTER_PROJECT_VIEW, icon: <CheckSquareOutlined />, accent: "#6366f1" },
+    ],
+  },
+  {
     key: "workflow",
     title: "Workflow",
     items: [
@@ -87,7 +97,7 @@ export const MASTER_CATEGORIES: MasterCategoryDef[] = [
   },
 ];
 
-export const MASTER_TAB_PERMISSIONS: Record<string, PmtPermission> = Object.fromEntries(
+export const MASTER_TAB_PERMISSIONS: Record<string, BmsPermission> = Object.fromEntries(
   MASTER_CATEGORIES.flatMap((cat) => cat.items.map((item) => [item.key, item.permission])),
 );
 

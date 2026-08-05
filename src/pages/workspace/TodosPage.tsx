@@ -28,6 +28,7 @@ import "@/components/common/KanbanBoard.css";
 import TodoDetailDrawer from "./TodoDetailDrawer";
 import ClockTimePicker from "@/components/common/ClockTimePicker";
 import GoogleColorPicker from "@/components/common/GoogleColorPicker";
+import { apiErrorMsg } from "@/utils/apiError";
 import { extractCustomColor } from "./workspaceCalendarTheme";
 
 
@@ -80,9 +81,9 @@ function PriorityPicker({ value, onChange }: { value?: string; onChange?: (v: st
             onClick={() => onChange?.(p.value)}
             style={{
               padding: "8px 4px", borderRadius: 8,
-              border: `2px solid ${active ? p.border : "var(--pmt-border)"}`,
-              background: active ? p.bg : "var(--pmt-surface)",
-              color: active ? p.text : "var(--pmt-text-2)",
+              border: `2px solid ${active ? p.border : "var(--bms-border)"}`,
+              background: active ? p.bg : "var(--bms-surface)",
+              color: active ? p.text : "var(--bms-text-2)",
               fontWeight: active ? 700 : 500, fontSize: 12, cursor: "pointer",
             }}
           >
@@ -154,8 +155,8 @@ function TodoCard({
 
       <div className="kanban-card__title">{item.title}</div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "6px 0 8px 0", fontSize: 11, color: "var(--pmt-text-3)" }}>
-        <UserOutlined style={{ fontSize: 10, color: "var(--pmt-text-3)" }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "6px 0 8px 0", fontSize: 11, color: "var(--bms-text-3)" }}>
+        <UserOutlined style={{ fontSize: 10, color: "var(--bms-text-3)" }} />
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {(item.assignees_data || []).map(a => a.full_name).join(", ") || "Unassigned"}
         </span>
@@ -194,7 +195,7 @@ function KanbanColumn({
     <div
       className="kanban-column"
       style={{
-        background: isDragOver && canDrop ? `${col.color}14` : "var(--pmt-board-column)",
+        background: isDragOver && canDrop ? `${col.color}14` : "var(--bms-board-column)",
         border: isDragOver && canDrop ? `2px dashed ${col.color}` : "2px solid transparent",
       }}
       onDragOver={(e) => { if (canDrop) { e.preventDefault(); setIsDragOver(true); } }}
@@ -315,13 +316,13 @@ export default function TodosPage() {
   const createMutation = useMutation({
     mutationFn: (data: TodoCreate) => todoApi.create(data),
     onSuccess: () => { message.success("To-do created"); setModalOpen(false); form.resetFields(); invalidate(); },
-    onError: () => message.error("Failed to create to-do"),
+    onError: (err: any) => message.error(apiErrorMsg(err, "Failed to create to-do")),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<TodoCreate> }) => todoApi.update(id, data),
     onSuccess: () => { message.success("To-do updated"); setModalOpen(false); setEditing(null); form.resetFields(); invalidate(); },
-    onError: () => message.error("Failed to update to-do"),
+    onError: (err: any) => message.error(apiErrorMsg(err, "Failed to update to-do")),
   });
 
   const deleteMutation = useMutation({
@@ -358,7 +359,7 @@ export default function TodosPage() {
       title: item.title,
       priority: item.priority || "MEDIUM",
       description: cleanText,
-      content: item.content,
+      comments: item.comments,
       color: color,
       assignees: item.assignees || (item.assignee ? [item.assignee] : []),
       date_range: [
@@ -384,7 +385,7 @@ export default function TodosPage() {
         title: values.title,
         priority: values.priority || "MEDIUM",
         description: finalDescription,
-        content: values.content || "",
+        comments: values.comments || "",
         assignees: values.assignees || [],
         start_date: startDate ? startDate.format("YYYY-MM-DD") : null,
         due_date: endDate ? endDate.format("YYYY-MM-DD") : null,
@@ -432,7 +433,7 @@ export default function TodosPage() {
       key: "title",
       width: 280,
       render: (_: any, item: TodoItem) => (
-        <Text strong style={{ color: "var(--pmt-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <Text strong style={{ color: "var(--bms-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {item.title}
         </Text>
       ),
@@ -477,7 +478,7 @@ export default function TodosPage() {
               {item.due_date ? dayjs(item.due_date).format("DD MMM YYYY") : "No due date"}
             </Text>
             {timeRange && <Text type="secondary" style={{ fontSize: 12 }}>{timeRange}</Text>}
-            {item.is_overdue && <Text strong style={{ color: "var(--pmt-danger)", fontSize: 12, marginTop: 4 }}><WarningOutlined /> OVERDUE</Text>}
+            {item.is_overdue && <Text strong style={{ color: "var(--bms-danger)", fontSize: 12, marginTop: 4 }}><WarningOutlined /> OVERDUE</Text>}
           </div>
         );
       },
@@ -486,7 +487,7 @@ export default function TodosPage() {
       title: "",
       key: "actions",
       width: 120,
-      fixed: "right" as const,
+
       align: "right" as const,
       render: (_: any, item: TodoItem) => (
         <Space size={4} onClick={(e) => e.stopPropagation()}>
@@ -530,14 +531,15 @@ export default function TodosPage() {
               { value: "list", icon: <UnorderedListOutlined />, label: "List" },
             ]}
           />
-          <Select
-            placeholder="All Stages"
-            allowClear
-            style={{ width: 160 }}
-            value={statusFilter || undefined}
-            onChange={(v) => setStatusFilter(v || "")}
-            options={TODO_BOARD_COLUMNS.map((c) => ({ value: c.slug, label: c.label }))}
-          />
+          {viewMode === "list" && (
+            <Select
+              allowClear
+              style={{ width: 160 }}
+              value={statusFilter || ""}
+              onChange={(v) => setStatusFilter(v || "")}
+              options={[{ value: "", label: "All Stages" }, ...TODO_BOARD_COLUMNS.map((c) => ({ value: c.slug, label: c.label }))]}
+            />
+          )}
           {canCreate && (
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Add To-Do</Button>
           )}
@@ -673,10 +675,10 @@ export default function TodosPage() {
                         const sDt = sDate.hour(start.hour()).minute(start.minute()).second(0);
                         const eDt = eDate.hour(end.hour()).minute(end.minute()).second(0);
                         if (eDt.isAfter(sDt)) return Promise.resolve();
-                        return Promise.reject(new Error("End must be after start"));
+                        return Promise.reject(new Error("Enter a valid time range"));
                       }
                       // Fallback: no dates — compare times alone
-                      if (!end.isAfter(start)) return Promise.reject(new Error("End must be after start"));
+                      if (!end.isAfter(start)) return Promise.reject(new Error("Enter a valid time range"));
                     }
                     return Promise.resolve();
                   },
@@ -689,7 +691,7 @@ export default function TodosPage() {
           </Row>
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item name="assignees" label="Assignees">
+              <Form.Item name="assignees" label="Assignees" rules={[{ required: true, message: "Assignees are required" }]}>
                 <Select
                   mode="multiple"
                   allowClear
@@ -715,10 +717,10 @@ export default function TodosPage() {
           <Form.Item name="description" label="Description" rules={[{ required: true, message: "Description is required" }]}>
             <TextArea rows={3} placeholder="What needs to be done?" />
           </Form.Item>
-          <Form.Item name="content" label="Content">
-            <TextArea rows={4} placeholder="Detailed content" />
+          <Form.Item name="comments" label="Comment">
+            <TextArea rows={4} placeholder="Detailed comment" />
           </Form.Item>
-          <Form.Item name="color" label="Color (optional)">
+          <Form.Item name="color" label="Event Color">
             <GoogleColorPicker />
           </Form.Item>
         </Form>

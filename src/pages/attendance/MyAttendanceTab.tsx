@@ -13,7 +13,7 @@ export default function MyAttendanceTab() {
 
   return (
     <div style={{ background: token.colorBgLayout }}>
-      <div className="pmt-att-matrix-card att-tracker-page__card">
+      <div className="bms-att-matrix-card att-tracker-page__card">
         {user?.id ? (
           <AttendanceCalendar
             employeeId={user.id}
@@ -25,7 +25,7 @@ export default function MyAttendanceTab() {
       {/* ── Regularization Requests Section ─────────────────────────────── */}
       <Divider style={{ margin: "24px 0 16px" }} />
       <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-        <ClockCircleOutlined style={{ color: "var(--pmt-primary)", fontSize: 16 }} />
+        <ClockCircleOutlined style={{ color: "var(--bms-primary)", fontSize: 16 }} />
         <Title level={5} style={{ margin: 0 }}>Attendance Regularization</Title>
       </div>
       <MyRegularizationRequests />

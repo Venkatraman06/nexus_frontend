@@ -18,7 +18,7 @@ export default function RichTextContent({
         dangerouslySetInnerHTML={{ __html: html }}
       />
       <style>{`
-        .rte-content { font-size: 14px; line-height: 1.7; color: var(--pmt-text, #1f2937); word-break: break-word; }
+        .rte-content { font-size: 14px; line-height: 1.7; color: var(--bms-text, #1f2937); word-break: break-word; }
         .rte-content p { margin: 0 0 6px; }
         .rte-content p:last-child { margin-bottom: 0; }
         .rte-content ul, .rte-content ol { padding-left: 20px; margin: 6px 0; }
@@ -75,7 +75,7 @@ export function PostContent({ content, style }: { content: string; style?: React
     return <RichTextContent html={content} style={style} />;
   }
   return (
-    <div style={{ fontSize: 14, lineHeight: 1.7, color: "var(--pmt-text-2)", whiteSpace: "pre-wrap", ...style }}>
+    <div style={{ fontSize: 14, lineHeight: 1.7, color: "var(--bms-text-2)", whiteSpace: "pre-wrap", ...style }}>
       {content}
     </div>
   );
@@ -99,7 +99,7 @@ export function PostContentPreview({
     <div
       style={{
         fontSize: 12,
-        color: "var(--pmt-text-2)",
+        color: "var(--bms-text-2)",
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",

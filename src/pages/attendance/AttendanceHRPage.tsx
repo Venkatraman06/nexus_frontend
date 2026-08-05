@@ -20,7 +20,7 @@ import dayjs, { Dayjs } from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { get, post, patch } from "@/services/api";
 import { usePermission } from "@/hooks/usePermission";
-import { PERMS, type PmtPermission } from "@/constants/permissions";
+import { PERMS, type BmsPermission } from "@/constants/permissions";
 import { useAuthStore } from "@/store/auth";
 import { useThemeStore } from "@/store/theme";
 import { RegularizationAdminPanel } from "./AttendanceRegularizationPanel";
@@ -104,14 +104,14 @@ interface WFHSetting {
 
 // ─── Style maps ───────────────────────────────────────────────────────────────
 const STATUS_STYLE: Record<string, { color: string; bg: string; label: string }> = {
-  PRESENT:    { color: "var(--pmt-success)", bg: "rgba(22, 163, 74, 0.15)", label: "Present"    },
-  WFH:        { color: "var(--pmt-primary)", bg: "rgba(37, 99, 235, 0.15)", label: "WFH"        },
-  ABSENT:     { color: "var(--pmt-danger)", bg: "var(--pmt-danger-bg)", label: "Absent"     },
-  HALF_DAY:   { color: "var(--pmt-warning)", bg: "rgba(217, 119, 6, 0.15)", label: "Half Day"   },
+  PRESENT:    { color: "var(--bms-success)", bg: "rgba(22, 163, 74, 0.15)", label: "Present"    },
+  WFH:        { color: "var(--bms-primary)", bg: "rgba(37, 99, 235, 0.15)", label: "WFH"        },
+  ABSENT:     { color: "var(--bms-danger)", bg: "var(--bms-danger-bg)", label: "Absent"     },
+  HALF_DAY:   { color: "var(--bms-warning)", bg: "rgba(217, 119, 6, 0.15)", label: "Half Day"   },
   ON_LEAVE:   { color: "#7c3aed", bg: "rgba(124, 58, 237, 0.15)", label: "On Leave"   },
   HOLIDAY:    { color: "#0d9488", bg: "rgba(13, 148, 136, 0.15)", label: "Holiday"    },
-  WEEKEND:    { color: "var(--pmt-text-3)", bg: "var(--pmt-surface-2)", label: "Weekend"    },
-  NOT_MARKED: { color: "var(--pmt-text-3)", bg: "var(--pmt-surface)", label: "Not Marked" },
+  WEEKEND:    { color: "var(--bms-text-3)", bg: "var(--bms-surface-2)", label: "Weekend"    },
+  NOT_MARKED: { color: "var(--bms-text-3)", bg: "var(--bms-surface)", label: "Not Marked" },
 };
 const PIE_COLORS: Record<string, string> = {
   PRESENT: "#059669", WFH: "#2563eb", ABSENT: "#dc2626",
@@ -119,10 +119,10 @@ const PIE_COLORS: Record<string, string> = {
   WEEKEND: "#6b7280", NOT_MARKED: "#d1d5db",
 };
 const EVENT_META: Record<string, { color: string; icon: React.ReactNode; bg: string }> = {
-  CHECK_IN:    { color: "var(--pmt-success)", bg: "rgba(22, 163, 74, 0.15)", icon: <LoginOutlined />       },
-  CHECK_OUT:   { color: "var(--pmt-danger)", bg: "var(--pmt-danger-bg)", icon: <LogoutOutlined />      },
-  BREAK_START: { color: "var(--pmt-warning)", bg: "rgba(245, 158, 11, 0.15)", icon: <PauseCircleOutlined /> },
-  BREAK_END:   { color: "var(--pmt-primary)", bg: "rgba(59, 130, 246, 0.15)", icon: <PlayCircleOutlined />  },
+  CHECK_IN:    { color: "var(--bms-success)", bg: "rgba(22, 163, 74, 0.15)", icon: <LoginOutlined />       },
+  CHECK_OUT:   { color: "var(--bms-danger)", bg: "var(--bms-danger-bg)", icon: <LogoutOutlined />      },
+  BREAK_START: { color: "var(--bms-warning)", bg: "rgba(245, 158, 11, 0.15)", icon: <PauseCircleOutlined /> },
+  BREAK_END:   { color: "var(--bms-primary)", bg: "rgba(59, 130, 246, 0.15)", icon: <PlayCircleOutlined />  },
 };
 
 // ─── Job type / employment type color helpers ─────────────────────────────────
@@ -160,7 +160,7 @@ const LeafletMap = React.lazy(() => import("./LeafletMap"));
 // ─── Export helper ────────────────────────────────────────────────────────────
 function downloadExport(year: number, month: number) {
   const token = localStorage.getItem("kc_access_token");
-  const url   = `/pmt/api/v1/attendance/export/?year=${year}&month=${month}`;
+  const url   = `/bms/api/v1/attendance/export/?year=${year}&month=${month}`;
   fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
     .then((r) => r.blob())
     .then((blob) => {
@@ -247,12 +247,12 @@ function AttendanceOverview({ date }: { date: Dayjs }) {
     <div>
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         {[
-          { label: "Total Employees",  value: data.total_employees, color: "var(--pmt-primary)", icon: <TeamOutlined /> },
-          { label: "Present / WFH",    value: (data.counts.PRESENT ?? 0) + (data.counts.WFH ?? 0), color: "var(--pmt-success)", icon: <CheckCircleOutlined /> },
-          { label: "Absent",           value: data.counts.ABSENT   ?? 0, color: "var(--pmt-danger)", icon: <CloseCircleOutlined /> },
+          { label: "Total Employees",  value: data.total_employees, color: "var(--bms-primary)", icon: <TeamOutlined /> },
+          { label: "Present / WFH",    value: (data.counts.PRESENT ?? 0) + (data.counts.WFH ?? 0), color: "var(--bms-success)", icon: <CheckCircleOutlined /> },
+          { label: "Absent",           value: data.counts.ABSENT   ?? 0, color: "var(--bms-danger)", icon: <CloseCircleOutlined /> },
           { label: "On Leave",         value: data.counts.ON_LEAVE ?? 0, color: "#7c3aed", icon: <CalendarOutlined /> },
-          { label: "Not Marked",       value: data.not_marked,           color: "var(--pmt-text-3)", icon: <ClockCircleOutlined /> },
-          { label: "Attendance Rate",  value: `${attendance_rate}%`,     color: attendance_rate >= 80 ? "var(--pmt-success)" : "var(--pmt-warning)", icon: <CheckCircleOutlined /> },
+          { label: "Not Marked",       value: data.not_marked,           color: "var(--bms-text-3)", icon: <ClockCircleOutlined /> },
+          { label: "Attendance Rate",  value: `${attendance_rate}%`,     color: attendance_rate >= 80 ? "var(--bms-success)" : "var(--bms-warning)", icon: <CheckCircleOutlined /> },
         ].map(({ label, value, color, icon }) => (
           <Col xs={12} sm={8} lg={4} key={label}>
             <Card size="small" style={{ borderRadius: 10, textAlign: "center", borderTop: `3px solid ${color}` }}>
@@ -363,7 +363,7 @@ function AttendanceListTab({ mode, dateRange, singleDate, filters }: {
       render: (name: string, row: AttendanceRow) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{name}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{row.employee_code}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{row.employee_code}</div>
         </div>
       ),
     },
@@ -380,7 +380,7 @@ function AttendanceListTab({ mode, dateRange, singleDate, filters }: {
     { title: "Check In",  dataIndex: "check_in",      key: "check_in",      width: 90,  render: (v: string | null) => v ?? "—" },
     { title: "Check Out", dataIndex: "check_out",     key: "check_out",     width: 90,  render: (v: string | null) => v ?? "—" },
     { title: "Hours",     dataIndex: "working_hours", key: "working_hours", width: 80,  render: (v: number) => v ? `${v}h` : "—" },
-    { title: "Shift",     dataIndex: "shift_name",    key: "shift_name",    width: 120, render: (v: string | null) => v ?? <span style={{ color: "var(--pmt-text-3)" }}>No shift</span> },
+    { title: "Shift",     dataIndex: "shift_name",    key: "shift_name",    width: 120, render: (v: string | null) => v ?? <span style={{ color: "var(--bms-text-3)" }}>No shift</span> },
     ...(canManage ? [{
       title: "Action", key: "action", width: 100,
       render: (_: any, row: AttendanceRow) => (
@@ -494,8 +494,8 @@ function ShiftAssignmentPanel() {
       render: (_: any, r: EmployeeShift) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{r.employee_name}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
-          {r.department && <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{r.department}</div>}
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
+          {r.department && <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{r.department}</div>}
         </div>
       ),
     },
@@ -504,7 +504,7 @@ function ShiftAssignmentPanel() {
       render: (_: any, r: EmployeeShift) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{r.shift_name}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
             {r.start_time?.slice(0, 5)} – {r.end_time?.slice(0, 5)}
           </div>
         </div>
@@ -533,7 +533,7 @@ function ShiftAssignmentPanel() {
       title: "Effective To", dataIndex: "effective_to", key: "effective_to", width: 130,
       render: (v: string | null) => v
         ? dayjs(v).format("DD MMM YYYY")
-        : <span style={{ color: "var(--pmt-text-3)" }}>Ongoing</span>,
+        : <span style={{ color: "var(--bms-text-3)" }}>Ongoing</span>,
     },
     {
       title: "Actions", key: "actions", width: 80,
@@ -686,7 +686,7 @@ function JobTypeSchedulePanel() {
         const isToday  = d.isSame(dayjs(), "day");
         return (
           <div>
-            <div style={{ fontWeight: isToday ? 700 : 400, color: isToday ? "#1677ff" : "var(--pmt-text)" }}>
+            <div style={{ fontWeight: isToday ? 700 : 400, color: isToday ? "#1677ff" : "var(--bms-text)" }}>
               {d.format("DD MMM YYYY")}
             </div>
             {isFuture && <Tag color="blue" style={{ fontSize: 10, borderRadius: 20, padding: "0 6px", marginTop: 2 }}>Upcoming</Tag>}
@@ -701,12 +701,12 @@ function JobTypeSchedulePanel() {
         ? (
           <div>
             <div style={{ fontWeight: 600, fontSize: 13 }}>{r.shift_name}</div>
-            <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+            <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
               {r.check_in?.slice(0, 5) ?? "—"} – {r.check_out?.slice(0, 5) ?? "—"}
             </div>
           </div>
         )
-        : <span style={{ color: "var(--pmt-text-3)", fontSize: 12 }}>No shift assigned</span>,
+        : <span style={{ color: "var(--bms-text-3)", fontSize: 12 }}>No shift assigned</span>,
     },
     {
       // FIX 3: Job type shown per future date row
@@ -726,7 +726,7 @@ function JobTypeSchedulePanel() {
     {
       title: "Status", dataIndex: "status", key: "status", width: 120,
       render: (v: string | null) => {
-        if (!v) return <span style={{ color: "var(--pmt-text-3)", fontSize: 12 }}>—</span>;
+        if (!v) return <span style={{ color: "var(--bms-text-3)", fontSize: 12 }}>—</span>;
         const ss = STATUS_STYLE[v] ?? STATUS_STYLE.NOT_MARKED;
         return <Tag style={{ color: ss.color, background: ss.bg, border: `1px solid ${ss.color}33`, borderRadius: 20 }}>{ss.label}</Tag>;
       },
@@ -761,22 +761,22 @@ function JobTypeSchedulePanel() {
         {selectedEmp && (
           <div style={{
             padding: "12px 16px", borderRadius: 10, marginBottom: 16,
-            background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)",
+            background: "var(--bms-surface-2)", border: "1px solid var(--bms-border)",
             display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
           }}>
             <div>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Employee</div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--pmt-text)" }}>{selectedEmp.full_name}</div>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{selectedEmp.employee_code}</div>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Employee</div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--bms-text)" }}>{selectedEmp.full_name}</div>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{selectedEmp.employee_code}</div>
             </div>
             {selectedEmp.department && (
               <div>
-                <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Department</div>
-                <div style={{ fontSize: 13, color: "var(--pmt-text)" }}>{selectedEmp.department}</div>
+                <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Department</div>
+                <div style={{ fontSize: 13, color: "var(--bms-text)" }}>{selectedEmp.department}</div>
               </div>
             )}
             <div>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginBottom: 4 }}>Job Type</div>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)", marginBottom: 4 }}>Job Type</div>
               <Tag style={{
                 color: jobTypeColor(selectedEmp.job_type ?? selectedEmp.employment_type),
                 background: jobTypeColor(selectedEmp.job_type ?? selectedEmp.employment_type) + "18",
@@ -787,7 +787,7 @@ function JobTypeSchedulePanel() {
               </Tag>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Upcoming days this month</div>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Upcoming days this month</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "#1677ff" }}>{futureDays.length}</div>
             </div>
           </div>
@@ -885,7 +885,7 @@ function WFHSettingsPanel() {
           </div>
           <div>
             <div style={{ fontWeight: 600, fontSize: 13 }}>{r.employee_name}</div>
-            <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>
+            <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>
               {r.employee_code}
             </div>
           </div>
@@ -897,7 +897,7 @@ function WFHSettingsPanel() {
       dataIndex: "department",
       key: "department",
       width: 160,
-      render: (v: string) => v || <span style={{ color: "var(--pmt-text-3)" }}>—</span>,
+      render: (v: string) => v || <span style={{ color: "var(--bms-text-3)" }}>—</span>,
     },
     {
       title: "Updated By",
@@ -905,7 +905,7 @@ function WFHSettingsPanel() {
       key: "updated_by",
       width: 140,
       render: (v: string | null) => (
-        <span style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v ?? "—"}</span>
+        <span style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v ?? "—"}</span>
       ),
     },
     {
@@ -923,15 +923,15 @@ function WFHSettingsPanel() {
             unCheckedChildren="Blocked"
             loading={toggleMutation.isPending}
             style={{
-              background: r.wfh_enabled ? "var(--pmt-primary)" : undefined,
+              background: r.wfh_enabled ? "var(--bms-primary)" : undefined,
             }}
           />
           {r.wfh_enabled ? (
-            <span style={{ fontSize: 11, color: "var(--pmt-primary)", fontWeight: 600 }}>
+            <span style={{ fontSize: 11, color: "var(--bms-primary)", fontWeight: 600 }}>
               Can request WFH
             </span>
           ) : (
-            <span style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+            <span style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
               Office only
             </span>
           )}
@@ -948,21 +948,21 @@ function WFHSettingsPanel() {
           {
             label: "WFH Allowed",
             value: enabledCount,
-            color: "var(--pmt-primary)",
+            color: "var(--bms-primary)",
             icon: <HomeOutlined />,
             desc: "Employees who can request WFH",
           },
           {
             label: "Office Only",
             value: disabledCount,
-            color: "var(--pmt-text-3)",
+            color: "var(--bms-text-3)",
             icon: <UserOutlined />,
             desc: "Employees restricted to office",
           },
           {
             label: "Total Employees",
             value: settings.length,
-            color: "var(--pmt-primary)",
+            color: "var(--bms-primary)",
             icon: <TeamOutlined />,
             desc: "In this view",
           },
@@ -974,8 +974,8 @@ function WFHSettingsPanel() {
             >
               <div style={{ color, fontSize: 20, marginBottom: 4 }}>{icon}</div>
               <div style={{ fontSize: 26, fontWeight: 700, color }}>{value}</div>
-              <div style={{ fontSize: 12, color: "var(--pmt-text-2)", fontWeight: 600 }}>{label}</div>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginTop: 2 }}>{desc}</div>
+              <div style={{ fontSize: 12, color: "var(--bms-text-2)", fontWeight: 600 }}>{label}</div>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)", marginTop: 2 }}>{desc}</div>
             </Card>
           </Col>
         ))}
@@ -986,7 +986,7 @@ function WFHSettingsPanel() {
         <Space wrap>
           <Input
             placeholder="Search employee name or code..."
-            prefix={<UserOutlined style={{ color: "var(--pmt-text-3)" }} />}
+            prefix={<UserOutlined style={{ color: "var(--bms-text-3)" }} />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             allowClear
@@ -1108,11 +1108,11 @@ function HRRequestsPanel() {
   };
 
   const actionBtns = (id: string, type: "wfh" | "shift", currentStatus: string) => {
-    if (currentStatus !== "PENDING") return <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>—</Text>;
+    if (currentStatus !== "PENDING") return <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>—</Text>;
     return (
       <Space>
         <Button size="small" type="primary" icon={<CheckCircleOutlined />} loading={reviewMut.isPending}
-          style={{ background: "var(--pmt-success)", borderColor: "var(--pmt-success)" }}
+          style={{ background: "var(--bms-success)", borderColor: "var(--bms-success)" }}
           onClick={() => reviewMut.mutate({ id, type, action: "APPROVE" })}>
           Approve
         </Button>
@@ -1130,23 +1130,23 @@ function HRRequestsPanel() {
   const wfhCols = [
     { title: "Employee", key: "employee", render: (_: any, r: any) => (
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <Avatar size={34} style={{ background: "var(--pmt-primary)", fontWeight: 700 }}>{r.employee_name?.slice(0, 1).toUpperCase()}</Avatar>
+        <Avatar size={34} style={{ background: "var(--bms-primary)", fontWeight: 700 }}>{r.employee_name?.slice(0, 1).toUpperCase()}</Avatar>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 13, color: "var(--pmt-text)" }}>{r.employee_name}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{r.department}</div>
+          <div style={{ fontWeight: 600, fontSize: 13, color: "var(--bms-text)" }}>{r.employee_name}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{r.department}</div>
         </div>
       </div>
     )},
     { title: "WFH Date", dataIndex: "requested_date", key: "date", width: 130,
       render: (v: string) => <Tag color="blue">{dayjs(v).format("DD MMM YYYY")}</Tag> },
     { title: "Reason", dataIndex: "reason", key: "reason", ellipsis: true,
-      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text> },
+      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text> },
     { title: "Status", dataIndex: "status", key: "status", width: 110, render: (v: string) => statusPill(v) },
     { title: "Submitted", dataIndex: "created_at", key: "created_at", width: 140,
-      render: (v: string) => <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{dayjs(v).format("DD MMM, HH:mm")}</Text> },
+      render: (v: string) => <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{dayjs(v).format("DD MMM, HH:mm")}</Text> },
     { title: "Rejection Note", dataIndex: "rejection_note", key: "note", width: 160, ellipsis: true,
-      render: (v: string) => v ? <Text style={{ fontSize: 12, color: "var(--pmt-danger)" }}>{v}</Text> : "—" },
+      render: (v: string) => v ? <Text style={{ fontSize: 12, color: "var(--bms-danger)" }}>{v}</Text> : "—" },
     { title: "Action", key: "action", width: 170, render: (_: any, r: any) => actionBtns(r.id, "wfh", r.status) },
   ];
 
@@ -1155,22 +1155,22 @@ function HRRequestsPanel() {
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <Avatar size={34} style={{ background: "#7c3aed", fontWeight: 700 }}>{r.employee_name?.slice(0, 1).toUpperCase()}</Avatar>
         <div>
-          <div style={{ fontWeight: 600, fontSize: 13, color: "var(--pmt-text)" }}>{r.employee_name}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
+          <div style={{ fontWeight: 600, fontSize: 13, color: "var(--bms-text)" }}>{r.employee_name}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
         </div>
       </div>
     )},
     { title: "Type", dataIndex: "request_type", key: "type", width: 120,
       render: (v: string) => <Tag color={v === "PERMANENT" ? "purple" : "blue"}>{v}</Tag> },
     { title: "Date", dataIndex: "requested_date", key: "date", width: 120,
-      render: (v: string | null) => v ? dayjs(v).format("DD MMM YYYY") : <Text style={{ color: "var(--pmt-text-3)" }}>Permanent</Text> },
+      render: (v: string | null) => v ? dayjs(v).format("DD MMM YYYY") : <Text style={{ color: "var(--bms-text-3)" }}>Permanent</Text> },
     { title: "Requested Shift", dataIndex: "shift_name", key: "shift", width: 160,
       render: (v: string | null) => v ?? "—" },
     { title: "Reason", dataIndex: "reason", key: "reason", ellipsis: true,
-      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text> },
+      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text> },
     { title: "Status", dataIndex: "status", key: "status", width: 110, render: (v: string) => statusPill(v) },
     { title: "Rejection Note", dataIndex: "rejection_note", key: "note", width: 160, ellipsis: true,
-      render: (v: string) => v ? <Text style={{ fontSize: 12, color: "var(--pmt-danger)" }}>{v}</Text> : "—" },
+      render: (v: string) => v ? <Text style={{ fontSize: 12, color: "var(--bms-danger)" }}>{v}</Text> : "—" },
     { title: "Action", key: "action", width: 170, render: (_: any, r: any) => actionBtns(r.id, "shift", r.status) },
   ];
 
@@ -1178,9 +1178,9 @@ function HRRequestsPanel() {
     <div>
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         {[
-          { label: "Pending WFH",          value: wfhPending,                color: "var(--pmt-primary)", icon: <HomeOutlined /> },
+          { label: "Pending WFH",          value: wfhPending,                color: "var(--bms-primary)", icon: <HomeOutlined /> },
           { label: "Pending Shift Changes", value: shiftPending,              color: "#7c3aed", icon: <ScheduleOutlined /> },
-          { label: "Total Pending",         value: wfhPending + shiftPending, color: "var(--pmt-warning)", icon: <ExclamationCircleOutlined /> },
+          { label: "Total Pending",         value: wfhPending + shiftPending, color: "var(--bms-warning)", icon: <ExclamationCircleOutlined /> },
         ].map(({ label, value, color, icon }) => (
           <Col xs={24} sm={8} key={label}>
             <Card size="small" style={{ borderRadius: 10, textAlign: "center", borderTop: `3px solid ${color}` }}>
@@ -1234,14 +1234,14 @@ function HRRequestsPanel() {
       />
 
       <Modal
-        title={<span><ExclamationCircleOutlined style={{ color: "var(--pmt-danger)", marginRight: 8 }} />Reject Request</span>}
+        title={<span><ExclamationCircleOutlined style={{ color: "var(--bms-danger)", marginRight: 8 }} />Reject Request</span>}
         open={!!rejectTarget}
         onCancel={() => { setRejectTarget(null); setRejectNote(""); }}
         onOk={() => rejectTarget && reviewMut.mutate({ ...rejectTarget, action: "REJECT", note: rejectNote })}
         okText="Reject" okButtonProps={{ danger: true, loading: reviewMut.isPending }}
         destroyOnClose
       >
-        <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>Provide a reason (visible to employee):</Text>
+        <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>Provide a reason (visible to employee):</Text>
         <Input.TextArea rows={3} value={rejectNote} onChange={(e) => setRejectNote(e.target.value)}
           placeholder="e.g. Insufficient notice, team meeting required..." style={{ marginTop: 10 }} />
       </Modal>
@@ -1331,7 +1331,7 @@ function EmployeeAttendanceDrawer({ open, empId, selDate, onClose }: {
       </div>
       <div>
         <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.2 }}>{data.employee.full_name}</div>
-        <div style={{ fontSize: 12, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{data.employee.employee_code}</div>
+        <div style={{ fontSize: 12, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{data.employee.employee_code}</div>
       </div>
       <Tag style={{ marginLeft: "auto", marginRight: 0 }}>{selDate.format("DD MMM YYYY")}</Tag>
     </div>
@@ -1371,16 +1371,16 @@ function EmployeeAttendanceDrawer({ open, empId, selDate, onClose }: {
                       <Card size="small" style={{ borderRadius: 10, textAlign: "center", padding: 0 }}>
                         <div style={{ color, fontSize: 16, marginBottom: 2 }}>{icon}</div>
                         <div style={{ fontSize: 16, fontWeight: 700, color }}>{value}</div>
-                        <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{label}</div>
+                        <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>{label}</div>
                       </Card>
                     </Col>
                   ))}
                 </Row>
                 <Divider style={{ margin: "12px 0" }} />
-                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 12, color: "var(--pmt-text)" }}>Day Timeline</div>
+                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 12, color: "var(--bms-text)" }}>Day Timeline</div>
                 {data.events.length === 0 ? <Empty description="No events recorded" image={Empty.PRESENTED_IMAGE_SIMPLE} /> : (
                   <div style={{ position: "relative", paddingLeft: 28 }}>
-                    <div style={{ position: "absolute", left: 9, top: 8, bottom: 8, width: 2, background: "var(--pmt-border)" }} />
+                    <div style={{ position: "absolute", left: 9, top: 8, bottom: 8, width: 2, background: "var(--bms-border)" }} />
                     {data.events.map((ev, idx) => {
                       const meta = EVENT_META[ev.type] ?? EVENT_META.CHECK_IN;
                       return (
@@ -1391,13 +1391,13 @@ function EmployeeAttendanceDrawer({ open, empId, selDate, onClose }: {
                           <div style={{ background: meta.bg, borderRadius: 8, padding: "7px 11px", border: `1px solid ${meta.color}22` }}>
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <Text strong style={{ fontSize: 12, color: meta.color }}>{ev.label}</Text>
-                              <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{ev.time}</Text>
+                              <Text style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{ev.time}</Text>
                             </div>
-                            {ev.duration_minutes != null && <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Duration: {ev.duration_minutes} min</Text>}
+                            {ev.duration_minutes != null && <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Duration: {ev.duration_minutes} min</Text>}
                             {ev.lat != null && ev.lng != null && (
                               <div style={{ marginTop: 3, display: "flex", alignItems: "center", gap: 4 }}>
-                                <EnvironmentOutlined style={{ fontSize: 10, color: "var(--pmt-text-3)" }} />
-                                <Text style={{ fontSize: 10, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{ev.lat.toFixed(5)}, {ev.lng.toFixed(5)}</Text>
+                                <EnvironmentOutlined style={{ fontSize: 10, color: "var(--bms-text-3)" }} />
+                                <Text style={{ fontSize: 10, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{ev.lat.toFixed(5)}, {ev.lng.toFixed(5)}</Text>
                               </div>
                             )}
                           </div>
@@ -1409,7 +1409,7 @@ function EmployeeAttendanceDrawer({ open, empId, selDate, onClose }: {
                 {mapPoints.length > 0 && (
                   <>
                     <Divider style={{ margin: "12px 0" }} />
-                    <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, color: "var(--pmt-text)", display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10, color: "var(--bms-text)", display: "flex", alignItems: "center", gap: 6 }}>
                       <EnvironmentOutlined style={{ color: "#1677ff" }} /> Location Track
                     </div>
                     <MapErrorBoundary>
@@ -1421,9 +1421,9 @@ function EmployeeAttendanceDrawer({ open, empId, selDate, onClose }: {
                       {mapPoints.map((p) => (
                         <div key={p.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div style={{ width: 8, height: 8, borderRadius: "50%", background: p.color, flexShrink: 0 }} />
-                          <Text style={{ fontSize: 12, color: "var(--pmt-text)", minWidth: 36 }}>{p.label}</Text>
-                          {p.time && <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{p.time}</Text>}
-                          <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{p.lat.toFixed(5)}, {p.lng.toFixed(5)}</Text>
+                          <Text style={{ fontSize: 12, color: "var(--bms-text)", minWidth: 36 }}>{p.label}</Text>
+                          {p.time && <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{p.time}</Text>}
+                          <Text style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{p.lat.toFixed(5)}, {p.lng.toFixed(5)}</Text>
                         </div>
                       ))}
                     </div>

@@ -71,8 +71,8 @@ function CommentCard({
   return (
     <div
       style={{
-        background: comment.is_pinned ? "var(--pmt-primary-light)" : "var(--pmt-surface-2)",
-        border: `1px solid ${comment.is_pinned ? "var(--pmt-primary)" : "var(--pmt-border)"}`,
+        background: comment.is_pinned ? "var(--bms-primary-light)" : "var(--bms-surface-2)",
+        border: `1px solid ${comment.is_pinned ? "var(--bms-primary)" : "var(--bms-border)"}`,
         borderRadius: 12,
         padding: "14px 16px",
         marginBottom: 12,
@@ -83,7 +83,7 @@ function CommentCard({
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <Space size={8}>
-          <Avatar size={28} icon={<UserOutlined />} style={{ background: "var(--pmt-primary)" }} />
+          <Avatar size={28} icon={<UserOutlined />} style={{ background: "var(--bms-primary)" }} />
           <div>
             <Text strong style={{ fontSize: 13 }}>{comment.created_by_name}</Text>
             <Text type="secondary" style={{ fontSize: 11, marginLeft: 8 }}>
@@ -275,13 +275,13 @@ export default function ProjectCommentsDrawer({
       onClose={onClose}
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <CommentOutlined style={{ color: "var(--pmt-primary)", fontSize: 18 }} />
+          <CommentOutlined style={{ color: "var(--bms-primary)", fontSize: 18 }} />
           <div>
             <div style={{ fontWeight: 600, fontSize: 14 }}>
               Project Comments
             </div>
-            <div style={{ fontSize: 11, color: "var(--pmt-text-2)", fontWeight: 400 }}>
-              <code style={{ color: "var(--pmt-primary)", background: "var(--pmt-primary-light)", padding: "1px 5px", borderRadius: 4, fontSize: 10 }}>
+            <div style={{ fontSize: 11, color: "var(--bms-text-2)", fontWeight: 400 }}>
+              <code style={{ color: "var(--bms-primary)", background: "var(--bms-primary-light)", padding: "1px 5px", borderRadius: 4, fontSize: 10 }}>
                 {projectCode}
               </code>
               {" "}{projectName}
@@ -314,7 +314,7 @@ export default function ProjectCommentsDrawer({
                 <Button
                   type="text"
                   size="small"
-                  icon={pinNew ? <PushpinFilled style={{ color: "var(--pmt-primary)" }} /> : <PushpinOutlined />}
+                  icon={pinNew ? <PushpinFilled style={{ color: "var(--bms-primary)" }} /> : <PushpinOutlined />}
                   onClick={() => setPinNew((v) => !v)}
                 >
                   {pinNew ? "Pinned" : "Pin"}

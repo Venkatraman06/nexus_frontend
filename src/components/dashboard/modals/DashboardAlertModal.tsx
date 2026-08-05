@@ -44,7 +44,7 @@ export default function DashboardAlertModal({
       title: "Project", key: "name", ellipsis: true,
       render: (_: unknown, r) => (
         <div>
-          <code style={{ fontSize: 11, color: "var(--pmt-primary)", marginRight: 6 }}>{r.code}</code>
+          <code style={{ fontSize: 11, color: "var(--bms-primary)", marginRight: 6 }}>{r.code}</code>
           <Text strong style={{ fontSize: 13 }}>{r.name}</Text>
         </div>
       ),
@@ -53,7 +53,7 @@ export default function DashboardAlertModal({
       title: "Due", key: "due", width: 110,
       render: (_: unknown, r) => {
         if (r.days_left == null) return "—";
-        const color = r.days_left < 0 ? "var(--pmt-danger)" : r.days_left < 14 ? "var(--pmt-warning)" : "inherit";
+        const color = r.days_left < 0 ? "var(--bms-danger)" : r.days_left < 14 ? "var(--bms-warning)" : "inherit";
         return (
           <span style={{ fontSize: 12, color }}>
             {r.days_left < 0 ? `${Math.abs(r.days_left)}d overdue` : `${r.days_left}d left`}
@@ -101,7 +101,7 @@ export default function DashboardAlertModal({
           title: "Ticket", key: "ticket", ellipsis: true,
           render: (_: unknown, r) => (
             <div>
-              <code style={{ fontSize: 11, color: "var(--pmt-primary)", marginRight: 6 }}>{r.ticket_id as string}</code>
+              <code style={{ fontSize: 11, color: "var(--bms-primary)", marginRight: 6 }}>{r.ticket_id as string}</code>
               <Text style={{ fontSize: 13 }}>{r.title as string}</Text>
             </div>
           ),
@@ -204,7 +204,7 @@ export default function DashboardAlertModal({
       ];
       footerExtra = (
         <Text type="secondary" style={{ fontSize: 12, display: "block", marginTop: 8 }}>
-          Acknowledging forwards the request to the employee&apos;s reporting manager for final approval.
+          Review and respond to pending leave requests from your reporting line.
         </Text>
       );
       onRow = undefined;

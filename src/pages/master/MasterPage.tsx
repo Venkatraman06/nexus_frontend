@@ -11,7 +11,9 @@ import {
   CheckOutlined, CloseOutlined, ApartmentOutlined, ClockCircleOutlined,
   ArrowRightOutlined, TeamOutlined, SaveOutlined, LockOutlined, UnlockOutlined,
   CalendarOutlined, CheckCircleOutlined, InfoCircleOutlined,
-  SettingOutlined, ThunderboltOutlined,
+  SettingOutlined, ThunderboltOutlined, UserOutlined, MailOutlined,
+  IdcardOutlined, SafetyCertificateOutlined, SendOutlined, FileProtectOutlined,
+  DollarCircleOutlined, AuditOutlined,
 } from "@ant-design/icons";
 import {
   ReactFlow, Background, Controls, MiniMap,
@@ -28,9 +30,10 @@ import {
 import {
   designationApi, departmentApi, locationApi, employmentTypeApi,
   shiftCategoryApi, rateCardApi, clientCategoryApi, businessTypeApi, billingTypeApi,
-  leaveTypeApi, holidayApi,
-  type MasterItem, type ShiftCategoryItem, type RateCardItem, type BusinessTypeItem,
+  leaveTypeApi, holidayApi, followupTypeApi, reimbursementConfigApi,
+  type MasterItem, type ShiftCategoryItem, type RateCardItem, type BusinessTypeItem, type ReimbursementConfigItem,
 } from "@/services/master";
+import { employeeApi } from "@/services/employees";
 import dayjs from "dayjs";
 import { apiErrorMsg } from "@/utils/apiError";
 import { get, post, patch } from "@/services/api";
@@ -42,6 +45,7 @@ import type { ReactNode } from "react";
 import ActiveStatusSwitch from "@/components/common/ActiveStatusSwitch";
 import MasterHub from "./MasterHub";
 import { MASTER_TAB_PERMISSIONS, getMasterItemDef } from "./masterConfig";
+import ExpensesPage from "@/pages/expenses/ExpensesPage";
 import "./master.css";
 
 const { Text, Title } = Typography;
@@ -275,7 +279,7 @@ function ShiftCategoryTable() {
       <Row gutter={[12, 12]}>
         {SHIFT_PRESETS.map((p) => (
           <Col key={p.label} xs={24} sm={12} md={8} lg={6}>
-            <div style={{ border: "1px solid var(--pmt-border)", borderRadius: 10, padding: "14px 16px", cursor: "default", background: "var(--pmt-surface)", boxShadow: "var(--shadow-sm)" }}>
+            <div style={{ border: "1px solid var(--bms-border)", borderRadius: 10, padding: "14px 16px", cursor: "default", background: "var(--bms-surface)", boxShadow: "var(--shadow-sm)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
@@ -284,7 +288,7 @@ function ShiftCategoryTable() {
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
                     <Tag color="blue" style={{ margin: 0 }}>{dayjs(p.start, "HH:mm:ss").format("hh:mm A")}</Tag>
-                    <span style={{ color: "var(--pmt-text-3)", fontSize: 12 }}>→</span>
+                    <span style={{ color: "var(--bms-text-3)", fontSize: 12 }}>→</span>
                     <Tag color="purple" style={{ margin: 0 }}>{dayjs(p.end, "HH:mm:ss").format("hh:mm A")}</Tag>
                     <Tag color="green" style={{ margin: 0 }}>9h</Tag>
                   </div>
@@ -315,7 +319,7 @@ function ShiftCategoryTable() {
     if (diff < 0) diff += 24 * 60; // handle overnight shifts (end time is next day)
     const h = Math.floor(diff / 60); const m = diff % 60;
     const ok = h === 9 && m === 0;
-    return <div style={{ marginBottom: 16, padding: "8px 12px", background: ok ? "color-mix(in srgb, var(--pmt-success) 15%, var(--pmt-surface))" : "color-mix(in srgb, var(--pmt-warning) 15%, var(--pmt-surface))", borderRadius: 8, border: `1px solid ${ok ? "var(--pmt-success)" : "var(--pmt-warning)"}` }}><Text style={{ color: ok ? "var(--pmt-success)" : "var(--pmt-warning)", fontWeight: 600 }}>Duration: {h}h{m > 0 ? ` ${m}m` : ""} {ok ? "✓ Valid (9h)" : "⚠ Must be exactly 9 hours"}</Text></div>;
+    return <div style={{ marginBottom: 16, padding: "8px 12px", background: ok ? "color-mix(in srgb, var(--bms-success) 15%, var(--bms-surface))" : "color-mix(in srgb, var(--bms-warning) 15%, var(--bms-surface))", borderRadius: 8, border: `1px solid ${ok ? "var(--bms-success)" : "var(--bms-warning)"}` }}><Text style={{ color: ok ? "var(--bms-success)" : "var(--bms-warning)", fontWeight: 600 }}>Duration: {h}h{m > 0 ? ` ${m}m` : ""} {ok ? "✓ Valid (9h)" : "⚠ Must be exactly 9 hours"}</Text></div>;
   }}
 </Form.Item>
           <Form.Item name="is_active" label="Status" valuePropName="checked" initialValue={true}><Switch checkedChildren="Active" unCheckedChildren="Inactive" /></Form.Item>
@@ -384,7 +388,7 @@ function RateCardTable() {
         <Text className="master-panel-toolbar-title"><strong>{rows.length}</strong> rate card{rows.length === 1 ? "" : "s"}{isError && <Tag color="error" style={{ marginLeft: 8 }}>API error</Tag>}</Text>
         {canCreate && <Button type="primary" icon={<PlusOutlined />} onClick={openAdd}>Add Rate Card</Button>}
       </div>
-      <div className="master-panel-section" style={{ marginBottom: 0, background: "color-mix(in srgb, var(--pmt-success) 15%, var(--pmt-surface))", borderColor: "var(--pmt-success)", fontSize: 12, color: "var(--pmt-success)" }}>
+      <div className="master-panel-section" style={{ marginBottom: 0, background: "color-mix(in srgb, var(--bms-success) 15%, var(--bms-surface))", borderColor: "var(--bms-success)", fontSize: 12, color: "var(--bms-success)" }}>
         <strong>Daily rates</strong> — HR Daily Rate = company cost per working day | Client Billing Rate = amount billed to client per day | Monthly estimates based on 22 working days
       </div>
       <Table dataSource={rows} columns={columns} rowKey="id" loading={isLoading} size="middle" pagination={{ pageSize: 20, showTotal: (t, r) => `Showing ${r[0]}-${r[1]} of ${t}` }} />
@@ -449,7 +453,7 @@ function BusinessTypeTable() {
   ];
   return (
     <>
-      <div className="master-panel-section" style={{ background: "color-mix(in srgb, var(--pmt-primary) 15%, var(--pmt-surface))", borderColor: "var(--pmt-primary)", fontSize: 12, color: "var(--pmt-primary)" }}>
+      <div className="master-panel-section" style={{ background: "color-mix(in srgb, var(--bms-primary) 15%, var(--bms-surface))", borderColor: "var(--bms-primary)", fontSize: 12, color: "var(--bms-primary)" }}>
         <strong>Code Prefix</strong> — Each type carries a short prefix (e.g. <code>PRJ</code>, <code>TRN</code>). Project codes are auto-generated as <code>PREFIX-YY####</code>.
       </div>
       <div className="master-panel-toolbar">
@@ -597,7 +601,7 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
       while (cells.length % 7 !== 0) cells.push(null);
 
       return (
-        <div style={{ border: "1px solid var(--pmt-border)", borderRadius: 10, overflow: "hidden", marginBottom: 16 }}>
+        <div style={{ border: "1px solid var(--bms-border)", borderRadius: 10, overflow: "hidden", marginBottom: 16 }}>
           {/* Month header */}
           <div style={{ background: "#1677ff", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <Text style={{ color: "#fff", fontWeight: 700, fontSize: 14 }}>{firstDay.format("MMMM YYYY")}</Text>
@@ -611,7 +615,7 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
             </div>
           </div>
           {/* Day labels */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#f8fafc", borderBottom: "1px solid var(--pmt-border)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#f8fafc", borderBottom: "1px solid var(--bms-border)" }}>
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
               <div key={d} style={{ textAlign: "center", padding: "6px 0", fontSize: 11, fontWeight: 600, color: "#6b7280" }}>{d}</div>
             ))}
@@ -631,9 +635,9 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
                   <div style={{
                     minHeight: 44,
                     padding: "4px 6px",
-                    borderRight: idx % 7 !== 6 ? "1px solid var(--pmt-border)" : "none",
-                    borderBottom: idx < cells.length - 7 ? "1px solid var(--pmt-border)" : "none",
-                    background: isGovt ? '#059669' : isCompany ? '#f59e0b' : isWeekend ? '#25bdc2' : 'var(--pmt-surface)',
+                    borderRight: idx % 7 !== 6 ? "1px solid var(--bms-border)" : "none",
+                    borderBottom: idx < cells.length - 7 ? "1px solid var(--bms-border)" : "none",
+                    background: isGovt ? '#059669' : isCompany ? '#f59e0b' : isWeekend ? '#25bdc2' : 'var(--bms-surface)',
                     cursor: holiday ? "pointer" : "default",
                     transition: "background 0.1s",
                   }}
@@ -643,7 +647,7 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
                       <>
                         <div style={{
                           fontSize: 12, fontWeight: holiday ? 700 : 400,
-                          color: isGovt ? '#fff' : isCompany ? '#fff' : isWeekend ? '#1d1f24' : 'var(--pmt-text)'
+                          color: isGovt ? '#fff' : isCompany ? '#fff' : isWeekend ? '#1d1f24' : 'var(--bms-text)'
                         }}>
                           {day}
                         </div>
@@ -678,10 +682,10 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
           ].map(({ color, border, text }) => (
             <div key={text} style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <div style={{ width: 14, height: 14, borderRadius: 3, background: color, border: `1.5px solid ${border}` }} />
-              <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{text}</Text>
+              <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{text}</Text>
             </div>
           ))}
-          <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", marginLeft: "auto" }}>Click a holiday to edit</Text>
+          <Text style={{ fontSize: 11, color: "var(--bms-text-3)", marginLeft: "auto" }}>Click a holiday to edit</Text>
         </div>
 
         {/* Single month nav (calendar mode) */}
@@ -715,7 +719,7 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
         </div>
         <Space wrap>
           {/* View toggle */}
-          <div style={{ display: "flex", border: "1px solid var(--pmt-border)", borderRadius: 6, overflow: "hidden" }}>
+          <div style={{ display: "flex", border: "1px solid var(--bms-border)", borderRadius: 6, overflow: "hidden" }}>
             {([
               { key: "table",    label: "☰ List"       },
               { key: "calendar", label: "🗓 Month"      },
@@ -725,9 +729,9 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
                 onClick={() => setViewMode(key)}
                 style={{
                   padding: "4px 12px", border: "none", cursor: "pointer", fontSize: 12,
-                  background: viewMode === key ? "#1677ff" : "var(--pmt-surface-2)",
-                  color: viewMode === key ? "#fff" : "var(--pmt-text-2)",
-                  borderRight: key !== "year" ? "1px solid var(--pmt-border)" : "none",
+                  background: viewMode === key ? "#1677ff" : "var(--bms-surface-2)",
+                  color: viewMode === key ? "#fff" : "var(--bms-text-2)",
+                  borderRight: key !== "year" ? "1px solid var(--bms-border)" : "none",
                 }}
               >
                 {label}
@@ -751,7 +755,7 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
         </Space>
       </div>
 
-      <div className="master-panel-section" style={{ background: "color-mix(in srgb, var(--pmt-warning) 15%, var(--pmt-surface))", borderColor: "var(--pmt-warning)", fontSize: 12, color: "var(--pmt-warning)" }}>
+      <div className="master-panel-section" style={{ background: "color-mix(in srgb, var(--bms-warning) 15%, var(--bms-surface))", borderColor: "var(--bms-warning)", fontSize: 12, color: "var(--bms-warning)" }}>
         <strong>Holiday Policy</strong> — Government holidays are national/state holidays. Company holidays are org-specific offs.
         These dates will be marked as <strong>HOLIDAY</strong> in employee attendance calendars.
       </div>
@@ -781,10 +785,10 @@ const companyCount = allDisplayed.filter((h) => h.holiday_type === "COMPANY").le
       {isLoading ? (
         <div style={{ textAlign: "center", padding: 60 }}><Spin size="large" /></div>
       ) : rows.length === 0 && viewMode === "table" ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", border: "2px dashed var(--pmt-border)", borderRadius: 12, background: "var(--pmt-surface-2)" }}>
+        <div style={{ textAlign: "center", padding: "60px 20px", border: "2px dashed var(--bms-border)", borderRadius: 12, background: "var(--bms-surface-2)" }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>🗓️</div>
-          <Title level={5} style={{ color: "var(--pmt-text)", marginBottom: 8 }}>No holidays configured for {year}</Title>
-          <Text style={{ color: "var(--pmt-text-3)", fontSize: 13, display: "block", marginBottom: 20 }}>
+          <Title level={5} style={{ color: "var(--bms-text)", marginBottom: 8 }}>No holidays configured for {year}</Title>
+          <Text style={{ color: "var(--bms-text-3)", fontSize: 13, display: "block", marginBottom: 20 }}>
             Add holidays manually or import government holidays.
           </Text>
           <Space wrap style={{ justifyContent: "center" }}>
@@ -1045,15 +1049,15 @@ function WorkflowTab({ appLabel, model, contentTypeId }: { appLabel: string; mod
           onInit={(instance) => { reactFlowRef.current = instance; }}
           defaultEdgeOptions={{ type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed } }}
           connectionLineStyle={{ stroke: "#1677ff", strokeWidth: 2 }}
-          style={{ background: "var(--pmt-surface-2)" }}
+          style={{ background: "var(--bms-surface-2)" }}
         >
-          <Background gap={18} color="var(--pmt-border)" /><Controls /><MiniMap nodeColor={(n) => n.type === "startNode" ? "#059669" : ((n.data as any)?.color ?? "#6B7280")} nodeStrokeWidth={0} />
+          <Background gap={18} color="var(--bms-border)" /><Controls /><MiniMap nodeColor={(n) => n.type === "startNode" ? "#059669" : ((n.data as any)?.color ?? "#6B7280")} nodeStrokeWidth={0} />
         </ReactFlow>
       </div>
       {selectedTrans && (
         <div className="master-workflow-groups">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <div><div style={{ fontSize: 13, fontWeight: 700, color: "var(--pmt-text)" }}>Assign Groups</div><div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginTop: 2 }}>{selectedTrans.source_state_detail?.name} → {selectedTrans.destination_state_detail?.name}</div></div>
+            <div><div style={{ fontSize: 13, fontWeight: 700, color: "var(--bms-text)" }}>Assign Groups</div><div style={{ fontSize: 11, color: "var(--bms-text-3)", marginTop: 2 }}>{selectedTrans.source_state_detail?.name} → {selectedTrans.destination_state_detail?.name}</div></div>
             <button onClick={() => setSelectedTrans(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: "#9ca3af", padding: 2 }}>×</button>
           </div>
           <Input size="small" placeholder="Search groups…" value={groupSearch} onChange={(e) => setGroupSearch(e.target.value)} style={{ marginBottom: 8, borderRadius: 6 }} />
@@ -1105,6 +1109,404 @@ function WorkflowTab({ appLabel, model, contentTypeId }: { appLabel: string; mod
   );
 }
 
+// ── Reimbursement Config — Premium Singleton UI ────────────────────────────
+function ReimbursementConfigTable() {
+  const queryClient = useQueryClient();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form] = Form.useForm();
+
+  const { data: config, isLoading } = useQuery({
+    queryKey: ["master-reimbursement-config"],
+    queryFn: () => reimbursementConfigApi.get(),
+  });
+
+  const isConfigured = config?.is_configured === true;
+
+  const { data: employeesData } = useQuery({
+    queryKey: ["employees-dropdown"],
+    queryFn: () => employeeApi.list({ page_size: 200 }),
+  });
+  const employeesList = Array.isArray(employeesData)
+    ? employeesData
+    : employeesData?.results ?? [];
+
+  const saveMut = useMutation({
+    mutationFn: (approver_id: string) => reimbursementConfigApi.set(approver_id),
+    onSuccess: () => {
+      message.success("Approver configured successfully");
+      queryClient.invalidateQueries({ queryKey: ["master-reimbursement-config"] });
+      setModalOpen(false);
+      form.resetFields();
+    },
+    onError: (err: any) => message.error(apiErrorMsg(err, "Failed to save configuration")),
+  });
+
+  const openModal = () => {
+    if (isConfigured && config?.approver_id) {
+      form.setFieldsValue({ approver: config.approver_id });
+    } else {
+      form.resetFields();
+    }
+    setModalOpen(true);
+  };
+
+  const onFinish = (vals: { approver: string }) => saveMut.mutate(vals.approver);
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: 60, textAlign: "center" }}>
+        <Spin size="large" />
+        <div style={{ marginTop: 12, color: "#888", fontSize: 13 }}>Loading configuration…</div>
+      </div>
+    );
+  }
+
+  const WORKFLOW_STEPS = [
+    { icon: <SendOutlined />,          label: "Employee Submits",   desc: "Claim raised",        color: "#6366f1" },
+    { icon: <AuditOutlined />,         label: "Approver Reviews",   desc: "Checks receipts",     color: "#8b5cf6" },
+    { icon: <SafetyCertificateOutlined />, label: "Approved / Rejected", desc: "Decision made",  color: "#0ea5e9" },
+    { icon: <FileProtectOutlined />,   label: "Expense Created",    desc: "Auto-generated",      color: "#10b981" },
+    { icon: <DollarCircleOutlined />,  label: "Claim Paid Out",     desc: "Mark as Paid",        color: "#f59e0b" },
+  ];
+
+  return (
+    <div>
+      {/* ── Hero Banner ─────────────────────────────────────────────── */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+          borderRadius: 16,
+          padding: "28px 32px",
+          marginBottom: 28,
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Decorative blobs */}
+        <div style={{
+          position: "absolute", top: -30, right: -30, width: 120, height: 120,
+          borderRadius: "50%", background: "rgba(255,255,255,0.08)",
+        }} />
+        <div style={{
+          position: "absolute", bottom: -20, right: 80, width: 80, height: 80,
+          borderRadius: "50%", background: "rgba(255,255,255,0.06)",
+        }} />
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "rgba(255,255,255,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <SafetyCertificateOutlined style={{ color: "#fff", fontSize: 18 }} />
+            </div>
+            <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 600, letterSpacing: 1.2, textTransform: "uppercase" }}>
+              Reimbursement Workflow
+            </span>
+          </div>
+          <Title level={3} style={{ color: "#fff", margin: 0, fontWeight: 700 }}>
+            Approval Configuration
+          </Title>
+          <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 14, display: "block", marginTop: 6 }}>
+            Designate the single employee who reviews and approves all employee reimbursement claims.
+            On approval, a Company Expense is automatically created.
+          </Text>
+        </div>
+      </div>
+
+      {/* ── Workflow Pipeline ────────────────────────────────────────── */}
+      <div style={{ marginBottom: 28 }}>
+        <Text strong style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 14, letterSpacing: 0.5, textTransform: "uppercase" }}>
+          Workflow Pipeline
+        </Text>
+        <div style={{ display: "flex", alignItems: "center", gap: 0, flexWrap: "wrap" }}>
+          {WORKFLOW_STEPS.map((step, i) => (
+            <>
+              <div
+                key={step.label}
+                style={{
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  background: "#fff", border: `1.5px solid ${step.color}22`,
+                  borderRadius: 12, padding: "14px 18px",
+                  minWidth: 120, flex: "1 1 100px",
+                  boxShadow: `0 2px 8px ${step.color}18`,
+                  position: "relative",
+                }}
+              >
+                <div style={{
+                  width: 40, height: 40, borderRadius: "50%",
+                  background: `linear-gradient(135deg, ${step.color}33, ${step.color}11)`,
+                  border: `2px solid ${step.color}44`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  marginBottom: 8, fontSize: 18, color: step.color,
+                }}>
+                  {step.icon}
+                </div>
+                <Text strong style={{ fontSize: 12, textAlign: "center", lineHeight: 1.3, color: "#222" }}>
+                  {step.label}
+                </Text>
+                <Text type="secondary" style={{ fontSize: 10, textAlign: "center", marginTop: 2 }}>
+                  {step.desc}
+                </Text>
+                {/* Step badge */}
+                <div style={{
+                  position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)",
+                  background: step.color, color: "#fff", borderRadius: "50%",
+                  width: 18, height: 18, fontSize: 10, fontWeight: 700,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  {i + 1}
+                </div>
+              </div>
+              {i < WORKFLOW_STEPS.length - 1 && (
+                <div key={`arrow-${i}`} style={{ color: "#c0c0c0", fontSize: 18, padding: "0 4px", flexShrink: 0 }}>
+                  <ArrowRightOutlined />
+                </div>
+              )}
+            </>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Approver Config Card ─────────────────────────────────────── */}
+      {isConfigured ? (
+        <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+          {/* Approver Card */}
+          <div style={{ flex: "1 1 320px", maxWidth: 480 }}>
+            <Text strong style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 12, letterSpacing: 0.5, textTransform: "uppercase" }}>
+              Designated Approver
+            </Text>
+            <div
+              style={{
+                borderRadius: 16, overflow: "hidden",
+                boxShadow: "0 4px 24px rgba(102,102,234,0.15)",
+                border: "1px solid #e8e3ff",
+              }}
+            >
+              {/* Card header gradient */}
+              <div style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                padding: "20px 24px",
+                display: "flex", alignItems: "center", gap: 16,
+              }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: "50%",
+                  background: "rgba(255,255,255,0.2)",
+                  border: "3px solid rgba(255,255,255,0.4)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 22, fontWeight: 700, color: "#fff", flexShrink: 0,
+                }}>
+                  {config?.approver_name?.charAt(0)?.toUpperCase() ?? "A"}
+                </div>
+                <div>
+                  <Text style={{ color: "#fff", fontSize: 18, fontWeight: 700, display: "block" }}>
+                    {config?.approver_name}
+                  </Text>
+                  <Tag
+                    icon={<SafetyCertificateOutlined />}
+                    color="#ffffff30"
+                    style={{ color: "#fff", border: "1px solid rgba(255,255,255,0.4)", fontSize: 11 }}
+                  >
+                    Designated Approver
+                  </Tag>
+                </div>
+              </div>
+              {/* Card body */}
+              <div style={{ background: "#fff", padding: "18px 24px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {config?.approver_code && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <IdcardOutlined style={{ color: "#8b5cf6", fontSize: 14 }} />
+                      <Text style={{ fontSize: 13 }}>EMP ID: <strong>{config.approver_code}</strong></Text>
+                    </div>
+                  )}
+                  {config?.approver_email && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <MailOutlined style={{ color: "#8b5cf6", fontSize: 14 }} />
+                      <Text style={{ fontSize: 13 }}>{config.approver_email}</Text>
+                    </div>
+                  )}
+                  {config?.configured_by_name && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4, paddingTop: 10, borderTop: "1px solid #f0f0f0" }}>
+                      <UserOutlined style={{ color: "#aaa", fontSize: 13 }} />
+                      <Text type="secondary" style={{ fontSize: 11 }}>
+                        Last configured by <strong>{config.configured_by_name}</strong>
+                      </Text>
+                    </div>
+                  )}
+                </div>
+                <div style={{ marginTop: 18, display: "flex", justifyContent: "flex-end" }}>
+                  <Button
+                    icon={<EditOutlined />}
+                    onClick={openModal}
+                    type="primary"
+                    ghost
+                    style={{ borderRadius: 8 }}
+                  >
+                    Change Approver
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Info panel */}
+          <div style={{ flex: "1 1 200px", maxWidth: 320 }}>
+            <Text strong style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 12, letterSpacing: 0.5, textTransform: "uppercase" }}>
+              How It Works
+            </Text>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[
+                { icon: <CheckCircleOutlined style={{ color: "#10b981" }} />, text: "All employees see this person as their approver" },
+                { icon: <CheckCircleOutlined style={{ color: "#10b981" }} />, text: "Approver gets notified on every new submission" },
+                { icon: <CheckCircleOutlined style={{ color: "#10b981" }} />, text: "On approval, a Company Expense is auto-created" },
+                { icon: <CheckCircleOutlined style={{ color: "#10b981" }} />, text: "Approver can request more info or reject claims" },
+                { icon: <CheckCircleOutlined style={{ color: "#10b981" }} />, text: "Final step: mark claim as Paid to close the loop" },
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#f8fffe", borderRadius: 8, padding: "8px 12px", border: "1px solid #d1fae5" }}>
+                  <span style={{ marginTop: 1, flexShrink: 0 }}>{item.icon}</span>
+                  <Text style={{ fontSize: 12, color: "#374151", lineHeight: 1.5 }}>{item.text}</Text>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ── Not configured state ──────────────────────────────────── */
+        <div
+          style={{
+            borderRadius: 16, border: "2px dashed #f59e0b",
+            background: "linear-gradient(135deg, #fffbeb, #fef3c7)",
+            padding: 32, maxWidth: 580,
+          }}
+        >
+          <div style={{ display: "flex", gap: 20, alignItems: "flex-start", marginBottom: 24 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 16, flexShrink: 0,
+              background: "linear-gradient(135deg, #f59e0b, #d97706)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(245,158,11,0.4)",
+            }}>
+              <InfoCircleOutlined style={{ color: "#fff", fontSize: 24 }} />
+            </div>
+            <div>
+              <Text strong style={{ fontSize: 17, display: "block", color: "#92400e" }}>
+                Approver Not Configured
+              </Text>
+              <Text style={{ fontSize: 13, color: "#b45309", display: "block", marginTop: 4 }}>
+                Employees cannot submit reimbursement claims until you designate an approver.
+                Complete the setup below to unlock the reimbursement workflow.
+              </Text>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+            {[
+              "Go to Finance → Employee Reimbursements to see all claims",
+              "Once configured, the approver is auto-assigned to every new claim",
+              "The approver can approve, reject, or request more info on claims",
+            ].map((step, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+                  background: "#f59e0b", color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 700,
+                }}>{i + 1}</div>
+                <Text style={{ fontSize: 12, color: "#78350f" }}>{step}</Text>
+              </div>
+            ))}
+          </div>
+          <Button
+            type="primary"
+            icon={<SettingOutlined />}
+            onClick={openModal}
+            size="large"
+            style={{
+              background: "linear-gradient(135deg, #f59e0b, #d97706)",
+              border: "none", borderRadius: 10,
+              boxShadow: "0 4px 12px rgba(245,158,11,0.4)",
+              fontWeight: 600,
+            }}
+          >
+            Configure Approver Now
+          </Button>
+        </div>
+      )}
+
+      {/* ── Modal ───────────────────────────────────────────────────── */}
+      <Modal
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8,
+              background: "linear-gradient(135deg, #667eea, #764ba2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <SafetyCertificateOutlined style={{ color: "#fff", fontSize: 15 }} />
+            </div>
+            <span>{isConfigured ? "Change Reimbursement Approver" : "Configure Reimbursement Approver"}</span>
+          </div>
+        }
+        open={modalOpen}
+        onCancel={() => { setModalOpen(false); form.resetFields(); }}
+        onOk={() => form.submit()}
+        confirmLoading={saveMut.isPending}
+        okText={isConfigured ? "Save Changes" : "Configure Approver"}
+        okButtonProps={{ style: { background: "linear-gradient(135deg, #667eea, #764ba2)", border: "none" } }}
+        destroyOnClose
+        width={500}
+      >
+        <Alert
+          type="info"
+          showIcon
+          message="This replaces any previously configured approver across the organisation."
+          style={{ marginBottom: 20, borderRadius: 8 }}
+        />
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          <Form.Item
+            name="approver"
+            label={<span style={{ fontWeight: 600 }}>Designated Approver</span>}
+            rules={[{ required: true, message: "Please select an employee" }]}
+          >
+            <Select
+              placeholder="Search and select employee…"
+              showSearch
+              optionFilterProp="label"
+              size="large"
+              style={{ width: "100%" }}
+            >
+              {employeesList.map((emp: any) => (
+                <Select.Option
+                  key={emp.id}
+                  value={emp.id}
+                  label={emp.full_name || emp.username}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "2px 0" }}>
+                    <div style={{
+                      width: 30, height: 30, borderRadius: "50%", flexShrink: 0,
+                      background: "linear-gradient(135deg, #667eea, #764ba2)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: "#fff", fontSize: 12, fontWeight: 700,
+                    }}>
+                      {(emp.full_name || emp.username)?.charAt(0)?.toUpperCase()}
+                    </div>
+                    <div style={{ lineHeight: 1.3 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>{emp.full_name || emp.username}</div>
+                      <div style={{ fontSize: 11, color: "#888" }}>
+                        {emp.employee_code ? `${emp.employee_code} · ` : ""}{emp.email}
+                      </div>
+                    </div>
+                  </div>
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function MasterPage({ defaultTab }: { defaultTab?: string }) {
   const navigate = useNavigate();
@@ -1122,12 +1524,15 @@ export default function MasterPage({ defaultTab }: { defaultTab?: string }) {
     location:        <LocationTable />,
     "employment-type": <MasterTable queryKey="master-employment-types" api={employmentTypeApi} title="Employment Type" />,
     "shift-category":  <ShiftCategoryTable />,
-    "rate-card":       <RateCardTable />,
-    holiday:           <HolidayTab />,
+    "rate-card":            <RateCardTable />,
+    reimbursement:          <ReimbursementConfigTable />,
+    "reimbursement-config": <ReimbursementConfigTable />,
+    holiday:                <HolidayTab />,
     "leave-type":      <LeaveTypeTable />,
     "client-category": <MasterTable queryKey="master-client-categories" api={clientCategoryApi} title="Client Category" scope="client" />,
     "business-type":   <BusinessTypeTable />,
     "billing-type":    <MasterTable queryKey="master-billing-types"   api={billingTypeApi}   title="Billing Type" scope="project" />,
+    "followup-type":   <MasterTable queryKey="master-followup-types"  api={followupTypeApi}  title="Follow-up Type" scope="project" />,
     workflow: (
       <Tabs
         className="master-workflow-tabs"

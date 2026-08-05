@@ -189,7 +189,7 @@ export default function ClockTimePicker({
           justifyContent: "space-between",
           alignItems: "center",
           padding: "8px 12px",
-          background: "var(--pmt-surface-2, #F8FAFC)",
+          background: "var(--bms-surface-2, #F8FAFC)",
           borderRadius: 8,
           marginBottom: 16,
         }}
@@ -202,13 +202,13 @@ export default function ClockTimePicker({
               fontSize: 28,
               fontWeight: 700,
               cursor: "pointer",
-              color: activeMode === "hour" ? "var(--pmt-primary, #4F6EF7)" : "var(--pmt-text-3, #94A3B8)",
+              color: activeMode === "hour" ? "var(--bms-primary, #4F6EF7)" : "var(--bms-text-3, #94A3B8)",
               transition: "color 0.2s",
             }}
           >
             {hour}
           </span>
-          <span style={{ fontSize: 24, fontWeight: 700, color: "var(--pmt-text-3, #94A3B8)" }}>:</span>
+          <span style={{ fontSize: 24, fontWeight: 700, color: "var(--bms-text-3, #94A3B8)" }}>:</span>
           {/* Minute display */}
           <span
             onClick={() => setActiveMode("minute")}
@@ -216,7 +216,7 @@ export default function ClockTimePicker({
               fontSize: 28,
               fontWeight: 700,
               cursor: "pointer",
-              color: activeMode === "minute" ? "var(--pmt-primary, #4F6EF7)" : "var(--pmt-text-3, #94A3B8)",
+              color: activeMode === "minute" ? "var(--bms-primary, #4F6EF7)" : "var(--bms-text-3, #94A3B8)",
               transition: "color 0.2s",
             }}
           >
@@ -231,8 +231,8 @@ export default function ClockTimePicker({
             onClick={() => setAmpm("AM")}
             style={{
               border: "none",
-              background: ampm === "AM" ? "var(--pmt-primary, #4F6EF7)" : "transparent",
-              color: ampm === "AM" ? "#fff" : "var(--pmt-text-2, #475569)",
+              background: ampm === "AM" ? "var(--bms-primary, #4F6EF7)" : "transparent",
+              color: ampm === "AM" ? "#fff" : "var(--bms-text-2, #475569)",
               padding: "4px 8px",
               borderRadius: 4,
               fontSize: 11,
@@ -248,8 +248,8 @@ export default function ClockTimePicker({
             onClick={() => setAmpm("PM")}
             style={{
               border: "none",
-              background: ampm === "PM" ? "var(--pmt-primary, #4F6EF7)" : "transparent",
-              color: ampm === "PM" ? "#fff" : "var(--pmt-text-2, #475569)",
+              background: ampm === "PM" ? "var(--bms-primary, #4F6EF7)" : "transparent",
+              color: ampm === "PM" ? "#fff" : "var(--bms-text-2, #475569)",
               padding: "4px 8px",
               borderRadius: 4,
               fontSize: 11,
@@ -276,7 +276,7 @@ export default function ClockTimePicker({
           width: 200,
           height: 200,
           borderRadius: "50%",
-          background: "var(--pmt-surface-3, #EEF2F6)",
+          background: "var(--bms-surface-3, #EEF2F6)",
           margin: "0 auto 16px",
           position: "relative",
           cursor: "pointer",
@@ -292,7 +292,7 @@ export default function ClockTimePicker({
             width: 6,
             height: 6,
             borderRadius: "50%",
-            background: "var(--pmt-primary, #4F6EF7)",
+            background: "var(--bms-primary, #4F6EF7)",
             zIndex: 3,
           }}
         />
@@ -305,7 +305,7 @@ export default function ClockTimePicker({
             top: 100,
             width: 2,
             height: 70,
-            background: "var(--pmt-primary, #4F6EF7)",
+            background: "var(--bms-primary, #4F6EF7)",
             transformOrigin: "top center",
             transform: `rotate(${currentAngle + 180}deg)`,
             zIndex: 1,
@@ -322,8 +322,8 @@ export default function ClockTimePicker({
             width: 30,
             height: 30,
             borderRadius: "50%",
-            background: "var(--pmt-primary-tint, rgba(79, 110, 247, 0.25))",
-            border: "2px solid var(--pmt-primary, #4F6EF7)",
+            background: "var(--bms-primary-tint, rgba(79, 110, 247, 0.25))",
+            border: "2px solid var(--bms-primary, #4F6EF7)",
             zIndex: 1,
             pointerEvents: "none",
           }}
@@ -349,7 +349,7 @@ export default function ClockTimePicker({
                 justifyContent: "center",
                 fontSize: 12,
                 fontWeight: isSelected ? 800 : 500,
-                color: isSelected ? "var(--pmt-primary, #4F6EF7)" : "var(--pmt-text, #1E293B)",
+                color: isSelected ? "var(--bms-primary, #4F6EF7)" : "var(--bms-text, #1E293B)",
                 zIndex: 2,
                 pointerEvents: "none",
                 transition: "color 0.15s, font-weight 0.15s",
@@ -393,10 +393,10 @@ export default function ClockTimePicker({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "6px 12px",
-          border: "1px solid var(--pmt-border, #CBD5E1)",
+          border: "1px solid var(--bms-border, #CBD5E1)",
           borderRadius: 8,
-          background: disabled ? "var(--pmt-surface-2, #F8FAFC)" : "var(--pmt-surface, #fff)",
-          color: displayString ? "var(--pmt-text, #1E293B)" : "var(--pmt-text-3, #94A3B8)",
+          background: disabled ? "var(--bms-surface-2, #F8FAFC)" : "var(--bms-surface, #fff)",
+          color: displayString ? "var(--bms-text, #1E293B)" : "var(--bms-text-3, #94A3B8)",
           cursor: disabled ? "not-allowed" : "pointer",
           minHeight: 38,
           fontSize: 14,
@@ -404,7 +404,7 @@ export default function ClockTimePicker({
         }}
       >
         <span>{displayString || placeholder}</span>
-        <ClockCircleOutlined style={{ color: "var(--pmt-text-3, #94A3B8)", fontSize: 14 }} />
+        <ClockCircleOutlined style={{ color: "var(--bms-text-3, #94A3B8)", fontSize: 14 }} />
       </div>
     </Popover>
   );

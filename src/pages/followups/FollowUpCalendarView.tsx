@@ -17,7 +17,7 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
 const { Text } = Typography;
-const BORDER = "1px solid var(--pmt-border)";
+const BORDER = "1px solid var(--bms-border)";
 type CalendarMode = "day" | "week" | "month";
 
 function useHourSlots() {
@@ -82,7 +82,7 @@ function HourLabels({ hours }: { hours: number[] }) {
           style={{
             height: HOUR_HEIGHT,
             fontSize: 10,
-            color: "var(--pmt-text-3)",
+            color: "var(--bms-text-3)",
             textAlign: "right",
             paddingRight: 8,
             paddingTop: 2,
@@ -285,14 +285,14 @@ function MonthView({
   const today = dayjs();
 
   return (
-    <div style={{ border: BORDER, borderRadius: 8, overflow: "hidden", background: "var(--pmt-surface)" }}>
+    <div style={{ border: BORDER, borderRadius: 8, overflow: "hidden", background: "var(--bms-surface)" }}>
       {/* Weekday header */}
       <div style={{
         display: "grid", gridTemplateColumns: "repeat(7, 1fr)",
-        borderBottom: BORDER, background: "var(--pmt-surface-2)",
+        borderBottom: BORDER, background: "var(--bms-surface-2)",
       }}>
         {WEEKDAYS.map((w) => (
-          <div key={w} style={{ padding: "10px 8px", textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--pmt-text-2)", letterSpacing: "0.05em" }}>
+          <div key={w} style={{ padding: "10px 8px", textAlign: "center", fontSize: 11, fontWeight: 700, color: "var(--bms-text-2)", letterSpacing: "0.05em" }}>
             {w.toUpperCase()}
           </div>
         ))}
@@ -326,7 +326,7 @@ function MonthView({
                   style={{
                     borderRight: day.day() < 6 ? BORDER : undefined,
                     padding: "4px 0 0",
-                    background: inMonth ? "var(--pmt-surface)" : "var(--pmt-surface-2)",
+                    background: inMonth ? "var(--bms-surface)" : "var(--bms-surface-2)",
                     opacity: inMonth ? 1 : 0.55,
                     minWidth: 0,
                     minHeight: ROW_HEIGHT,
@@ -338,8 +338,8 @@ function MonthView({
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
                       width: 26, height: 26, borderRadius: "50%",
                       fontSize: 12, fontWeight: isToday ? 700 : 400,
-                      background: isToday ? "var(--pmt-primary)" : "transparent",
-                      color: isToday ? "#fff" : inMonth ? "var(--pmt-text)" : "var(--pmt-text-3)",
+                      background: isToday ? "var(--bms-primary)" : "transparent",
+                      color: isToday ? "#fff" : inMonth ? "var(--bms-text)" : "var(--bms-text-3)",
                     }}>
                       {day.date()}
                     </span>
@@ -353,7 +353,7 @@ function MonthView({
                       left: `calc(${day.day()} * (100% / 7) + 4px)`,
                       width: `calc(100% / 7 - 8px)`,
                       fontSize: 11,
-                      color: "var(--pmt-text-2)",
+                      color: "var(--bms-text-2)",
                       fontWeight: 500,
                       cursor: "default",
                     }}>
@@ -436,22 +436,22 @@ function DayView({
   const timed = timedItems(items, cursor);
 
   return (
-    <div style={{ border: BORDER, borderRadius: 8, overflow: "hidden", background: "var(--pmt-surface)" }}>
+    <div style={{ border: BORDER, borderRadius: 8, overflow: "hidden", background: "var(--bms-surface)" }}>
       <div style={{
         display: "grid", gridTemplateColumns: "56px 1fr",
-        borderBottom: BORDER, background: "var(--pmt-surface-2)",
+        borderBottom: BORDER, background: "var(--bms-surface-2)",
       }}>
         <div />
         <div style={{ padding: "12px 16px", borderLeft: BORDER }}>
-          <div style={{ fontSize: 11, color: isToday ? "var(--pmt-primary)" : "var(--pmt-text-3)", fontWeight: 600, letterSpacing: 0.5 }}>
+          <div style={{ fontSize: 11, color: isToday ? "var(--bms-primary)" : "var(--bms-text-3)", fontWeight: 600, letterSpacing: 0.5 }}>
             {WEEKDAYS[cursor.day()].toUpperCase()}
           </div>
           <div style={{
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             width: 48, height: 48, borderRadius: "50%", marginTop: 6,
             fontSize: 28, fontWeight: isToday ? 500 : 400, lineHeight: 1,
-            background: isToday ? "var(--pmt-primary)" : "transparent",
-            color: isToday ? "#fff" : "var(--pmt-text)",
+            background: isToday ? "var(--bms-primary)" : "transparent",
+            color: isToday ? "#fff" : "var(--bms-text)",
           }}>
             {cursor.date()}
           </div>
@@ -462,7 +462,7 @@ function DayView({
         display: "grid", gridTemplateColumns: "56px 1fr",
         borderBottom: BORDER, minHeight: allDay.length ? 36 : 28,
       }}>
-        <div style={{ fontSize: 10, color: "var(--pmt-text-3)", padding: "8px 4px", textAlign: "right" }}>all-day</div>
+        <div style={{ fontSize: 10, color: "var(--bms-text-3)", padding: "8px 4px", textAlign: "right" }}>all-day</div>
         <div style={{ borderLeft: BORDER, padding: "4px 8px" }}>
           {allDay.map((item) => (
             <EventPill key={item.id} item={item} onClick={() => onSelect(item)} />
@@ -494,19 +494,19 @@ function WeekView({
   const hours = useHourSlots();
 
   return (
-    <div style={{ border: BORDER, borderRadius: 8, overflow: "hidden", background: "var(--pmt-surface)" }}>
+    <div style={{ border: BORDER, borderRadius: 8, overflow: "hidden", background: "var(--bms-surface)" }}>
       {/* Header row */}
-      <div style={{ display: "grid", gridTemplateColumns: "56px repeat(7, 1fr)", borderBottom: BORDER, background: "var(--pmt-surface-2)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "56px repeat(7, 1fr)", borderBottom: BORDER, background: "var(--bms-surface-2)" }}>
         <div />
         {days.map((day) => {
           const isToday = day.isSame(today, "day");
           const cellDate = day.format("YYYY-MM-DD");
           return (
             <div key={cellDate} style={{ padding: "8px 4px", textAlign: "center", borderLeft: BORDER }}>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontWeight: 500 }}>{WEEKDAYS[day.day()].toUpperCase()}</div>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontWeight: 500 }}>{WEEKDAYS[day.day()].toUpperCase()}</div>
               <div style={{
                 fontSize: 22, fontWeight: isToday ? 500 : 400, lineHeight: 1.2,
-                color: isToday ? "var(--pmt-primary)" : "var(--pmt-text)",
+                color: isToday ? "var(--bms-primary)" : "var(--bms-text)",
               }}>
                 {day.date()}
               </div>
@@ -517,7 +517,7 @@ function WeekView({
 
       {/* All-day row */}
       <div style={{ display: "grid", gridTemplateColumns: "56px repeat(7, 1fr)", borderBottom: BORDER, minHeight: 28 }}>
-        <div style={{ fontSize: 10, color: "var(--pmt-text-3)", padding: "6px 4px", textAlign: "right" }}>all-day</div>
+        <div style={{ fontSize: 10, color: "var(--bms-text-3)", padding: "6px 4px", textAlign: "right" }}>all-day</div>
         {days.map((day) => {
           const cellDate = day.format("YYYY-MM-DD");
           return (
@@ -559,7 +559,20 @@ export default function FollowUpCalendarView({
   const [mode, setMode] = useState<CalendarMode>("month");
 
   // Items that have at least a start_date or end_date (for calendar display)
-  const scheduled = useMemo(() => items.filter((i) => i.start_date || i.end_date), [items]);
+  const scheduled = useMemo(() => {
+    const now = dayjs();
+    return items.filter((i) => {
+      if (!i.start_date && !i.end_date) return false;
+      const slug = (i.workflow_state_slug || "").toLowerCase();
+      if (slug === "completed" || slug === "done") {
+        if (i.updated_at) {
+          const hoursAgo = now.diff(dayjs(i.updated_at), "hour", true);
+          if (hoursAgo > 2) return false;
+        }
+      }
+      return true;
+    });
+  }, [items]);
 
   const title = mode === "month"
     ? cursor.format("MMMM YYYY")
@@ -593,7 +606,7 @@ export default function FollowUpCalendarView({
           <Button onClick={goToday} style={{ borderRadius: 20, fontWeight: 500 }}>Today</Button>
           <Button type="text" icon={<LeftOutlined />} onClick={goPrev} />
           <Button type="text" icon={<RightOutlined />} onClick={goNext} />
-          <span style={{ fontSize: 20, fontWeight: 400, color: "var(--pmt-text)", marginLeft: 4 }}>{title}</span>
+          <span style={{ fontSize: 20, fontWeight: 400, color: "var(--bms-text)", marginLeft: 4 }}>{title}</span>
         </div>
         <Segmented
           value={mode}

@@ -1,7 +1,7 @@
 // import { create } from "zustand";
 // import { persist } from "zustand/middleware";
 
-// export const THEME_STORAGE_KEY = "pmt-theme";
+// export const THEME_STORAGE_KEY = "bms-theme";
 
 // interface ThemeState {
 //   isDark: boolean;
@@ -26,7 +26,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export const THEME_STORAGE_KEY = "pmt-theme";
+export const THEME_STORAGE_KEY = "bms-theme";
 
 export function applyThemeToDocument(isDark: boolean) {
   document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");

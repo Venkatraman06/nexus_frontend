@@ -8,7 +8,7 @@ import {
   PlusOutlined, EditOutlined, DeleteOutlined, CheckOutlined,
   PhoneOutlined, MailOutlined, CalendarOutlined, WhatsAppOutlined,
   EnvironmentOutlined, ClockCircleOutlined, WarningOutlined,
-  AppstoreOutlined, UnorderedListOutlined, HolderOutlined, UserOutlined,
+  AppstoreOutlined, UnorderedListOutlined, HolderOutlined, UserOutlined, CheckSquareOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -17,7 +17,7 @@ import { PERMS } from "@/constants/permissions";
 import { useAuthStore } from "@/store/auth";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import FollowUpDetailDrawer from "./FollowUpDetailDrawer";
-import { formatTimeRange } from "./followupCalendarUtils";
+import { formatTimeRange, getTypeTagColor } from "./followupCalendarUtils";
 import PastelTag, { OverdueTag } from "@/components/common/PastelTag";
 import KanbanColumnScroll from "@/components/common/KanbanColumnScroll";
 import KanbanBoardGrid from "@/components/common/KanbanBoardGrid";
@@ -34,16 +34,15 @@ const LIST_PAGE_SIZE = 10;
 const TYPE_OPTIONS = [
   { value: "EMAIL",      label: "Email",      icon: <MailOutlined /> },
   { value: "CALL",       label: "Call",       icon: <PhoneOutlined /> },
-  { value: "MEETING",    label: "Meeting",    icon: <CalendarOutlined /> },
   { value: "WHATSAPP",   label: "WhatsApp",   icon: <WhatsAppOutlined /> },
   { value: "SITE_VISIT", label: "Site Visit", icon: <EnvironmentOutlined /> },
 ];
 
 const BOARD_COLUMNS = [
-  { slug: "planning",   label: "Planning",    color: "#14B8A6" },
+  { slug: "planning",   label: "Planning",    color: "#8B5CF6" },
   { slug: "inprogress", label: "In Progress", color: "#3B82F6" },
   { slug: "completed",  label: "Completed",   color: "#10B981" },
-  { slug: "cancelled",  label: "Cancelled",   color: "#d96560" },
+  { slug: "cancelled",  label: "Cancelled",   color: "#EF4444" },
 ];
 
 const FOLLOWUP_MOVES: Record<string, string[]> = {
@@ -59,7 +58,7 @@ function userCanViewFollowUp(item: FollowUpItem, userId: string | undefined): bo
 }
 
 function filterItemsForUser(items: FollowUpItem[], userId: string | undefined, viewAll: boolean): FollowUpItem[] {
-  if (viewAll || !userId) return items;
+  if (!userId) return items;
   return items.filter((item) => userCanViewFollowUp(item, userId));
 }
 
@@ -73,7 +72,7 @@ function canDropOnColumn(item: FollowUpItem, destSlug: string): boolean {
 
 function TypeIcon({ type }: { type: string }) {
   const opt = TYPE_OPTIONS.find((t) => t.value === type);
-  return opt ? <span style={{ marginRight: 4 }}>{opt.icon}</span> : null;
+  return opt ? <span style={{ marginRight: 4 }}>{opt.icon}</span> : <CheckSquareOutlined style={{ marginRight: 4 }} />;
 }
 
 function PriorityTag({ priority, label, size = "default" }: { priority: string; label?: string; size?: "default" | "small" }) {
@@ -94,9 +93,9 @@ function PriorityPicker({ value, onChange }: { value?: string; onChange?: (v: st
             style={{
               padding: "8px 4px",
               borderRadius: 8,
-              border: `2px solid ${active ? p.border : "var(--pmt-border)"}`,
-              background: active ? p.bg : "var(--pmt-surface)",
-              color: active ? p.text : "var(--pmt-text-2)",
+              border: `2px solid ${active ? p.border : "var(--bms-border)"}`,
+              background: active ? p.bg : "var(--bms-surface)",
+              color: active ? p.text : "var(--bms-text-2)",
               fontWeight: active ? 700 : 500,
               fontSize: 12,
               cursor: "pointer",
@@ -175,8 +174,8 @@ function FollowUpCard({
 
       <div className="kanban-card__title">{item.title}</div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "6px 0 8px 0", fontSize: 11, color: "var(--pmt-text-3)" }}>
-        <UserOutlined style={{ fontSize: 10, color: "var(--pmt-text-3)" }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "6px 0 8px 0", fontSize: 11, color: "var(--bms-text-3)" }}>
+        <UserOutlined style={{ fontSize: 10, color: "var(--bms-text-3)" }} />
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {(item.assignees_data || []).map(a => a.full_name).join(", ") || "Unassigned"}
         </span>
@@ -222,7 +221,7 @@ function KanbanColumn({
     <div
       className="kanban-column"
       style={{
-        background: isDragOver && canDrop ? `${col.color}14` : "var(--pmt-board-column)",
+        background: isDragOver && canDrop ? `${col.color}14` : "var(--bms-board-column)",
         border: isDragOver && canDrop ? `2px dashed ${col.color}` : "2px solid transparent",
       }}
       onDragOver={(e) => {
@@ -433,7 +432,7 @@ export default function FollowUpsPage() {
       key: "title",
       width: 280,
       render: (_: any, item: FollowUpItem) => (
-        <Text strong style={{ color: "var(--pmt-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <Text strong style={{ color: "var(--bms-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {item.title}
         </Text>
       ),
@@ -450,18 +449,21 @@ export default function FollowUpsPage() {
       title: "Type",
       key: "type",
       width: 140,
-      render: (_: any, item: FollowUpItem) => (
-        <Tag icon={<TypeIcon type={item.type} />} style={{ background: "#1e3a5f", color: "#fff", border: "1px solid #2d5080", borderRadius: 6 }}>
-          {item.type_label}
-        </Tag>
-      ),
+      render: (_: any, item: FollowUpItem) => {
+        const bg = getTypeTagColor(item.type);
+        return (
+          <Tag icon={<TypeIcon type={item.type} />} style={{ background: bg, color: "#fff", border: "none", borderRadius: 12, padding: "2px 10px", fontWeight: 500 }}>
+            {item.type_label}
+          </Tag>
+        );
+      },
     },
     {
       title: "Stage",
       key: "stage",
       width: 140,
       render: (_: any, item: FollowUpItem) => (
-        <Tag style={{ background: item.workflow_state_color || "#1e3a5f", color: "#fff", border: "none", borderRadius: 6 }}>
+        <Tag style={{ background: item.workflow_state_color || "#3b82f6", color: "#fff", border: "none", borderRadius: 12, padding: "2px 10px", fontWeight: 500 }}>
           {item.workflow_state_name}
         </Tag>
       ),
@@ -489,7 +491,7 @@ export default function FollowUpsPage() {
               {item.end_date && item.end_date !== item.start_date ? ` – ${dayjs(item.end_date).format("DD MMM YYYY")}` : ""}
             </Text>
             {timeRange && <Text type="secondary" style={{ fontSize: 12 }}>{timeRange}</Text>}
-            {item.is_overdue && <Text strong style={{ color: "var(--pmt-danger)", fontSize: 12, marginTop: 4 }}><WarningOutlined /> OVERDUE</Text>}
+            {item.is_overdue && <Text strong style={{ color: "var(--bms-danger)", fontSize: 12, marginTop: 4 }}><WarningOutlined /> OVERDUE</Text>}
           </div>
         );
       },
@@ -498,7 +500,7 @@ export default function FollowUpsPage() {
       title: "",
       key: "actions",
       width: 120,
-      fixed: "right" as const,
+
       align: "right" as const,
       render: (_: any, item: FollowUpItem) => (
         <Space size={4} onClick={(e) => e.stopPropagation()}>
@@ -545,14 +547,15 @@ export default function FollowUpsPage() {
               { value: "list",  icon: <UnorderedListOutlined />, label: "List" },
             ]}
           />
-          <Select
-            placeholder="All Stages"
-            allowClear
-            style={{ width: 160 }}
-            value={statusFilter || undefined}
-            onChange={(v) => setStatusFilter(v || "")}
-            options={BOARD_COLUMNS.map((c) => ({ value: c.slug, label: c.label }))}
-          />
+          {viewMode === "list" && (
+            <Select
+              allowClear
+              style={{ width: 160 }}
+              value={statusFilter || ""}
+              onChange={(v) => setStatusFilter(v || "")}
+              options={[{ value: "", label: "All Stages" }, ...BOARD_COLUMNS.map((c) => ({ value: c.slug, label: c.label }))]}
+            />
+          )}
           {canCreate && (
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
               Schedule

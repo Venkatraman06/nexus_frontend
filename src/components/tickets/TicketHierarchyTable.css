@@ -1,7 +1,7 @@
 .ticket-hierarchy {
-  border: 1px solid var(--pmt-border, #dfe1e6);
+  border: 1px solid var(--bms-border, #dfe1e6);
   border-radius: 8px;
-  background: var(--pmt-surface, #fff);
+  background: var(--bms-surface, #fff);
   /* Below ~666px the row grid's minmax columns no longer fit — scroll
      horizontally inside this box instead of clipping assignee/action cells. */
   overflow-x: auto;
@@ -33,13 +33,13 @@
 
 .ticket-hierarchy__head {
   height: 40px;
-  background: var(--pmt-surface-2, #f4f5f7);
-  border-bottom: 1px solid var(--pmt-border, #dfe1e6);
+  background: var(--bms-surface-2, #f4f5f7);
+  border-bottom: 1px solid var(--bms-border, #dfe1e6);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--pmt-text-3, #5e6c84);
+  color: var(--bms-text-3, #5e6c84);
 }
 
 .ticket-hierarchy__body {
@@ -48,13 +48,13 @@
 
 .ticket-hierarchy__row {
   min-height: 44px;
-  border-bottom: 1px solid var(--pmt-border, #ebecf0);
+  border-bottom: 1px solid var(--bms-border, #ebecf0);
   cursor: pointer;
   transition: background 0.12s;
 }
 
 .ticket-hierarchy__row:hover {
-  background: var(--pmt-surface-2, #f4f5f7);
+  background: var(--bms-surface-2, #f4f5f7);
 }
 
 .ticket-hierarchy__row:last-child {
@@ -98,14 +98,14 @@
   border: none;
   background: transparent;
   border-radius: 4px;
-  color: var(--pmt-text-3, #5e6c84);
+  color: var(--bms-text-3, #5e6c84);
   cursor: pointer;
   transition: transform 0.2s ease, background 0.12s, color 0.12s;
 }
 
 .ticket-hierarchy__toggle:hover {
-  background: var(--pmt-border, #ebecf0);
-  color: var(--pmt-text, #172b4d);
+  background: var(--bms-border, #ebecf0);
+  color: var(--bms-text, #172b4d);
 }
 
 .ticket-hierarchy__toggle--expanded {
@@ -122,7 +122,7 @@
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--pmt-text-2, #5e6c84);
+  color: var(--bms-text-2, #5e6c84);
   white-space: nowrap;
 }
 
@@ -134,7 +134,7 @@
   cursor: pointer;
   font-size: 11px;
   font-weight: 500;
-  color: var(--pmt-text-2, #5f6368);
+  color: var(--bms-text-2, #5f6368);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   white-space: nowrap;
   overflow: hidden;
@@ -146,7 +146,7 @@
 }
 
 .ticket-hierarchy__id-link:hover {
-  color: var(--pmt-primary, #1a73e8);
+  color: var(--bms-primary, #1a73e8);
   text-decoration: underline;
 }
 
@@ -165,12 +165,12 @@
   min-width: 0;
   flex: 1;
   display: block;
-  color: var(--pmt-text, #202124);
+  color: var(--bms-text, #202124);
   transition: color 0.12s;
 }
 
 .ticket-hierarchy__title-link:hover {
-  color: var(--pmt-primary, #1a73e8);
+  color: var(--bms-primary, #1a73e8);
   text-decoration: underline;
 }
 
@@ -200,7 +200,7 @@
   white-space: nowrap;
   font-size: 12px;
   line-height: 1.4;
-  color: var(--pmt-text, #172b4d);
+  color: var(--bms-text, #172b4d);
 }
 
 .ticket-hierarchy__assignee .ant-avatar {
@@ -210,12 +210,12 @@
 .ticket-hierarchy__empty {
   padding: 48px 16px;
   text-align: center;
-  color: var(--pmt-text-3, #97a0af);
+  color: var(--bms-text-3, #97a0af);
   font-size: 13px;
 }
 
 .ticket-hierarchy__project + .ticket-hierarchy__project {
-  border-top: 1px solid var(--pmt-border, #dfe1e6);
+  border-top: 1px solid var(--bms-border, #dfe1e6);
 }
 
 .ticket-hierarchy__project-head {
@@ -223,13 +223,13 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--pmt-primary, #1a73e8) 6%, var(--pmt-surface-2, #f4f5f7));
-  border-bottom: 1px solid var(--pmt-border, #ebecf0);
+  background: color-mix(in srgb, var(--bms-primary, #1a73e8) 6%, var(--bms-surface-2, #f4f5f7));
+  border-bottom: 1px solid var(--bms-border, #ebecf0);
   min-width: 0;
 }
 
 .ticket-hierarchy__project-icon {
-  color: var(--pmt-primary, #1a73e8);
+  color: var(--bms-primary, #1a73e8);
   font-size: 13px;
   flex-shrink: 0;
 }
@@ -238,9 +238,9 @@
   font-size: 11px;
   font-weight: 700;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  color: var(--pmt-primary, #1a73e8);
-  background: color-mix(in srgb, var(--pmt-primary, #1a73e8) 10%, var(--pmt-surface, #fff));
-  border: 1px solid color-mix(in srgb, var(--pmt-primary, #1a73e8) 22%, var(--pmt-border, #dfe1e6));
+  color: var(--bms-primary, #1a73e8);
+  background: color-mix(in srgb, var(--bms-primary, #1a73e8) 10%, var(--bms-surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--bms-primary, #1a73e8) 22%, var(--bms-border, #dfe1e6));
   padding: 2px 7px;
   border-radius: 5px;
   flex-shrink: 0;
@@ -249,7 +249,7 @@
 .ticket-hierarchy__project-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--pmt-text, #172b4d);
+  color: var(--bms-text, #172b4d);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -260,7 +260,7 @@
 .ticket-hierarchy__project-count {
   font-size: 11px;
   font-weight: 600;
-  color: var(--pmt-text-2, #5e6c84);
+  color: var(--bms-text-2, #5e6c84);
   flex-shrink: 0;
 }
 
@@ -268,8 +268,8 @@
   display: flex;
   justify-content: flex-end;
   padding: 12px 14px;
-  border-top: 1px solid var(--pmt-border, #dfe1e6);
-  background: var(--pmt-surface, #fff);
+  border-top: 1px solid var(--bms-border, #dfe1e6);
+  background: var(--bms-surface, #fff);
 }
 
 @media (max-width: 1100px) {

@@ -130,7 +130,7 @@ export default function ClientReceivableSection({ showTitle = true }: { showTitl
         size="small"
         pagination={{ pageSize: 20, showSizeChanger: true }}
         summary={() => (
-          <Table.Summary.Row style={{ background: "var(--pmt-surface-2)" }}>
+          <Table.Summary.Row style={{ background: "var(--bms-surface-2)" }}>
             <Table.Summary.Cell index={0}><Text strong>Total</Text></Table.Summary.Cell>
             <Table.Summary.Cell index={1} align="right"><Text strong>{fmtCurrency(totalInvoiced)}</Text></Table.Summary.Cell>
             <Table.Summary.Cell index={2} align="right"><Text strong style={{ color: "#52c41a" }}>{fmtCurrency(totalReceived)}</Text></Table.Summary.Cell>

@@ -84,8 +84,8 @@ function RevenueByTypeChart({ data }: { data: ExecutiveDashboard["revenue_by_pro
           return (
             <div key={d.business_type} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 10, height: 10, borderRadius: 2, background: color, flexShrink: 0 }} />
-              <Text style={{ fontSize: 12, flex: 1, color: "var(--pmt-text)" }}>{d.business_type}</Text>
-              <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", whiteSpace: "nowrap" }}>
+              <Text style={{ fontSize: 12, flex: 1, color: "var(--bms-text)" }}>{d.business_type}</Text>
+              <Text style={{ fontSize: 11, color: "var(--bms-text-3)", whiteSpace: "nowrap" }}>
                 Billed {fmt(d.invoiced)}
               </Text>
               <Text style={{ fontSize: 12, fontWeight: 600, color, minWidth: 80, textAlign: "right", whiteSpace: "nowrap" }}>
@@ -113,12 +113,12 @@ function TopProjectTypeCard({ data, fyLabel }: { data: ExecutiveDashboard["reven
     <div style={{ display: "flex", flexDirection: "column", gap: 16, padding: "4px 0" }}>
       <div>
         <Text type="secondary" style={{ fontSize: 11 }}>Top collected — {fyLabel}</Text>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pmt-success)" }}>{topByReceived.business_type}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--bms-success)" }}>{topByReceived.business_type}</div>
         <Text style={{ fontSize: 13 }}>{fmt(topByReceived.received)} collected</Text>
       </div>
       <div>
         <Text type="secondary" style={{ fontSize: 11 }}>Top billed</Text>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--pmt-primary)" }}>{topByInvoiced.business_type}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: "var(--bms-primary)" }}>{topByInvoiced.business_type}</div>
         <Text style={{ fontSize: 13 }}>{fmt(topByInvoiced.invoiced)} billed</Text>
       </div>
       <div>
@@ -153,7 +153,7 @@ function ProjectDetailModal({
   });
 
   const f = data?.financials;
-  const marginColor = (f?.gross_margin ?? 0) >= 0 ? "var(--pmt-success)" : "var(--pmt-danger)";
+  const marginColor = (f?.gross_margin ?? 0) >= 0 ? "var(--bms-success)" : "var(--bms-danger)";
 
   return (
     <Modal
@@ -464,7 +464,7 @@ export default function ExecutiveDashboardPage() {
           <DashboardPanel
             title="Project enquiry pipeline"
             meta={`${data.project_pipeline.total} projects in portfolio`}
-            extra={<FunnelPlotOutlined style={{ color: "var(--pmt-text-3)" }} />}
+            extra={<FunnelPlotOutlined style={{ color: "var(--bms-text-3)" }} />}
           >
             <ExecutivePipelinePanel pipeline={data.project_pipeline} />
           </DashboardPanel>
@@ -488,16 +488,16 @@ export default function ExecutiveDashboardPage() {
                   />
                   <div className="exec-finance-pills">
                     {[
-                      { label: "Invoiced", value: fmt(data.finance.invoiced), color: "var(--pmt-primary)", dot: "#6366f1" },
-                      { label: "Received", value: fmt(data.finance.received), color: "var(--pmt-success)", dot: "#059669" },
-                      { label: "Pending", value: fmt(data.finance.pending), color: "var(--pmt-warning)", dot: "#f59e0b" },
+                      { label: "Invoiced", value: fmt(data.finance.invoiced), color: "var(--bms-primary)", dot: "#6366f1" },
+                      { label: "Received", value: fmt(data.finance.received), color: "var(--bms-success)", dot: "#059669" },
+                      { label: "Pending", value: fmt(data.finance.pending), color: "var(--bms-warning)", dot: "#f59e0b" },
                     ].map(({ label, value, color, dot }, idx) => (
                       <div
                         key={label}
                         className="exec-finance-pills__item exec-finance-pills__item--reveal"
                         style={{ animationDelay: `${500 + idx * 90}ms` }}
                       >
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--pmt-text-2)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--bms-text-2)" }}>
                           <span style={{ width: 7, height: 7, borderRadius: "50%", background: dot, flexShrink: 0 }} />
                           {label}
                         </div>
@@ -522,13 +522,13 @@ export default function ExecutiveDashboardPage() {
         <DashboardPanel
           className="dash-grid-area-map exec-chart-panel--reveal"
           title="Clients on map"
-          extra={<GlobalOutlined style={{ color: "var(--pmt-text-3)" }} />}
+          extra={<GlobalOutlined style={{ color: "var(--bms-text-3)" }} />}
         >
           {data.clients_map.length > 0 ? (
             <ExecutiveClientMap clients={data.clients_map} />
           ) : (
             <div className="exec-map-empty">
-              <GlobalOutlined style={{ fontSize: 32, color: "var(--pmt-text-3)", marginBottom: 12 }} />
+              <GlobalOutlined style={{ fontSize: 32, color: "var(--bms-text-3)", marginBottom: 12 }} />
               <Text type="secondary">No clients with geo coordinates yet</Text>
               <Text type="secondary" style={{ fontSize: 12, display: "block", marginTop: 4 }}>
                 Add latitude / longitude on the Clients page to plot them here

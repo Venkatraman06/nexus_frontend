@@ -65,8 +65,8 @@ export default function TimesheetPage() {
   return (
     <div>
       <div style={{ marginBottom: 20 }}>
-        <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>Timesheets</Title>
-        <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>
+        <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>Timesheets</Title>
+        <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>
           Log your weekly hours and review team submissions for projects you manage.
         </Text>
       </div>

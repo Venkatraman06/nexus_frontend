@@ -44,19 +44,19 @@ const STATUS_CFG: Record<string, {
   bg: string; border: string;
   tooltip: string; dotColor: string;
 }> = {
-  PRESENT:         { icon: <PersonCheckIcon color="var(--pmt-success)" />, bg: "rgba(22, 163, 74, 0.12)", border: "rgba(22, 163, 74, 0.25)", tooltip: "Present",               dotColor: "var(--pmt-success)" },
-  WFH:             { icon: <PersonHomeIcon  color="var(--pmt-primary)" />, bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.25)", tooltip: "Work From Home",        dotColor: "var(--pmt-primary)" },
-  HALF_DAY:        { icon: <PersonHalfIcon  color="var(--pmt-warning)" />, bg: "rgba(217, 119, 6, 0.12)", border: "rgba(217, 119, 6, 0.25)", tooltip: "Half Day",              dotColor: "var(--pmt-warning)" },
+  PRESENT:         { icon: <PersonCheckIcon color="var(--bms-success)" />, bg: "rgba(22, 163, 74, 0.12)", border: "rgba(22, 163, 74, 0.25)", tooltip: "Present",               dotColor: "var(--bms-success)" },
+  WFH:             { icon: <PersonHomeIcon  color="var(--bms-primary)" />, bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.25)", tooltip: "Work From Home",        dotColor: "var(--bms-primary)" },
+  HALF_DAY:        { icon: <PersonHalfIcon  color="var(--bms-warning)" />, bg: "rgba(217, 119, 6, 0.12)", border: "rgba(217, 119, 6, 0.25)", tooltip: "Half Day",              dotColor: "var(--bms-warning)" },
   ON_LEAVE:        { icon: <PersonXIcon     color="#7c3aed" />, bg: "rgba(124, 58, 237, 0.12)", border: "rgba(124, 58, 237, 0.25)", tooltip: "On Leave",              dotColor: "#7c3aed" },
   PENDING_LEAVE:   { icon: <PersonXIcon     color="#ea580c" />, bg: "rgba(234, 88, 12, 0.12)", border: "rgba(234, 88, 12, 0.25)", tooltip: "Leave Pending Approval", dotColor: "#ea580c" },
-  ABSENT:          { icon: <PersonXIcon     color="var(--pmt-danger)" />, bg: "var(--pmt-danger-bg)", border: "rgba(197, 34, 31, 0.25)", tooltip: "Absent",                dotColor: "var(--pmt-danger)" },
+  ABSENT:          { icon: <PersonXIcon     color="var(--bms-danger)" />, bg: "var(--bms-danger-bg)", border: "rgba(197, 34, 31, 0.25)", tooltip: "Absent",                dotColor: "var(--bms-danger)" },
   HOLIDAY:         { icon: <HolidayIcon     color="#0d9488" />, bg: "rgba(13, 148, 136, 0.12)", border: "rgba(13, 148, 136, 0.25)", tooltip: "Holiday",               dotColor: "#0d9488" },
   GOVT_HOLIDAY:    { icon: <HolidayIcon     color="#0d9488" />, bg: "rgba(13, 148, 136, 0.12)", border: "rgba(13, 148, 136, 0.25)", tooltip: "Govt Holiday",     dotColor: "#0d9488" },
   COMPANY_HOLIDAY: { icon: <HolidayIcon     color="#c026d3" />, bg: "rgba(192, 38, 211, 0.12)", border: "rgba(192, 38, 211, 0.25)", tooltip: "Company Holiday",  dotColor: "#c026d3" },
   CLOCKIN_ENABLED: { icon: <UnlockOutlined style={{ color: "#7c3aed", fontSize: 16 }} />, bg: "rgba(124, 58, 237, 0.10)", border: "rgba(124, 58, 237, 0.25)", tooltip: "Clock-in Enabled by HR", dotColor: "#7c3aed" },
-  WEEKEND:         { icon: <WeekendIcon />,                     bg: "var(--pmt-surface-2)", border: "var(--pmt-border)", tooltip: "Weekend",               dotColor: "var(--pmt-text-3)" },
-  NOT_MARKED:      { icon: null,                                bg: "var(--pmt-surface)",    border: "var(--pmt-border)", tooltip: "Not Marked",            dotColor: "var(--pmt-text-3)" },
-  FUTURE:          { icon: null,                                bg: "var(--pmt-surface)",    border: "var(--pmt-border)", tooltip: "",                      dotColor: "var(--pmt-border)" },
+  WEEKEND:         { icon: <WeekendIcon />,                     bg: "var(--bms-surface-2)", border: "var(--bms-border)", tooltip: "Weekend",               dotColor: "var(--bms-text-3)" },
+  NOT_MARKED:      { icon: null,                                bg: "var(--bms-surface)",    border: "var(--bms-border)", tooltip: "Not Marked",            dotColor: "var(--bms-text-3)" },
+  FUTURE:          { icon: null,                                bg: "var(--bms-surface)",    border: "var(--bms-border)", tooltip: "",                      dotColor: "var(--bms-border)" },
 };
 
 // ── SVG Icons ──────────────────────────────────────────────────────────────────
@@ -123,13 +123,13 @@ const SUMMARY_HIDDEN = new Set(["half_day", "absent", "clockin_enabled"]);
 // ── Legend ─────────────────────────────────────────────────────────────────────
 function Legend() {
   const items = [
-    { label: "Present",          bg: "rgba(22, 163, 74, 0.12)", border: "rgba(22, 163, 74, 0.25)", dot: "var(--pmt-success)" },
-    { label: "WFH",              bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.25)", dot: "var(--pmt-primary)" },
+    { label: "Present",          bg: "rgba(22, 163, 74, 0.12)", border: "rgba(22, 163, 74, 0.25)", dot: "var(--bms-success)" },
+    { label: "WFH",              bg: "rgba(37, 99, 235, 0.12)", border: "rgba(37, 99, 235, 0.25)", dot: "var(--bms-primary)" },
     { label: "On Leave",         bg: "rgba(124, 58, 237, 0.12)", border: "rgba(124, 58, 237, 0.25)", dot: "#7c3aed" },
     { label: "Leave Pending",    bg: "rgba(234, 88, 12, 0.12)", border: "rgba(234, 88, 12, 0.25)", dot: "#ea580c" },
     { label: "Govt Holiday",     bg: "rgba(13, 148, 136, 0.12)", border: "rgba(13, 148, 136, 0.25)", dot: "#0d9488" },
     { label: "Company Holiday",  bg: "rgba(192, 38, 211, 0.12)", border: "rgba(192, 38, 211, 0.25)", dot: "#c026d3" },
-    { label: "Weekend",          bg: "var(--pmt-surface-2)", border: "var(--pmt-border)", dot: "var(--pmt-text-3)" },
+    { label: "Weekend",          bg: "var(--bms-surface-2)", border: "var(--bms-border)", dot: "var(--bms-text-3)" },
   ];
   return (
     <div className="att-cal-legend">
@@ -175,7 +175,7 @@ function FutureDateModal({
   const wfhMutation = useMutation({
     mutationFn: (payload: any) => post("/attendance/wfh-requests/", payload),
     onSuccess: () => {
-      message.success("WFH request submitted — HR will review it");
+      message.success("WFH request submitted — your Reporting Manager will review it");
       wfhForm.resetFields();
       onClose();
       onSuccess();
@@ -191,7 +191,7 @@ function FutureDateModal({
   const shiftMutation = useMutation({
     mutationFn: (payload: any) => post("/attendance/shift-change-requests/", payload),
     onSuccess: () => {
-      message.success("Shift change request submitted — HR will review it");
+      message.success("Shift change request submitted — your Reporting Manager will review it");
       shiftForm.resetFields();
       onClose();
       onSuccess();
@@ -226,12 +226,12 @@ function FutureDateModal({
             <Button
               type="text" size="small"
               onClick={() => { setMode("menu"); wfhForm.resetFields(); shiftForm.resetFields(); }}
-              style={{ color: "var(--pmt-text-3)", padding: "0 4px", marginRight: 4 }}
+              style={{ color: "var(--bms-text-3)", padding: "0 4px", marginRight: 4 }}
             >
               ←
             </Button>
           )}
-          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)" }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--bms-text)" }}>
             {mode === "menu"  && `Requests for ${formattedDate}`}
             {mode === "wfh"   && `WFH Request — ${formattedDate}`}
             {mode === "shift" && `Shift Change — ${formattedDate}`}
@@ -242,7 +242,7 @@ function FutureDateModal({
       {/* ── Menu ── */}
       {mode === "menu" && (
         <div style={{ padding: "8px 0" }}>
-          <Text style={{ fontSize: 13, color: "var(--pmt-text-2)", display: "block", marginBottom: 16 }}>
+          <Text style={{ fontSize: 13, color: "var(--bms-text-2)", display: "block", marginBottom: 16 }}>
             What would you like to request for this date?
           </Text>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -252,18 +252,18 @@ function FutureDateModal({
               style={{
                 display: "flex", alignItems: "center", gap: 14,
                 padding: "14px 16px", borderRadius: 10, cursor: "pointer",
-                border: "1px solid var(--pmt-border)", background: "var(--pmt-surface-2)",
+                border: "1px solid var(--bms-border)", background: "var(--bms-surface-2)",
                 transition: "box-shadow 0.15s, transform 0.15s",
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(37,99,235,0.12)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; (e.currentTarget as HTMLElement).style.transform = ""; }}
             >
               <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(37, 99, 235, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <HomeOutlined style={{ fontSize: 20, color: "var(--pmt-primary)" }} />
+                <HomeOutlined style={{ fontSize: 20, color: "var(--bms-primary)" }} />
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--pmt-text)" }}>Request WFH</div>
-                <div style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>Work from home — HR approval required</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--bms-text)" }}>Request WFH</div>
+                <div style={{ fontSize: 12, color: "var(--bms-text-3)" }}>Work from home — Reporting Manager approval required</div>
               </div>
             </div>
 
@@ -273,7 +273,7 @@ function FutureDateModal({
               style={{
                 display: "flex", alignItems: "center", gap: 14,
                 padding: "14px 16px", borderRadius: 10, cursor: "pointer",
-                border: "1px solid var(--pmt-border)", background: "var(--pmt-surface-2)",
+                border: "1px solid var(--bms-border)", background: "var(--bms-surface-2)",
                 transition: "box-shadow 0.15s, transform 0.15s",
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(124,58,237,0.12)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
@@ -283,8 +283,8 @@ function FutureDateModal({
                 <ScheduleOutlined style={{ fontSize: 20, color: "#7c3aed" }} />
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--pmt-text)" }}>Request Shift Change</div>
-                <div style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>Temporary or permanent shift change</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--bms-text)" }}>Request Shift Change</div>
+                <div style={{ fontSize: 12, color: "var(--bms-text-3)" }}>Temporary or permanent shift change</div>
               </div>
             </div>
             {/* Leave option */}
@@ -293,18 +293,18 @@ function FutureDateModal({
               style={{
                 display: "flex", alignItems: "center", gap: 14,
                 padding: "14px 16px", borderRadius: 10, cursor: "pointer",
-                border: "1px solid var(--pmt-border)", background: "var(--pmt-surface-2)",
+                border: "1px solid var(--bms-border)", background: "var(--bms-surface-2)",
                 transition: "box-shadow 0.15s, transform 0.15s",
               }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(5,150,105,0.12)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; (e.currentTarget as HTMLElement).style.transform = ""; }}
             >
               <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(5, 150, 105, 0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <WalletOutlined style={{ fontSize: 20, color: "var(--pmt-success)" }} />
+                <WalletOutlined style={{ fontSize: 20, color: "var(--bms-success)" }} />
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--pmt-text)" }}>Apply for Leave</div>
-                <div style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>Submit a leave request — HR approval required</div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: "var(--bms-text)" }}>Apply for Leave</div>
+                <div style={{ fontSize: 12, color: "var(--bms-text-3)" }}>Submit a leave request — Reporting Manager approval required</div>
               </div>
             </div>
           </div>
@@ -326,7 +326,7 @@ function FutureDateModal({
           <div style={{
             background: "rgba(37, 99, 235, 0.12)", border: "1px solid rgba(37, 99, 235, 0.25)",
             borderRadius: 8, padding: "8px 12px", marginBottom: 14,
-            fontSize: 12, color: "var(--pmt-text)",
+            fontSize: 12, color: "var(--bms-text)",
           }}>
             <HomeOutlined style={{ marginRight: 6 }} />
             Requesting WFH for <strong>{formattedDate}</strong>
@@ -337,7 +337,7 @@ function FutureDateModal({
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <Button onClick={handleClose}>Cancel</Button>
             <Button type="primary" htmlType="submit" loading={wfhMutation.isPending}
-              style={{ background: "var(--pmt-primary)", borderColor: "var(--pmt-primary)" }}>
+              style={{ background: "var(--bms-primary)", borderColor: "var(--bms-primary)" }}>
               Submit WFH Request
             </Button>
           </div>
@@ -361,7 +361,7 @@ function FutureDateModal({
           <div style={{
             background: "rgba(124, 58, 237, 0.12)", border: "1px solid rgba(124, 58, 237, 0.25)",
             borderRadius: 8, padding: "8px 12px", marginBottom: 14,
-            fontSize: 12, color: "var(--pmt-text)",
+            fontSize: 12, color: "var(--bms-text)",
           }}>
             <ScheduleOutlined style={{ marginRight: 6 }} />
             Requesting shift change for <strong>{formattedDate}</strong>
@@ -383,7 +383,7 @@ function FutureDateModal({
                 value: s.id,
                 label: `${s.name} (${s.start_time?.slice(0, 5)} – ${s.end_time?.slice(0, 5)})`,
               }))}
-              notFoundContent={<span style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>Loading shifts…</span>}
+              notFoundContent={<span style={{ fontSize: 12, color: "var(--bms-text-3)" }}>Loading shifts…</span>}
             />
           </Form.Item>
 
@@ -457,7 +457,7 @@ function DayCell({
       style={{
         minHeight: 64,
         border: `1px solid ${
-          isToday ? "var(--pmt-primary)"
+          isToday ? "var(--bms-primary)"
           : (day.clockin_enabled && isFuture) ? "rgba(124, 58, 237, 0.4)"
           : isClickable ? "rgba(99, 102, 241, 0.4)"
           : cfg.border
@@ -524,10 +524,10 @@ function DayCell({
       {/* Day number */}
       <div style={{
         fontSize: 11, fontWeight: isToday ? 700 : 500,
-        color: isToday ? "var(--pmt-primary)"
+        color: isToday ? "var(--bms-primary)"
           : (day.clockin_enabled && isFuture) ? "#a78bfa"
           : isFuture ? "#818cf8"
-          : "var(--pmt-text)",
+          : "var(--bms-text)",
         textAlign: "right", lineHeight: 1, marginBottom: 4,
       }}>
         {day.day}
@@ -542,7 +542,7 @@ function DayCell({
 
       {/* Check-in time */}
       {day.check_in && !day.is_weekend && (
-        <div style={{ fontSize: 9, color: "var(--pmt-text-3)", textAlign: "center", marginTop: 2, lineHeight: 1.2 }}>
+        <div style={{ fontSize: 9, color: "var(--bms-text-3)", textAlign: "center", marginTop: 2, lineHeight: 1.2 }}>
           {day.check_in}
         </div>
       )}
@@ -631,9 +631,9 @@ export default function AttendanceCalendar({
       {/* Month navigation */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Text style={{ fontSize: 14, color: "var(--pmt-text)" }}>
+          <Text style={{ fontSize: 14, color: "var(--bms-text)" }}>
             Effective days worked:{" "}
-            <Text strong style={{ fontSize: 15, color: "var(--pmt-primary)" }}>
+            <Text strong style={{ fontSize: 15, color: "var(--bms-primary)" }}>
               {data?.effective_days ?? "—"}
             </Text>
           </Text>
@@ -641,23 +641,23 @@ export default function AttendanceCalendar({
         <Space>
           <div style={{
             display: "flex", alignItems: "center", gap: 12,
-            background: "var(--pmt-surface-2)", borderRadius: 8, padding: "4px 12px",
-            border: "1px solid var(--pmt-border)",
+            background: "var(--bms-surface-2)", borderRadius: 8, padding: "4px 12px",
+            border: "1px solid var(--bms-border)",
           }}>
             <LeftOutlined
-              style={{ fontSize: 12, cursor: "pointer", color: "var(--pmt-text)" }}
+              style={{ fontSize: 12, cursor: "pointer", color: "var(--bms-text)" }}
               onClick={() => setCurrent((c) => c.subtract(1, "month"))}
             />
-            <Text strong style={{ fontSize: 14, color: "var(--pmt-text)", minWidth: 100, textAlign: "center" }}>
+            <Text strong style={{ fontSize: 14, color: "var(--bms-text)", minWidth: 100, textAlign: "center" }}>
               {current.format("MMMM YYYY")}
             </Text>
             <RightOutlined
-              style={{ fontSize: 12, cursor: "pointer", color: "var(--pmt-text)" }}
+              style={{ fontSize: 12, cursor: "pointer", color: "var(--bms-text)" }}
               onClick={() => setCurrent((c) => c.add(1, "month"))}
             />
           </div>
           <div
-            style={{ fontSize: 12, color: "var(--pmt-primary)", cursor: "pointer", padding: "4px 8px", borderRadius: 6, border: "1px solid var(--pmt-border)", background: "var(--pmt-surface-2)" }}
+            style={{ fontSize: 12, color: "var(--bms-primary)", cursor: "pointer", padding: "4px 8px", borderRadius: 6, border: "1px solid var(--bms-border)", background: "var(--bms-surface-2)" }}
             onClick={() => setCurrent(today)}
           >
             Today
@@ -670,7 +670,7 @@ export default function AttendanceCalendar({
         <div style={{
           display: "flex", alignItems: "center", gap: 6,
           marginBottom: 8, padding: "6px 12px", borderRadius: 8,
-          background: "rgba(124, 58, 237, 0.10)", border: "1px solid rgba(124, 58, 237, 0.25)", fontSize: 12, color: "var(--pmt-text)",
+          background: "rgba(124, 58, 237, 0.10)", border: "1px solid rgba(124, 58, 237, 0.25)", fontSize: 12, color: "var(--bms-text)",
         }}>
           🔓 <strong style={{ marginLeft: 2 }}>HR has enabled clock-in</strong> for one or more dates this month. Those dates are highlighted in purple — click them to request WFH or a shift change too.
         </div>
@@ -681,7 +681,7 @@ export default function AttendanceCalendar({
         <div style={{
           display: "flex", alignItems: "center", gap: 6,
           marginBottom: 10, padding: "6px 12px", borderRadius: 8,
-          background: "rgba(99, 102, 241, 0.10)", border: "1px solid rgba(99, 102, 241, 0.25)", fontSize: 12, color: "var(--pmt-text)",
+          background: "rgba(99, 102, 241, 0.10)", border: "1px solid rgba(99, 102, 241, 0.25)", fontSize: 12, color: "var(--bms-text)",
         }}>
           <span style={{ fontWeight: 700 }}>Tip:</span>
           Click on any future date (marked with <span style={{ fontWeight: 700, marginLeft: 2, marginRight: 2 }}>+</span>) to request WFH or a shift change for that day.
@@ -698,15 +698,15 @@ export default function AttendanceCalendar({
       {isLoading ? (
         <div style={{ textAlign: "center", padding: 60 }}><Spin size="large" /></div>
       ) : (
-        <div style={{ border: "1px solid var(--pmt-border)", borderRadius: 10, overflow: "hidden", background: "var(--pmt-surface)" }}>
+        <div style={{ border: "1px solid var(--bms-border)", borderRadius: 10, overflow: "hidden", background: "var(--bms-surface)" }}>
           {/* Week header */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "var(--pmt-surface-2)", borderBottom: "1px solid var(--pmt-border)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "var(--bms-surface-2)", borderBottom: "1px solid var(--bms-border)" }}>
             {WEEK_HEADERS.map((h) => (
               <div key={h} style={{
                 textAlign: "center", padding: "8px 4px",
                 fontSize: 12, fontWeight: 600,
-                color: (h === "Sun" || h === "Sat") ? "var(--pmt-text-3)" : "var(--pmt-text-2)",
-                borderRight: "1px solid var(--pmt-border)",
+                color: (h === "Sun" || h === "Sat") ? "var(--bms-text-3)" : "var(--bms-text-2)",
+                borderRight: "1px solid var(--bms-border)",
               }}>
                 {h}
               </div>
@@ -717,10 +717,10 @@ export default function AttendanceCalendar({
           {Array.from({ length: gridCells.length / 7 }, (_, rowIdx) => (
             <div key={rowIdx} style={{
               display: "grid", gridTemplateColumns: "repeat(7, 1fr)",
-              borderBottom: rowIdx < gridCells.length / 7 - 1 ? "1px solid var(--pmt-border)" : "none",
+              borderBottom: rowIdx < gridCells.length / 7 - 1 ? "1px solid var(--bms-border)" : "none",
             }}>
               {gridCells.slice(rowIdx * 7, rowIdx * 7 + 7).map((day, colIdx) => (
-                <div key={colIdx} style={{ padding: 4, borderRight: colIdx < 6 ? "1px solid var(--pmt-border)" : "none", minHeight: 72 }}>
+                <div key={colIdx} style={{ padding: 4, borderRight: colIdx < 6 ? "1px solid var(--bms-border)" : "none", minHeight: 72 }}>
                   {day ? (
                     <DayCell
                       day={day}

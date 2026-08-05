@@ -30,7 +30,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <AppThemeProvider>
-        <BrowserRouter basename="/pmt">
+        <BrowserRouter basename="/bms">
           <App />
         </BrowserRouter>
       </AppThemeProvider>

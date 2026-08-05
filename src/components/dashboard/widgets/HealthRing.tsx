@@ -43,7 +43,7 @@ function DonutChart({
           cy={cy}
           r={radius}
           fill="none"
-          stroke="var(--pmt-border, #eef2f6)"
+          stroke="var(--bms-border, #eef2f6)"
           strokeWidth={strokeWidth}
         />
       </svg>
@@ -121,8 +121,8 @@ export default function HealthRing({
             pointerEvents: "none",
           }}
         >
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{centerLabel}</div>
-          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--pmt-text)", lineHeight: 1.2 }}>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{centerLabel}</div>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--bms-text)", lineHeight: 1.2 }}>
             {displayCenter}
           </div>
         </div>

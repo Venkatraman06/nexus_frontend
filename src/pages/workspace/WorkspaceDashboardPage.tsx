@@ -8,7 +8,7 @@ import {
 import {
   CheckCircleOutlined, ClockCircleOutlined,
   CalendarOutlined, PhoneOutlined, UserOutlined,
-  PlusOutlined, ArrowRightOutlined, FilterOutlined,
+  ArrowRightOutlined, FilterOutlined,
   FileTextOutlined, BarChartOutlined,
   ThunderboltOutlined, RiseOutlined,
   AlertOutlined, AimOutlined,
@@ -21,11 +21,7 @@ import RelativeTime from "dayjs/plugin/relativeTime";
 import { todoApi } from "@/services/todos";
 import { followUpApi } from "@/services/followups";
 import { workspaceApi } from "@/services/workspace";
-import { PERMS } from "@/constants/permissions";
-import { useAuthStore } from "@/store/auth";
 import { useThemeStore } from "@/store/theme";
-import TodoCreateModal from "./TodoCreateModal";
-import FollowUpCreateModal from "./FollowUpCreateModal";
 
 dayjs.extend(RelativeTime);
 
@@ -41,14 +37,14 @@ const TIME_FILTER_OPTIONS = [
 ];
 
 const TODO_STATUS_COLORS: Record<string, string> = {
-  open: "#6366F1",
+  open: "#8B5CF6",
   inprogress: "#3B82F6",
   done: "#10B981",
-  cancelled: "#94A3B8",
+  cancelled: "#EF4444",
 };
 
 const FOLLOWUP_STATUS_COLORS: Record<string, string> = {
-  planning: "#0D9488",
+  planning: "#8B5CF6",
   inprogress: "#3B82F6",
   completed: "#10B981",
   cancelled: "#EF4444",
@@ -104,9 +100,9 @@ function KpiCard({
       onClick={onClick}
       style={{
         borderRadius: 14,
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         height: "100%",
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
         cursor: onClick ? "pointer" : "default",
         transition: "all 0.2s ease-in-out",
         boxShadow: "var(--shadow-sm)",
@@ -125,9 +121,9 @@ function KpiCard({
           {icon}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--pmt-text-3)", marginBottom: 4 }}>{label}</div>
-          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--pmt-text)", lineHeight: 1.1 }}>{value}</div>
-          {sub && <div style={{ fontSize: 12, color: "var(--pmt-text-2)", marginTop: 4 }}>{sub}</div>}
+          <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--bms-text-3)", marginBottom: 4 }}>{label}</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: "var(--bms-text)", lineHeight: 1.1 }}>{value}</div>
+          {sub && <div style={{ fontSize: 12, color: "var(--bms-text-2)", marginTop: 4 }}>{sub}</div>}
           {progress !== undefined && (
             <Progress
               percent={progress}
@@ -156,8 +152,8 @@ function Section({
   children: React.ReactNode;
 }) {
   const isDark = useThemeStore((s) => s.isDark);
-  const headerBg    = isDark ? (darkBg     ?? "var(--pmt-surface-2)") : (lightBg     ?? "var(--pmt-surface)");
-  const borderColor = isDark ? (darkBorder ?? "var(--pmt-border)")    : (lightBorder ?? "var(--pmt-border)");
+  const headerBg    = isDark ? (darkBg     ?? "var(--bms-surface-2)") : (lightBg     ?? "var(--bms-surface)");
+  const borderColor = isDark ? (darkBorder ?? "var(--bms-border)")    : (lightBorder ?? "var(--bms-border)");
 
   return (
     <Card
@@ -165,14 +161,14 @@ function Section({
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ color: iconColor, fontSize: 16, display: "flex", alignItems: "center" }}>{icon}</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)", letterSpacing: "-0.01em" }}>{title}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--bms-text)", letterSpacing: "-0.01em" }}>{title}</span>
         </div>
       }
       extra={extra}
       styles={{
         body: {
           padding: "16px 20px",
-          background: "var(--pmt-surface)",
+          background: "var(--bms-surface)",
           borderRadius: "0 0 14px 14px",
         },
         header: {
@@ -186,7 +182,7 @@ function Section({
         borderRadius: 14,
         border: `1px solid ${borderColor}`,
         height: "100%",
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
         boxShadow: "var(--shadow-sm)",
       }}
     >
@@ -217,20 +213,25 @@ const DonutChart = ({
     );
   }
 
-  const config = {
+  const config: any = {
     data: nonZeroData,
     theme: isDark ? "dark" : "light",
     angleField: "value",
     colorField: "type",
-    color: (dataItem: any) => {
-      const typeName = typeof dataItem === "string" ? dataItem : (dataItem?.type || "");
-      const match = nonZeroData.find((d) => d.type === typeName || d.type.toLowerCase() === typeName.toLowerCase());
-      if (match?.color) return match.color;
-      const key = typeName.toLowerCase();
-      return colors[key] || colors[typeName] || "#94A3B8";
+    color: ({ type }: any) => {
+      const match = nonZeroData.find((d) => d.type === type || d.type.toLowerCase() === (type || "").toLowerCase());
+      return match?.color || colors[type?.toLowerCase()] || "#94A3B8";
+    },
+    scale: {
+      color: {
+        range: nonZeroData.map((d) => d.color),
+      },
+    },
+    style: {
+      fill: (d: any) => d?.color || nonZeroData.find((item) => item.type === d?.type)?.color || "#94A3B8",
     },
     radius: 0.85,
-    innerRadius: 0.6,
+    innerRadius: 0.55,
     label: false,
     legend: false,
     tooltip: {
@@ -241,8 +242,11 @@ const DonutChart = ({
         valueFormatter: (v: number) => `${v} (${total > 0 ? Math.round((v / total) * 100) : 0}%)`,
       }],
     },
-    height: 220,
-    statistic: false,
+    height: 238,
+    statistic: {
+      title: { content: "Total", style: { color: isDark ? "#9aa0a6" : "#5f6368" } },
+      content: { content: String(total), style: { color: isDark ? "#e8eaed" : "#202124" } },
+    },
   };
 
   return <Pie {...config} />;
@@ -263,19 +267,19 @@ const StatusLegend = ({ data, total }: {
             style={{
               display: "flex", alignItems: "center", justifyBetween: "space-between",
               padding: "8px 12px", borderRadius: 8,
-              background: "var(--pmt-bg)",
-              border: `1px solid var(--pmt-border)`,
+              background: "var(--bms-bg)",
+              border: `1px solid var(--bms-border)`,
               transition: "transform 0.15s ease-in-out",
             }}
-            className="pmt-legend-item"
+            className="bms-legend-item"
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: item.color }} />
-              <Text style={{ fontSize: 12, color: "var(--pmt-text)", fontWeight: 500 }}>{item.type}</Text>
+              <Text style={{ fontSize: 12, color: "var(--bms-text)", fontWeight: 500 }}>{item.type}</Text>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Text style={{ fontSize: 13, fontWeight: 700, color: item.color }}>{item.value}</Text>
-              <Text style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{pct}%</Text>
+              <Text style={{ fontSize: 10, color: "var(--bms-text-3)" }}>{pct}%</Text>
             </div>
           </div>
         );
@@ -303,14 +307,14 @@ const TimelineItem = ({
       style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "12px 16px", borderRadius: 10,
-        background: "var(--pmt-surface-2)",
-        border: `1px solid var(--pmt-border)`,
+        background: "var(--bms-surface-2)",
+        border: `1px solid var(--bms-border)`,
         borderLeft: `3px solid ${accent}`,
         cursor: onClick ? "pointer" : "default",
         marginBottom: 10,
         transition: "all 0.15s ease-in-out",
       }}
-      className="pmt-timeline-hover-card"
+      className="bms-timeline-hover-card"
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
         <div style={{
@@ -322,14 +326,14 @@ const TimelineItem = ({
           {icon}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <Text strong style={{ fontSize: 13, color: "var(--pmt-text)", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <Text strong style={{ fontSize: 13, color: "var(--bms-text)", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {title}
           </Text>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px", marginTop: 4 }}>
             {date && (
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <CalendarOutlined style={{ fontSize: 10, color: "var(--pmt-text-3)" }} />
-                <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+                <CalendarOutlined style={{ fontSize: 10, color: "var(--bms-text-3)" }} />
+                <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
                   {dateFormat ? dayjs(date).format(dateFormat) : dayjs(date).fromNow()}
                 </Text>
               </div>
@@ -337,17 +341,17 @@ const TimelineItem = ({
             {status && statusColor && (
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <div style={{ width: 5, height: 5, borderRadius: "50%", background: statusColor }} />
-                <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{status}</Text>
+                <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{status}</Text>
               </div>
             )}
             {assignee && (
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <UserOutlined style={{ fontSize: 10, color: "var(--pmt-text-3)" }} />
-                <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{assignee}</Text>
+                <UserOutlined style={{ fontSize: 10, color: "var(--bms-text-3)" }} />
+                <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{assignee}</Text>
               </div>
             )}
             {subtitle && (
-              <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{subtitle}</Text>
+              <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{subtitle}</Text>
             )}
           </div>
         </div>
@@ -392,7 +396,7 @@ const StatusPills = ({ items }: {
         >
           <div style={{ fontSize: 18, color, marginBottom: 4 }}>{icon}</div>
           <div style={{ fontSize: 22, fontWeight: 700, color }}>{value}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-2)", marginTop: 2 }}>{label}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-2)", marginTop: 2 }}>{label}</div>
         </div>
       ))}
     </div>
@@ -416,7 +420,7 @@ const StatusProgressRow = ({ status, count, total, color }: {
     >
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-        <Text style={{ fontSize: 12, color: "var(--pmt-text)" }}>
+        <Text style={{ fontSize: 12, color: "var(--bms-text)" }}>
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </Text>
       </div>
@@ -486,9 +490,9 @@ const DailyBriefingPanel = ({
       icon={<BarChartOutlined />}
       iconColor="#6366F1"
       lightBg="#f5f3ff" lightBorder="#ddd6fe"
-      darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+      darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
     >
-      <Text style={{ fontSize: 13, color: "var(--pmt-text-2)", lineHeight: 1.6, display: "block", marginBottom: 18 }}>
+      <Text style={{ fontSize: 13, color: "var(--bms-text-2)", lineHeight: 1.6, display: "block", marginBottom: 18 }}>
         You have <strong>{totalItems}</strong> upcoming task{totalItems !== 1 ? "s" : ""} in the next 5 days.{" "}
         {urgentCount > 0
           ? `⚠️ ${urgentCount} item${urgentCount !== 1 ? "s are" : " is"} due within 2 days or overdue.`
@@ -501,8 +505,8 @@ const DailyBriefingPanel = ({
               onClick={onClick}
               style={{
                 borderRadius: 12,
-                border: `1px solid var(--pmt-border)`,
-                background: "var(--pmt-surface)",
+                border: `1px solid var(--bms-border)`,
+                background: "var(--bms-surface)",
                 padding: "16px 18px",
                 cursor: onClick ? "pointer" : "default",
                 height: "100%",
@@ -521,7 +525,7 @@ const DailyBriefingPanel = ({
                   {icon}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 11, color: "var(--bms-text-3)", marginBottom: 2 }}>{label}</div>
                   <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1.1 }}>{value}</div>
                 </div>
               </div>
@@ -538,13 +542,6 @@ export default function WorkspaceDashboardPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [timeFilter, setTimeFilter] = useState<string>("all");
-  const [todoCreateOpen, setTodoCreateOpen] = useState(false);
-  const [followUpCreateOpen, setFollowUpCreateOpen] = useState(false);
-
-  const user = useAuthStore((s) => s.user);
-  const permissions = useAuthStore((s) => s.permissions);
-  const canCreateTodo = permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
-  const canCreateFollowup = permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
 
   const [overdueFilter, setOverdueFilter] = useState<string>("overdue");
   const [upcomingFollowUpsModalOpen, setUpcomingFollowUpsModalOpen] = useState(false);
@@ -600,7 +597,9 @@ export default function WorkspaceDashboardPage() {
       if (status in counts) counts[status as keyof TodoStatusCounts]++;
       else (counts as any)[status] = ((counts as any)[status] || 0) + 1;
 
-      if (todo.workflow_state_color) {
+      if (TODO_STATUS_COLORS[status]) {
+        colors[status] = TODO_STATUS_COLORS[status];
+      } else if (todo.workflow_state_color) {
         colors[status] = todo.workflow_state_color;
       }
     });
@@ -616,7 +615,9 @@ export default function WorkspaceDashboardPage() {
       if (status in counts) counts[status as keyof FollowUpStatusCounts]++;
       else (counts as any)[status] = ((counts as any)[status] || 0) + 1;
 
-      if (f.workflow_state_color) {
+      if (FOLLOWUP_STATUS_COLORS[status]) {
+        colors[status] = FOLLOWUP_STATUS_COLORS[status];
+      } else if (f.workflow_state_color) {
         colors[status] = f.workflow_state_color;
       }
     });
@@ -769,13 +770,13 @@ export default function WorkspaceDashboardPage() {
 
   const todayMeetingsCount = useMemo(() => {
     const list = todayCalendarData?.events || [];
-    return list.filter((ev) => ev.start_date === todayStr || ev.end_date === todayStr).length;
+    return list.filter((ev) => (ev.start_date === todayStr || ev.end_date === todayStr) && ev.event_kind === "meeting").length;
   }, [todayCalendarData, todayStr]);
 
   const todayScheduleEvents = useMemo(() => {
     const list = todayCalendarData?.events || [];
     return [...list]
-      .filter((ev) => ev.start_date === todayStr || ev.end_date === todayStr)
+      .filter((ev) => (ev.start_date === todayStr || ev.end_date === todayStr) && ev.event_kind === "meeting")
       .map((ev) => {
         const timeStr = ev.start_time
           ? dayjs(`${todayStr}T${ev.start_time}`).format("hh:mm A")
@@ -819,13 +820,13 @@ export default function WorkspaceDashboardPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--pmt-bg)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bms-bg)" }}>
       {/* ── Header ── */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>Workspace Dashboard</Title>
-            <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>
+            <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>Workspace Dashboard</Title>
+            <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>
               Todos, follow-ups and calendar overview · {dayjs().format("DD MMM YYYY")}
             </Text>
           </div>
@@ -840,25 +841,6 @@ export default function WorkspaceDashboardPage() {
                 <Option key={opt.value} value={opt.value}>{opt.label}</Option>
               ))}
             </Select>
-            {canCreateFollowup && (
-              <Button
-                icon={<CalendarOutlined />}
-                onClick={() => setFollowUpCreateOpen(true)}
-                style={{ borderRadius: 10, height: 36, fontWeight: 600, fontSize: 13 }}
-              >
-                Schedule
-              </Button>
-            )}
-            {canCreateTodo && (
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => setTodoCreateOpen(true)}
-                style={{ borderRadius: 10, height: 36, fontWeight: 600, fontSize: 13 }}
-              >
-                Add To-Do
-              </Button>
-            )}
           </div>
         </div>
       </div>
@@ -915,7 +897,7 @@ export default function WorkspaceDashboardPage() {
             icon={<BarChartOutlined />}
             iconColor="#6366F1"
             lightBg="#eff6ff" lightBorder="#bfdbfe"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
             extra={
               <Button type="link" size="small" onClick={() => navigate("/workspace/todos")} style={{ fontSize: 12, fontWeight: 600, padding: 0 }}>
                 View All <ArrowRightOutlined />
@@ -950,7 +932,7 @@ export default function WorkspaceDashboardPage() {
                             background: todoStats.colors[status] || TODO_STATUS_COLORS[status] || "#94A3B8",
                           }}
                         />
-                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--pmt-text)" }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--bms-text)" }}>
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </span>
                       </div>
@@ -971,7 +953,7 @@ export default function WorkspaceDashboardPage() {
             icon={<PhoneOutlined />}
             iconColor="#0D9488"
             lightBg="#f0fdfa" lightBorder="#99f6e4"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
             extra={
               <Button type="link" size="small" onClick={() => navigate("/workspace/followups")} style={{ fontSize: 12, fontWeight: 600, padding: 0 }}>
                 View All <ArrowRightOutlined />
@@ -1008,7 +990,7 @@ export default function WorkspaceDashboardPage() {
             icon={<ClockCircleOutlined />}
             iconColor="#6366F1"
             lightBg="#f5f3ff" lightBorder="#ddd6fe"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
           >
             {todayScheduleItems.length === 0 ? (
               <div style={{ textAlign: "center", padding: "24px 0" }}>
@@ -1020,8 +1002,8 @@ export default function WorkspaceDashboardPage() {
                 }}>
                   <CheckCircleOutlined style={{ fontSize: 24, color: "#6366F1" }} />
                 </div>
-                <Text style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)", display: "block" }}>Free day!</Text>
-                <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>Nothing scheduled for today.</Text>
+                <Text style={{ fontSize: 14, fontWeight: 600, color: "var(--bms-text)", display: "block" }}>Free day!</Text>
+                <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>Nothing scheduled for today.</Text>
               </div>
             ) : (
               <OverdueList items={todayScheduleItems} />
@@ -1034,7 +1016,7 @@ export default function WorkspaceDashboardPage() {
             icon={<AlertOutlined />}
             iconColor="#EF4444"
             lightBg="#fff1f2" lightBorder="#fecdd3"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
             extra={
               <Select
                 value={overdueFilter}
@@ -1059,8 +1041,8 @@ export default function WorkspaceDashboardPage() {
                 }}>
                   <CheckCircleOutlined style={{ fontSize: 24, color: "#10B981" }} />
                 </div>
-                <Text style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)", display: "block" }}>All caught up!</Text>
-                <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>No items matching the filter.</Text>
+                <Text style={{ fontSize: 14, fontWeight: 600, color: "var(--bms-text)", display: "block" }}>All caught up!</Text>
+                <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>No items matching the filter.</Text>
               </div>
             ) : (
               <OverdueList items={filteredOverdueItems} />
@@ -1068,24 +1050,6 @@ export default function WorkspaceDashboardPage() {
           </Section>
         </Col>
       </Row>
-
-      {/* ── Modals ── */}
-      <TodoCreateModal
-        open={todoCreateOpen}
-        onClose={() => setTodoCreateOpen(false)}
-        onCreated={() => {
-          queryClient.invalidateQueries({ queryKey: ["workspace-dashboard-todos"] });
-          queryClient.invalidateQueries({ queryKey: ["workspace-dashboard-calendar"] });
-        }}
-      />
-      <FollowUpCreateModal
-        open={followUpCreateOpen}
-        onClose={() => setFollowUpCreateOpen(false)}
-        onCreated={() => {
-          queryClient.invalidateQueries({ queryKey: ["workspace-dashboard-followups"] });
-          queryClient.invalidateQueries({ queryKey: ["workspace-dashboard-calendar"] });
-        }}
-      />
 
       {/* ── Upcoming Follow-ups Modal ── */}
       <Modal
@@ -1109,8 +1073,8 @@ export default function WorkspaceDashboardPage() {
                 }}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "10px 14px", borderRadius: 8, background: "var(--pmt-surface-2)",
-                  border: "1px solid var(--pmt-border)", cursor: "pointer",
+                  padding: "10px 14px", borderRadius: 8, background: "var(--bms-surface-2)",
+                  border: "1px solid var(--bms-border)", cursor: "pointer",
                   borderLeft: "3px solid #0D9488",
                 }}
               >
@@ -1119,7 +1083,7 @@ export default function WorkspaceDashboardPage() {
                   <Text strong style={{ fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</Text>
                 </div>
                 <Space>
-                  {item.end_date && <span style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Due {dayjs(item.end_date).format("DD MMM YYYY")}</span>}
+                  {item.end_date && <span style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Due {dayjs(item.end_date).format("DD MMM YYYY")}</span>}
                   <span style={{
                     fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4,
                     background: (FOLLOWUP_STATUS_COLORS[item.workflow_state_slug?.toLowerCase() || ""] || "#94A3B8") + "15",

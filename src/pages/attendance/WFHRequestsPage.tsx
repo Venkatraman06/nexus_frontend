@@ -43,9 +43,9 @@ interface EmployeeWFHAccess {
 }
 
 const WFH_STATUS: Record<string, { color: string; bg: string; label: string; antColor: string }> = {
-  PENDING:  { color: "var(--pmt-warning)", bg: "rgba(217, 119, 6, 0.15)", label: "Pending",  antColor: "warning" },
-  APPROVED: { color: "var(--pmt-success)", bg: "rgba(22, 163, 74, 0.15)", label: "Approved", antColor: "success" },
-  REJECTED: { color: "var(--pmt-danger)", bg: "var(--pmt-danger-bg)", label: "Rejected", antColor: "error"   },
+  PENDING:  { color: "var(--bms-warning)", bg: "rgba(217, 119, 6, 0.15)", label: "Pending",  antColor: "warning" },
+  APPROVED: { color: "var(--bms-success)", bg: "rgba(22, 163, 74, 0.15)", label: "Approved", antColor: "success" },
+  REJECTED: { color: "var(--bms-danger)", bg: "var(--bms-danger-bg)", label: "Rejected", antColor: "error"   },
 };
 
 // ─── Reject modal ─────────────────────────────────────────────────────────────
@@ -60,10 +60,10 @@ function RejectModal({ open, onCancel, onConfirm, loading }: {
     setNote("");
   };
   return (
-    <Modal title={<span><ExclamationCircleOutlined style={{ color: "var(--pmt-danger)", marginRight: 8 }} />Reject WFH Request</span>}
+    <Modal title={<span><ExclamationCircleOutlined style={{ color: "var(--bms-danger)", marginRight: 8 }} />Reject WFH Request</span>}
       open={open} onCancel={onCancel} onOk={handle} okText="Reject" okButtonProps={{ danger: true, loading }}
       destroyOnClose>
-      <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>Provide a reason for rejection (visible to employee):</Text>
+      <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>Provide a reason for rejection (visible to employee):</Text>
       <TextArea rows={3} value={note} onChange={(e) => setNote(e.target.value)}
         placeholder="e.g. Not enough notice period, team meeting required..." style={{ marginTop: 10 }} />
     </Modal>

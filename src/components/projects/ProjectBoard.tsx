@@ -287,7 +287,7 @@ export default function ProjectBoard({
               key={col.id}
               className="kanban-column"
               style={{
-                background: overColumn === col.slug && dropOk ? hexToRgba(dotColor, 0.08) : "var(--pmt-board-column)",
+                background: overColumn === col.slug && dropOk ? hexToRgba(dotColor, 0.08) : "var(--bms-board-column)",
                 border: overColumn === col.slug && dropOk
                   ? `2px dashed ${dotColor}`
                   : "2px solid transparent",
@@ -309,7 +309,7 @@ export default function ProjectBoard({
                 <Text
                   strong
                   ellipsis
-                  style={{ fontSize: 13, color: "var(--pmt-text)", flex: 1, minWidth: 0 }}
+                  style={{ fontSize: 13, color: "var(--bms-text)", flex: 1, minWidth: 0 }}
                 >
                   {col.name}
                 </Text>
@@ -359,9 +359,9 @@ export default function ProjectBoard({
                         style={{ background: accent }}
                         aria-hidden
                       />
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start" }}>
                         <Text strong style={{ fontSize: 13, lineHeight: 1.3 }}>{p.name}</Text>
-                        {overdue && <Tag color="error" style={{ margin: 0, fontSize: 10 }}>Due</Tag>}
+                        {overdue && <Tag color="error" style={{ margin: 0, fontSize: 10, flexShrink: 0, whiteSpace: "nowrap" }}>Due</Tag>}
                       </div>
                       {p.client_name && (
                         <Text type="secondary" style={{ fontSize: 11, display: "block", marginTop: 4 }}>
@@ -376,7 +376,7 @@ export default function ProjectBoard({
                           <Tag color="purple" style={{ margin: 0, fontSize: 10 }}>{p.billing_type_name}</Tag>
                         )}
                       </div>
-                      <Text style={{ fontSize: 12, fontWeight: 600, color: "var(--pmt-text-2, #5f6368)", display: "block", marginTop: 8 }}>
+                      <Text style={{ fontSize: 12, fontWeight: 600, color: "var(--bms-text-2, #5f6368)", display: "block", marginTop: 8 }}>
                         {formatHours(p.estimated_hours)}
                       </Text>
                       {progress > 0 && (

@@ -132,7 +132,7 @@ export default function HRCompliancePage() {
         <Space>
           <FileTextOutlined style={{ color: "#1677ff", fontSize: 18 }} />
           <div>
-            <Text strong style={{ fontSize: 13, color: "var(--pmt-text)" }}>{row.title}</Text>
+            <Text strong style={{ fontSize: 13, color: "var(--bms-text)" }}>{row.title}</Text>
             {row.version && (
               <Text type="secondary" style={{ fontSize: 11, display: "block" }}>v{row.version}</Text>
             )}
@@ -144,7 +144,7 @@ export default function HRCompliancePage() {
       title: "Employee",
       dataIndex: "employee_name",
       key: "employee_name",
-      render: (name: string) => <Text style={{ color: "var(--pmt-text)" }}>{name}</Text>,
+      render: (name: string) => <Text style={{ color: "var(--bms-text)" }}>{name}</Text>,
     }] : []),
     {
       title: "Type",
@@ -159,7 +159,7 @@ export default function HRCompliancePage() {
       dataIndex: "effective_date",
       key: "effective_date",
       render: (d: string | null) => (
-        <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>
+        <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>
           {d ? dayjs(d).format("DD MMM YYYY") : "—"}
         </Text>
       ),
@@ -170,7 +170,7 @@ export default function HRCompliancePage() {
       render: (_: unknown, row: HRComplianceDocument) =>
         row.is_acknowledged ? (
           <Badge status="success" text={
-            <Text style={{ fontSize: 12, color: "var(--pmt-text)" }}>
+            <Text style={{ fontSize: 12, color: "var(--bms-text)" }}>
               Acknowledged {row.acknowledged_date ? dayjs(row.acknowledged_date).format("DD MMM YYYY") : ""}
             </Text>
           } />
@@ -237,7 +237,7 @@ export default function HRCompliancePage() {
         <div>
           <Space align="center">
             <SafetyCertificateOutlined style={{ fontSize: 24, color: "#1677ff" }} />
-            <Title level={3} style={{ margin: 0, color: "var(--pmt-text)" }}>HR Compliance Documents</Title>
+            <Title level={3} style={{ margin: 0, color: "var(--bms-text)" }}>HR Compliance Documents</Title>
           </Space>
           <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
             {isHR
@@ -305,7 +305,7 @@ export default function HRCompliancePage() {
         <Card size="small" style={{ marginBottom: 16 }}>
           <Row gutter={16} align="middle">
             <Col>
-              <Text strong style={{ fontSize: 13, color: "var(--pmt-text)" }}>Filter by Employee:</Text>
+              <Text strong style={{ fontSize: 13, color: "var(--bms-text)" }}>Filter by Employee:</Text>
             </Col>
             <Col flex={1} style={{ maxWidth: 320 }}>
               <Select

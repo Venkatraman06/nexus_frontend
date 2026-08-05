@@ -1,4 +1,4 @@
-import type { PmtPermission } from "@/constants/permissions";
+import type { BmsPermission } from "@/constants/permissions";
 import { PERMS } from "@/constants/permissions";
 import type { AuthUser } from "@/store/auth";
 
@@ -11,7 +11,7 @@ export function hasFullAccess(user: AuthUser | null | undefined): boolean {
 export function hasPermission(
   user: AuthUser | null | undefined,
   permissions: string[],
-  permission: PmtPermission,
+  permission: BmsPermission,
 ): boolean {
   if (!user) return false;
   if (hasFullAccess(user)) return true;
@@ -21,7 +21,7 @@ export function hasPermission(
 export function hasAnyPermission(
   user: AuthUser | null | undefined,
   permissions: string[],
-  anyOf: PmtPermission[],
+  anyOf: BmsPermission[],
 ): boolean {
   if (!user) return false;
   if (hasFullAccess(user)) return true;
@@ -31,7 +31,7 @@ export function hasAnyPermission(
 export function hasAllPermissions(
   user: AuthUser | null | undefined,
   permissions: string[],
-  allOf: PmtPermission[],
+  allOf: BmsPermission[],
 ): boolean {
   if (!user) return false;
   if (hasFullAccess(user)) return true;
@@ -51,8 +51,8 @@ export function resolveLandingPath(
 }
 
 export interface NavPermissionItem {
-  permission?: PmtPermission;
-  anyOf?: PmtPermission[];
+  permission?: BmsPermission;
+  anyOf?: BmsPermission[];
   children?: NavPermissionItem[];
 }
 

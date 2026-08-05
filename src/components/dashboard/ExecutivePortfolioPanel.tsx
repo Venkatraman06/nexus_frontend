@@ -50,10 +50,10 @@ export default function ExecutivePortfolioPanel({ projects, onProjectClick }: Pr
     <div className="exec-portfolio-panel">
       <div className="exec-portfolio-panel__summary">
         {[
-          { label: "Projects", value: String(projects.length), color: "var(--pmt-text)" },
+          { label: "Projects", value: String(projects.length), color: "var(--bms-text)" },
           { label: "FY invoiced", value: fmt(summary.totalRevenue), color: "#4f46e5" },
           { label: "Portfolio margin", value: fmt(summary.totalMargin), color: marginMetaColor(summary.totalMargin) },
-          { label: "At risk", value: String(summary.negative), color: summary.negative > 0 ? "var(--pmt-danger)" : "var(--pmt-success)" },
+          { label: "At risk", value: String(summary.negative), color: summary.negative > 0 ? "var(--bms-danger)" : "var(--bms-success)" },
         ].map(({ label, value, color }) => (
           <div key={label} className="exec-portfolio-panel__stat">
             <span className="exec-portfolio-panel__stat-label">{label}</span>

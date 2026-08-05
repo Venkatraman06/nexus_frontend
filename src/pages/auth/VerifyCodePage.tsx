@@ -93,7 +93,7 @@ export default function VerifyCodePage() {
       </Form>
 
       <div style={{ textAlign: "center", marginTop: 8 }}>
-        <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>
+        <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>
           Didn't receive the code?{" "}
           <Button type="link" onClick={handleResend} style={{ padding: 0, fontSize: 13 }}>
             Resend

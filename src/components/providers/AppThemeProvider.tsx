@@ -114,19 +114,20 @@ const lightTokens = {
 
 const darkTokens = {
   ...lightTokens,
-  colorPrimary: "#8ab4f8",
-  colorLink: "#8ab4f8",
-  colorBgContainer: "#1a2236",
-  colorBgLayout: "#0f1419",
-  colorBgElevated: "#1e2a3f",
-  colorBorder: "#3c4043",
-  colorText: "#e8eaed",
-  colorTextSecondary: "#9aa0a6",
-  colorTextTertiary: "#80868b",
-  colorFillAlter: "#243044",
-  colorFillSecondary: "#2a3548",
-  boxShadow: "0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 2px 0 rgba(0,0,0,0.12)",
-  boxShadowSecondary: "0 4px 6px -1px rgba(0,0,0,0.25), 0 2px 4px -1px rgba(0,0,0,0.15)",
+  colorPrimary: "#3b82f6",
+  colorLink: "#60a5fa",
+  colorBgLayout: "#080c14",      // Deep black page background
+  colorBgContainer: "#172136",   // Vibrant dark blue box background
+  colorBgElevated: "#1c2842",    // Elevated dark blue modal/popover/select box
+  colorBorder: "#2b3d63",        // Blue-tinted border line
+  colorBorderSecondary: "#233352",
+  colorText: "#f1f5f9",
+  colorTextSecondary: "#94a3b8",
+  colorTextTertiary: "#64748b",
+  colorFillAlter: "#1e2c48",
+  colorFillSecondary: "#233352",
+  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.18)",
+  boxShadowSecondary: "0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.22)",
 };
 
 export default function AppThemeProvider({ children }: { children: React.ReactNode }) {
@@ -150,21 +151,23 @@ export default function AppThemeProvider({ children }: { children: React.ReactNo
         token: isDark ? darkTokens : lightTokens,
         components: {
           Button:  { borderRadius: 10, fontWeight: 500, controlHeight: 36 },
-          Card:    { borderRadius: 14 },
-          Input:   { borderRadius: 10, controlHeight: 36 },
-          Select:  { borderRadius: 10, controlHeight: 36 },
-          Modal:   { borderRadius: 14 },
+          Card:    { borderRadius: 14, colorBgContainer: isDark ? "#172136" : "#ffffff" },
+          Input:   { borderRadius: 10, controlHeight: 36, colorBgContainer: isDark ? "#121b2d" : "#ffffff", colorBorder: isDark ? "#2b3d63" : "#dadce0" },
+          Select:  { borderRadius: 10, controlHeight: 36, colorBgContainer: isDark ? "#121b2d" : "#ffffff", colorBorder: isDark ? "#2b3d63" : "#dadce0" },
+          Modal:   { borderRadius: 14, contentBg: isDark ? "#172136" : "#ffffff", headerBg: isDark ? "#172136" : "#ffffff", footerBg: isDark ? "#172136" : "#ffffff" },
+          Drawer:  { colorBgElevated: isDark ? "#172136" : "#ffffff" },
           Table: {
             borderRadius: 14,
-            headerBg:   isDark ? "#1a2236" : "#f1f3f4",
-            rowHoverBg: isDark ? "#243044" : "#e8f0fe",
+            headerBg:   isDark ? "#1e2c48" : "#f1f3f4",
+            rowHoverBg: isDark ? "#233352" : "#e8f0fe",
+            colorBgContainer: isDark ? "#172136" : "#ffffff",
           },
           Menu: {
             itemBorderRadius:    10,
             itemSelectedBg:      "#1a73e8",
             itemSelectedColor:   "#ffffff",
-            darkItemBg:          "#0f172a",
-            darkItemHoverBg:     "#1e293b",
+            darkItemBg:          "#080c14",
+            darkItemHoverBg:     "#172136",
             darkItemSelectedBg:  "#1a73e8",
           },
           Tag: {

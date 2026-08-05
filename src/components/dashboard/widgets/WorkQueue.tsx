@@ -91,7 +91,7 @@ export default function WorkQueue({
               {item.meta && (
                 <div
                   className="dash-queue-item__meta dash-queue-item__meta--emphasis"
-                  style={{ marginTop: 6, color: item.metaColor ?? "var(--pmt-text-2)" }}
+                  style={{ marginTop: 6, color: item.metaColor ?? "var(--bms-text-2)" }}
                 >
                   {item.meta}
                 </div>

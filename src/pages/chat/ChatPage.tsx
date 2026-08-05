@@ -309,7 +309,7 @@ export default function ChatPage() {
 
   return (
     <div style={{ display: "flex", height: "calc(100vh - 112px)", gap: 16 }}>
-      <div style={{ width: 320, display: "flex", flexDirection: "column", borderRight: "1px solid var(--pmt-border, #e5e7eb)" }}>
+      <div style={{ width: 320, display: "flex", flexDirection: "column", borderRight: "1px solid var(--bms-border, #e5e7eb)" }}>
         <div style={{ padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Title level={5} style={{ margin: 0 }}>Chat</Title>
           <Tooltip title="New conversation">
@@ -367,7 +367,7 @@ export default function ChatPage() {
           <Empty description="Select a conversation" style={{ marginTop: 80 }} />
         ) : (
           <>
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--pmt-border, #e5e7eb)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--bms-border, #e5e7eb)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Title level={5} style={{ margin: 0 }}>{conversationTitle(activeConversation, myId)}</Title>
                 {typingNames.length > 0 && <Text type="secondary" style={{ fontSize: 12 }}>{typingNames.join(", ")} typing…</Text>}
@@ -473,7 +473,7 @@ export default function ChatPage() {
             </div>
 
             {filterTab === "all" && (
-              <div style={{ padding: 16, borderTop: "1px solid var(--pmt-border, #e5e7eb)" }}>
+              <div style={{ padding: 16, borderTop: "1px solid var(--bms-border, #e5e7eb)" }}>
                 {pendingFile && (
                   <Tag closable onClose={() => setPendingFile(null)} style={{ marginBottom: 8 }}>
                     {pendingFile.name}

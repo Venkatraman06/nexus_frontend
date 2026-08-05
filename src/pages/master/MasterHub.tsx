@@ -54,7 +54,7 @@ export default function MasterHub() {
         <Input
           className="master-hub-search"
           placeholder="Search masters…"
-          prefix={<SearchOutlined style={{ color: "var(--pmt-text-3)" }} />}
+          prefix={<SearchOutlined style={{ color: "var(--bms-text-3)" }} />}
           allowClear
           value={search}
           onChange={(e) => setSearch(e.target.value)}

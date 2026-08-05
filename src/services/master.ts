@@ -1,4 +1,4 @@
-import { get, post, patch, del } from "./api";
+import { get, post, patch, put, del } from "./api";
 
 const BASE = "/master";
 
@@ -106,6 +106,8 @@ export const billingTypeApi = {
   dropdown: () => get<DropdownOption[]>(`${BASE}/dropdown/billing-types/`),
 };
 
+export const followupTypeApi = masterApi("followup-types");
+
 export const shiftCategoryApi = {
   list:     (params?: Record<string, unknown>) =>
     get<any>(`${BASE}/shift-categories/`, params).then((r: any) => (Array.isArray(r) ? r : r.results ?? r)),
@@ -173,4 +175,29 @@ export const holidayApi = {
 export const leaveBalanceAssignApi = {
   assign: (data: { year: number; assignments: Array<{ employee_id: string; leave_type_id: string; total_days: number }> }) =>
     post<any>(`${BASE}/leave/balances/assign/`, data),
+};
+
+/**
+ * Singleton configuration: exactly ONE row in the database.
+ * The API reflects this — no list, no ID-based access.
+ */
+export interface ReimbursementConfigItem {
+  id: string;
+  approver_id: string | null;
+  approver_name: string | null;
+  approver_code: string | null;
+  approver_email: string | null;
+  configured_by_name: string | null;
+  is_configured: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export const reimbursementConfigApi = {
+  /** Fetch the active singleton config. Returns { is_configured: false } if not set up yet. */
+  get: () => get<ReimbursementConfigItem & { is_configured: boolean }>("/master/reimbursement-config/"),
+
+  /** Upsert (create or update) the singleton config with a new approver. */
+  set: (approver_id: string) =>
+    put<ReimbursementConfigItem>("/master/reimbursement-config/", { approver: approver_id }),
 };

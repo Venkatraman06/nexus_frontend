@@ -46,7 +46,7 @@ export default function ReportingChain({
       <div className="emp-chain-row">
         <div className="emp-chain-row__track">
           <div className="emp-chain-row__dot" style={{ background: accent, boxShadow: `0 0 0 2px ${accent}40` }} />
-          {!isLast && <div className="emp-chain-row__line" style={{ background: `linear-gradient(to bottom, ${accent}60, var(--pmt-border))` }} />}
+          {!isLast && <div className="emp-chain-row__line" style={{ background: `linear-gradient(to bottom, ${accent}60, var(--bms-border))` }} />}
         </div>
         <button type="button" className="emp-chain-row__card" onClick={() => onNavigate(id)}>
           <div className="emp-chain-row__accent" style={{ background: `linear-gradient(90deg, ${accent}, ${accent}44)` }} />

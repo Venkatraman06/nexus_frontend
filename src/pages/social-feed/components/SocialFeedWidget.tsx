@@ -30,8 +30,8 @@ interface SocialFeedWidgetProps {
 
 function widgetHeaderStyle(isDark: boolean, bgColor?: string, borderColor?: string) {
   return {
-    hBg: isDark ? "var(--pmt-surface-2)" : (bgColor ?? "var(--pmt-surface-2)"),
-    hBorder: isDark ? "var(--pmt-border)" : (borderColor ?? "#eaecf0"),
+    hBg: isDark ? "var(--bms-surface-2)" : (bgColor ?? "var(--bms-surface-2)"),
+    hBorder: isDark ? "var(--bms-border)" : (borderColor ?? "#eaecf0"),
   };
 }
 
@@ -51,8 +51,8 @@ function PostPreviewRow({ post, onClick }: { post: SocialPostItem; onClick: () =
         width: "100%",
         padding: "10px 12px",
         borderRadius: 8,
-        border: "1px solid var(--pmt-border)",
-        background: "var(--pmt-surface-2)",
+        border: "1px solid var(--bms-border)",
+        background: "var(--bms-surface-2)",
         cursor: "pointer",
         textAlign: "left",
         transition: "box-shadow 0.15s",
@@ -75,7 +75,7 @@ function PostPreviewRow({ post, onClick }: { post: SocialPostItem; onClick: () =
         <Text
           style={{
             fontSize: 13,
-            color: "var(--pmt-text)",
+            color: "var(--bms-text)",
             display: "block",
             marginTop: 2,
             overflow: "hidden",
@@ -152,10 +152,10 @@ export default function SocialFeedWidget({
           </Space>
         )}
         styles={{
-          body: { padding: "14px 16px", background: "var(--pmt-surface)", borderRadius: "0 0 12px 12px" },
+          body: { padding: "14px 16px", background: "var(--bms-surface)", borderRadius: "0 0 12px 12px" },
           header: { background: hBg, borderBottom: `1px solid ${hBorder}` },
         }}
-        style={{ borderRadius: 12, border: `1px solid ${hBorder}`, background: "var(--pmt-surface)" }}
+        style={{ borderRadius: 12, border: `1px solid ${hBorder}`, background: "var(--bms-surface)" }}
       >
         {isLoading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: 24 }}><Spin /></div>

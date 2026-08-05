@@ -80,7 +80,7 @@ function ToolbarButton({
         style={{
           width: 28, height: 28, padding: 0,
           borderRadius: 4,
-          ...(active ? {} : { color: "var(--pmt-text, #374151)" }),
+          ...(active ? {} : { color: "var(--bms-text, #374151)" }),
         }}
       />
     </Tooltip>
@@ -247,21 +247,21 @@ export default function RichTextEditor({
   return (
     <div
       style={{
-        border: flatCollapsed ? "none" : "1px solid var(--pmt-border, #d9d9d9)",
-        borderBottom: flatCollapsed ? "1px solid var(--pmt-border, #d9d9d9)" : undefined,
+        border: flatCollapsed ? "none" : "1px solid var(--bms-border, #d9d9d9)",
+        borderBottom: flatCollapsed ? "1px solid var(--bms-border, #d9d9d9)" : undefined,
         borderRadius: flatCollapsed ? 0 : 8,
         overflow: "hidden",
         transition: "border-color 0.2s",
-        background: "var(--pmt-surface, #fff)",
+        background: "var(--bms-surface, #fff)",
       }}
       onFocusCapture={(e) => {
         const el = e.currentTarget as HTMLElement;
-        el.style.borderColor = "var(--pmt-primary, #1677ff)";
+        el.style.borderColor = "var(--bms-primary, #1677ff)";
         el.style.boxShadow = "0 0 0 2px rgba(22,119,255,0.1)";
       }}
       onBlurCapture={(e) => {
         const el = e.currentTarget as HTMLElement;
-        el.style.borderColor = "var(--pmt-border, #d9d9d9)";
+        el.style.borderColor = "var(--bms-border, #d9d9d9)";
         el.style.boxShadow = "none";
       }}
     >
@@ -271,8 +271,8 @@ export default function RichTextEditor({
           style={{
             display: "flex", alignItems: "center", flexWrap: "wrap",
             gap: 2, padding: "6px 8px",
-            borderBottom: "1px solid var(--pmt-border, #f0f0f0)",
-            background: "var(--pmt-surface-2, #fafafa)",
+            borderBottom: "1px solid var(--bms-border, #f0f0f0)",
+            background: "var(--bms-surface-2, #fafafa)",
           }}
         >
           {/* Heading — not relevant in a chat composer */}
@@ -280,9 +280,9 @@ export default function RichTextEditor({
             <>
               <select
                 style={{
-                  height: 26, fontSize: 12, border: "1px solid var(--pmt-border, #e5e7eb)",
-                  borderRadius: 4, padding: "0 4px", color: "var(--pmt-text, #374151)",
-                  background: "var(--pmt-surface, #fff)", cursor: "pointer",
+                  height: 26, fontSize: 12, border: "1px solid var(--bms-border, #e5e7eb)",
+                  borderRadius: 4, padding: "0 4px", color: "var(--bms-text, #374151)",
+                  background: "var(--bms-surface, #fff)", cursor: "pointer",
                 }}
                 value={
                   editor.isActive("heading", { level: 1 }) ? "h1"
@@ -445,31 +445,31 @@ export default function RichTextEditor({
 
       {/* ── Global styles injected inline via a style tag ── */}
       <style>{`
-        .tiptap { outline: none; font-size: 14px; line-height: 1.7; color: var(--pmt-text, #1f2937); }
+        .tiptap { outline: none; font-size: 14px; line-height: 1.7; color: var(--bms-text, #1f2937); }
         .tiptap p { margin: 0 0 4px; }
         .tiptap h1 { font-size: 20px; font-weight: 700; margin: 8px 0 4px; }
         .tiptap h2 { font-size: 17px; font-weight: 700; margin: 6px 0 4px; }
         .tiptap h3 { font-size: 15px; font-weight: 600; margin: 4px 0 4px; }
         .rte-ul, .rte-ol { padding-left: 20px; margin: 4px 0; }
         .rte-ul li, .rte-ol li { margin-bottom: 2px; }
-        .tiptap a { color: var(--pmt-primary, #1677ff); text-decoration: underline; }
+        .tiptap a { color: var(--bms-primary, #1677ff); text-decoration: underline; }
         .tiptap strong { font-weight: 700; }
         .rte-code-block {
-          background: var(--pmt-surface-2, #f3f4f6); border-radius: 6px; padding: 10px 14px;
+          background: var(--bms-surface-2, #f3f4f6); border-radius: 6px; padding: 10px 14px;
           font-family: monospace; font-size: 13px; margin: 6px 0;
-          border: 1px solid var(--pmt-border, #e5e7eb); overflow-x: auto;
-          color: var(--pmt-text, #1f2937);
+          border: 1px solid var(--bms-border, #e5e7eb); overflow-x: auto;
+          color: var(--bms-text, #1f2937);
         }
         .rte-blockquote {
-          border-left: 3px solid var(--pmt-border, #d1d5db); padding-left: 12px;
-          color: var(--pmt-text-2, #6b7280); margin: 6px 0; font-style: italic;
+          border-left: 3px solid var(--bms-border, #d1d5db); padding-left: 12px;
+          color: var(--bms-text-2, #6b7280); margin: 6px 0; font-style: italic;
         }
         .tiptap p.is-editor-empty:first-child::before {
           color: #9ca3af; content: attr(data-placeholder);
           float: left; height: 0; pointer-events: none;
         }
         .rte-mention {
-          background: var(--pmt-primary-bg, #e6f4ff); color: var(--pmt-primary, #1677ff);
+          background: var(--bms-primary-bg, #e6f4ff); color: var(--bms-primary, #1677ff);
           border-radius: 4px; padding: 1px 4px; font-weight: 600; box-decoration-break: clone;
         }
       `}</style>

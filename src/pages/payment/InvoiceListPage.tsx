@@ -16,6 +16,7 @@ import { invoicesApi, milestonesApi, Invoice, InvoiceStatus, InvoiceType } from 
 import ProjectBudgetSummary from "@/components/payment/ProjectBudgetSummary";
 import { apiErrorMsg } from "@/utils/apiError";
 import { get } from "@/services/api";
+import { renderClientDropdown, renderProjectDropdown } from "@/components/common/DropdownRenderers";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -358,8 +359,8 @@ export default function InvoiceListPage() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="project" label="Project" rules={[{ required: true, message: "Project is required for budget tracking" }]}>
-                <Select placeholder="Select project" showSearch allowClear filterOption={(i, o) => (o?.children as string ?? "").toLowerCase().includes(i.toLowerCase())}>
+              <Form.Item name="project" label="Project (Optional)">
+                <Select placeholder="Select project (optional)" showSearch allowClear filterOption={(i, o) => (o?.children as string ?? "").toLowerCase().includes(i.toLowerCase())}>
                   {(projectsData as any[])?.map((p: any) => (
                     <Option key={p.id} value={p.id}>{p.code} — {p.name}</Option>
                   ))}

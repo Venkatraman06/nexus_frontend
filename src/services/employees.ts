@@ -189,9 +189,7 @@ export const employeeApi = {
   update: (id: string, data: EmployeeUpdatePayload) => patch<EmployeeDetail>(`${BASE}/${id}/`, data),
   delete: (id: string) => del(`${BASE}/${id}/`),
   dropdown: () =>
-    get<any>(`${BASE}/`, { dropdown: true, page_size: 500 }).then((r: any) =>
-      Array.isArray(r) ? r : r.results ?? r
-    ),
+    get<SimpleDropdownEmployee[]>(`${BASE}/simple-dropdown/`),
   simpleDropdown: () =>
     get<SimpleDropdownEmployee[]>(`${BASE}/simple-dropdown/`),
   performance: (id: string, params?: { period?: string; from?: string; to?: string }) =>

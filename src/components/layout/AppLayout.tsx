@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import logoImage from "@/assets/logo-HIT.png";
 import { Layout, Avatar, Dropdown, Typography, Space, Tooltip, Modal, Button } from "antd";
 import OrgChart from "@/components/OrgChart";
 import GlobalSearch from "@/components/common/GlobalSearch";
@@ -6,7 +7,6 @@ import ThemeToggle from "@/components/common/ThemeToggle";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import WorkspaceCalendarModal from "@/pages/workspace/WorkspaceCalendarModal";
 import DailyDueNotification from "@/components/common/DailyDueNotification";
-import { ContactsOutlined } from "@ant-design/icons";
 import {
   DashboardOutlined, ProjectOutlined, TeamOutlined, ApartmentOutlined,
   BarChartOutlined, UserOutlined, LogoutOutlined, MenuFoldOutlined,
@@ -18,10 +18,13 @@ import {
   FileTextOutlined,
   DollarOutlined, FileSearchOutlined, FundOutlined,
   ShopOutlined, CreditCardOutlined, PhoneOutlined, MessageOutlined,
+  ContactsOutlined, RiseOutlined,
 } from "@ant-design/icons";
-import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { useNavigate, useLocation, Outlet, useSearchParams } from "react-router-dom";
+import ClientFormPage from "@/pages/clients/ClientFormPage";
+import ProjectFormPage from "@/pages/projects/ProjectFormPage";
 import { useAuthStore } from "@/store/auth";
-import { PERMS, ANY_MASTER_VIEW, ANY_CRM_VIEW, ANY_FINANCE_VIEW, ANY_WORKSPACE_VIEW, type PmtPermission } from "@/constants/permissions";
+import { PERMS, ANY_MASTER_VIEW, ANY_CRM_VIEW, ANY_FINANCE_VIEW, ANY_WORKSPACE_VIEW, type BmsPermission } from "@/constants/permissions";
 import { canSeeNavItem, hasAnyPermission } from "@/utils/access";
 
 const { Header, Sider, Content } = Layout;
@@ -62,8 +65,8 @@ interface NavItem {
   key: string;
   icon?: React.ReactNode;
   label: string;
-  permission?: PmtPermission;
-  anyOf?: PmtPermission[];
+  permission?: BmsPermission;
+  anyOf?: BmsPermission[];
   children?: NavItem[];
   badge?: number;
 }
@@ -107,27 +110,26 @@ const NAV_ITEMS_WITHOUT_DASHBOARD: NavItem[] = [
     key: "/workspace",
     icon: <CheckCircleOutlined />,
     label: "Workspace",
-    anyOf: ANY_WORKSPACE_VIEW,
     children: [
-      { key: "/workspace/dashboard",  icon: <DashboardOutlined />,   label: "Dashboard", permission: PERMS.CRM_FOLLOWUP_VIEW },
-      { key: "/workspace/todos",      icon: <OrderedListOutlined />, label: "To-Do",     permission: PERMS.CRM_FOLLOWUP_VIEW },
-      { key: "/workspace/followups",  icon: <PhoneOutlined />,       label: "Follow-up", permission: PERMS.CRM_FOLLOWUP_VIEW },
-      { key: "/workspace/meetings",   icon: <CalendarOutlined />,    label: "Meetings",  permission: PERMS.CRM_FOLLOWUP_VIEW },
-      { key: "/workspace/calendar",   icon: <CalendarOutlined />,    label: "Calendar",  permission: PERMS.CRM_FOLLOWUP_VIEW },
+      { key: "/workspace/dashboard",  icon: <DashboardOutlined />,   label: "Dashboard" },
+      { key: "/workspace/todos",      icon: <OrderedListOutlined />, label: "To-Do" },
+      { key: "/workspace/followups",  icon: <PhoneOutlined />,       label: "Follow-up" },
+      { key: "/workspace/meetings",   icon: <CalendarOutlined />,    label: "Meetings" },
+      { key: "/workspace/calendar",   icon: <CalendarOutlined />,    label: "Calendar" },
     ],
   },
   {
-  key: "/crm",
-  icon: <ShopOutlined />,
-  label: "CRM",
-  anyOf: ANY_CRM_VIEW,
-  children: [
-    { key: "/crm/dashboard",     icon: <ContactsOutlined />, label: "Lead Management", permission: PERMS.CRM_LEAD_VIEW },
-    { key: "/clients",           icon: <BankOutlined />,     label: "Client",          permission: PERMS.PROJECT_CLIENT_VIEW },
-    { key: "/sales/opportunities", icon: <DollarOutlined />, label: "Sales",           permission: PERMS.CRM_LEAD_VIEW },
-    { key: "/finance/documents", icon: <FileTextOutlined />, label: "Quotation",       permission: PERMS.FINANCE_DOCUMENT_VIEW },
-  ],
-},
+    key: "/crm",
+    icon: <ShopOutlined />,
+    label: "CRM",
+    anyOf: ANY_CRM_VIEW,
+    children: [
+      { key: "/crm",                 icon: <ContactsOutlined />,   label: "Lead Management" },
+      { key: "/sales",               icon: <RiseOutlined />,       label: "Sales" },
+      { key: "/clients",             icon: <BankOutlined />,       label: "Client",     permission: PERMS.PROJECT_CLIENT_VIEW },
+      { key: "/finance/documents",   icon: <FileTextOutlined />,   label: "Quotation",  permission: PERMS.FINANCE_DOCUMENT_VIEW },
+    ],
+  },
   {
     key: "/finance",
     icon: <DollarOutlined />,
@@ -138,7 +140,7 @@ const NAV_ITEMS_WITHOUT_DASHBOARD: NavItem[] = [
       { key: "/payment/invoices",    icon: <FileSearchOutlined />,  label: "Invoice",            permission: PERMS.PAYMENT_INVOICE_VIEW },
       { key: "/payment/payments",    icon: <WalletOutlined />,      label: "Payment",            permission: PERMS.PAYMENT_PAYMENT_VIEW },
       { key: "/payment/milestones",  icon: <OrderedListOutlined />, label: "Milestone Billing",  permission: PERMS.PAYMENT_INVOICE_VIEW },
-      { key: "/expenses",            icon: <CreditCardOutlined />,  label: "Company Expenses",   permission: PERMS.CRM_EXPENSE_VIEW },
+      { key: "/expenses",            icon: <CreditCardOutlined />,  label: "Expenses & Reimbursements", anyOf: [PERMS.DASHBOARD_OWN, PERMS.CRM_EXPENSE_VIEW] },
       { key: "/payment/receivables", icon: <BarChartOutlined />,    label: "Receivable Summary", permission: PERMS.PAYMENT_DASHBOARD_VIEW },
     ],
   },
@@ -187,7 +189,7 @@ function visibleTopDashboardNavItems(
 // Sidebar CSS injected once — keeps all animation logic in one place
 // ─────────────────────────────────────────────────────────────────────────────
 const SIDEBAR_CSS = `
-  .pmt-nav-item {
+  .bms-nav-item {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -207,34 +209,34 @@ const SIDEBAR_CSS = `
     white-space: nowrap;
     overflow: hidden;
   }
-  .pmt-nav-item:hover {
+  .bms-nav-item:hover {
     transform: translateX(2px);
     color: #ffffff;
     background: rgba(255,255,255,0.06);
   }
-  .pmt-nav-item:hover .pmt-nav-icon {
+  .bms-nav-item:hover .bms-nav-icon {
     transform: scale(1.1);
   }
-  .pmt-nav-item.pmt-active {
-    background: var(--pmt-primary, #1a73e8);
+  .bms-nav-item.bms-active {
+    background: var(--bms-primary, #1a73e8);
     color: #ffffff;
     font-weight: 500;
   }
-  .pmt-nav-item.pmt-active .pmt-nav-icon {
+  .bms-nav-item.bms-active .bms-nav-icon {
     transform: scale(1.05);
   }
-  .pmt-nav-item.pmt-parent-open {
+  .bms-nav-item.bms-parent-open {
     background: rgba(26, 115, 232, 0.1);
     color: #ffffff;
     font-weight: 500;
-    border-left: 3px solid var(--pmt-primary);
+    border-left: 3px solid var(--bms-primary);
     border-radius: 0 8px 8px 0;
     padding-left: 11px;
   }
-  .pmt-nav-item.pmt-parent-open:hover {
+  .bms-nav-item.bms-parent-open:hover {
     transform: translateX(3px);
   }
-  .pmt-nav-icon {
+  .bms-nav-icon {
     font-size: 17px;
     flex-shrink: 0;
     display: flex;
@@ -245,7 +247,7 @@ const SIDEBAR_CSS = `
   }
 
   /* Child leaf items */
-  .pmt-child-item {
+  .bms-child-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -263,19 +265,19 @@ const SIDEBAR_CSS = `
     white-space: nowrap;
     overflow: hidden;
   }
-  .pmt-child-item:hover {
+  .bms-child-item:hover {
     transform: translateX(3px);
     color: #ffffff;
     background: rgba(255,255,255,0.05);
   }
 
-  .pmt-child-item.pmt-active {
-    background: var(--pmt-primary, #1a73e8);
+  .bms-child-item.bms-active {
+    background: var(--bms-primary, #1a73e8);
     color: #ffffff;
     font-weight: 500;
   }
 
-  .pmt-child-pip {
+  .bms-child-pip {
     width: 3px;
     height: 14px;
     border-radius: 4px;
@@ -283,42 +285,57 @@ const SIDEBAR_CSS = `
     flex-shrink: 0;
     transition: transform 0.15s ease, background 0.15s ease, height 0.15s ease;
   }
-  .pmt-child-item:hover .pmt-child-pip {
+  .bms-child-item:hover .bms-child-pip {
     background: #8ab4f8;
     height: 18px;
   }
-  .pmt-child-item.pmt-active .pmt-child-pip {
+  .bms-child-item.bms-active .bms-child-pip {
     background: #ffffff;
     height: 18px;
   }
 
   /* Arrow rotation */
-  .pmt-nav-arrow {
+  .bms-nav-arrow {
     font-size: 9px;
     opacity: 0.5;
-    transition: transform 0.2s ease, opacity 0.15s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
     display: flex;
     align-items: center;
   }
-  .pmt-nav-item:hover .pmt-nav-arrow {
+  .bms-nav-item:hover .bms-nav-arrow {
     opacity: 0.8;
   }
-  .pmt-nav-arrow.open {
+  .bms-nav-arrow.open {
     transform: rotate(90deg);
   }
 
   /* Children container — thin connector line */
-  .pmt-children {
-    margin: 2px 10px 4px 20px;
+  .bms-children {
+    margin-left: 20px;
+    margin-right: 10px;
     border-left: 1px solid rgba(255,255,255,0.06);
     padding-left: 2px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.25s ease-in-out,
+                margin 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .bms-children.expanded {
+    max-height: 285px;
+    opacity: 1;
+    margin-top: 2px;
+    margin-bottom: 4px;
   }
 
   /* Collapsed tooltip target */
-  .pmt-collapsed-item {
+  .bms-collapsed-item {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -333,18 +350,18 @@ const SIDEBAR_CSS = `
       color 0.15s ease-in-out;
     transform-origin: center;
   }
-  .pmt-collapsed-item:hover {
+  .bms-collapsed-item:hover {
     transform: scale(1.08);
     color: #ffffff;
     background: rgba(255,255,255,0.07);
   }
-  .pmt-collapsed-item.pmt-active {
-    background: var(--pmt-primary, #1a73e8);
+  .bms-collapsed-item.bms-active {
+    background: var(--bms-primary, #1a73e8);
     color: #ffffff;
   }
 
   /* Section label */
-  .pmt-section-label {
+  .bms-section-label {
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -354,31 +371,31 @@ const SIDEBAR_CSS = `
   }
 
   /* Scrollbar */
-  .pmt-nav-scroll::-webkit-scrollbar { width: 3px; }
-  .pmt-nav-scroll::-webkit-scrollbar-track { background: transparent; }
-  .pmt-nav-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
-  .pmt-nav-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+  .bms-nav-scroll::-webkit-scrollbar { width: 3px; }
+  .bms-nav-scroll::-webkit-scrollbar-track { background: transparent; }
+  .bms-nav-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+  .bms-nav-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
   /* Header icon buttons */
-  .pmt-header-icon-btn {
+  .bms-header-icon-btn {
     width: 34px; height: 34px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; border: 1px solid var(--pmt-border);
-    background: var(--pmt-surface);
+    cursor: pointer; border: 1px solid var(--bms-border);
+    background: var(--bms-surface);
     transition: all 0.15s ease-in-out;
   }
-  .pmt-header-icon-btn:hover {
-    background: var(--pmt-primary-light);
-    border-color: var(--pmt-primary);
+  .bms-header-icon-btn:hover {
+    background: var(--bms-primary-light);
+    border-color: var(--bms-primary);
     transform: translateY(-1px);
   }
 
 `;
 
 // Inject CSS once
-if (typeof document !== "undefined" && !document.getElementById("pmt-sidebar-css")) {
+if (typeof document !== "undefined" && !document.getElementById("bms-sidebar-css")) {
   const style = document.createElement("style");
-  style.id = "pmt-sidebar-css";
+  style.id = "bms-sidebar-css";
   style.textContent = SIDEBAR_CSS;
   document.head.appendChild(style);
 }
@@ -391,11 +408,15 @@ function SidebarItem({
   collapsed,
   depth = 0,
   onNavigate,
+  openParentKey,
+  setOpenParentKey,
 }: {
   item: NavItem;
   collapsed: boolean;
   depth?: number;
   onNavigate?: () => void;
+  openParentKey?: string | null;
+  setOpenParentKey?: (key: string | null) => void;
 }) {
   const navigate  = useNavigate();
   const location  = useLocation();
@@ -414,16 +435,16 @@ function SidebarItem({
     }
   };
 
-  const [open, setOpen] = useState(() =>
-    (item.children ?? []).some((c) => isChildActive(c, location.pathname))
-  );
-
-  // Re-open when navigating directly to a child
-  useEffect(() => {
-    if (item.children && (item.children ?? []).some((c) => isChildActive(c, location.pathname))) {
-      setOpen(true);
+  const open = openParentKey === item.key;
+  const setOpen = (v: boolean | ((prev: boolean) => boolean)) => {
+    if (!setOpenParentKey) return;
+    if (typeof v === "function") {
+      const nextVal = v(open);
+      setOpenParentKey(nextVal ? item.key : null);
+    } else {
+      setOpenParentKey(v ? item.key : null);
     }
-  }, [location.pathname]);
+  };
 
   const isLeafActive = !item.children && (
     location.pathname === item.key ||
@@ -444,7 +465,7 @@ function SidebarItem({
           role="button"
           tabIndex={0}
           aria-label={item.label}
-          className={`pmt-collapsed-item${isLeafActive || isParentOpen ? " pmt-active" : ""}`}
+          className={`bms-collapsed-item${isLeafActive || isParentOpen ? " bms-active" : ""}`}
           onClick={() => {
             // Navigate to first child if parent, otherwise navigate to the leaf
             if (firstVisibleChild) {
@@ -480,33 +501,31 @@ function SidebarItem({
           role="button"
           tabIndex={0}
           aria-expanded={open}
-          className={`pmt-nav-item${isParentOpen ? " pmt-parent-open" : ""}`}
+          className={`bms-nav-item${isParentOpen ? " bms-parent-open" : ""}`}
           style={{ justifyContent: "space-between" }}
           onClick={() => setOpen((v) => !v)}
           onKeyDown={(e) => handleKey(e, () => setOpen((v) => !v))}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 11, overflow: "hidden" }}>
-            {item.icon != null && <span className="pmt-nav-icon">{item.icon}</span>}
+            {item.icon != null && <span className="bms-nav-icon">{item.icon}</span>}
             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{item.label}</span>
           </div>
-          <span className={`pmt-nav-arrow${open ? " open" : ""}`}>
+          <span className={`bms-nav-arrow${open ? " open" : ""}`}>
             <RightOutlined />
           </span>
         </div>
 
-        {open && (
-          <div className="pmt-children">
-            {visibleChildren.map((child) => (
-              <SidebarItem
-                key={child.key}
-                item={child}
-                collapsed={false}
-                depth={depth + 1}
-                onNavigate={onNavigate}
-              />
-            ))}
-          </div>
-        )}
+        <div className={`bms-children${open ? " expanded" : ""}`}>
+          {visibleChildren.map((child) => (
+            <SidebarItem
+              key={child.key}
+              item={child}
+              collapsed={false}
+              depth={depth + 1}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
       </div>
     );
   }
@@ -518,11 +537,11 @@ function SidebarItem({
         role="button"
         tabIndex={0}
         aria-current={isLeafActive ? "page" : undefined}
-        className={`pmt-child-item${isLeafActive ? " pmt-active" : ""}`}
+        className={`bms-child-item${isLeafActive ? " bms-active" : ""}`}
         onClick={() => go(item.key)}
         onKeyDown={(e) => handleKey(e, () => go(item.key))}
       >
-        <span className="pmt-child-pip" />
+        <span className="bms-child-pip" />
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
           {item.label}
         </span>
@@ -549,11 +568,11 @@ function SidebarItem({
       role="button"
       tabIndex={0}
       aria-current={isLeafActive ? "page" : undefined}
-      className={`pmt-nav-item${isLeafActive ? " pmt-active" : ""}`}
+      className={`bms-nav-item${isLeafActive ? " bms-active" : ""}`}
       onClick={() => go(item.key)}
       onKeyDown={(e) => handleKey(e, () => go(item.key))}
     >
-      {item.icon != null && <span className="pmt-nav-icon">{item.icon}</span>}
+      {item.icon != null && <span className="bms-nav-icon">{item.icon}</span>}
       <span style={{ overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
         {item.label}
       </span>
@@ -565,6 +584,10 @@ function SidebarItem({
 // App Layout
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AppLayout() {
+  const [searchParams] = useSearchParams();
+  const showAddClient = searchParams.get("add_client") === "true";
+  const showAddProject = searchParams.get("add_project") === "true";
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [orgOpen, setOrgOpen] = useState(false);
@@ -592,10 +615,10 @@ export default function AppLayout() {
     PERMS.WORKSPACE_CALENDAR_VIEW,
   ]);
 
-  const pageBg       = "var(--pmt-bg)";
-  const headerBg     = "var(--pmt-surface)";
-  const headerBorder = "var(--pmt-border)";
-  const headerShadow = "var(--pmt-header-shadow)";
+  const pageBg       = "var(--bms-bg)";
+  const headerBg     = "var(--bms-surface)";
+  const headerBorder = "var(--bms-border)";
+  const headerShadow = "var(--bms-header-shadow)";
   const iconColor    = dark ? "#8c9ab0" : "#5a6a7e";
 
   const siderExpanded = isMobile ? true : !collapsed;
@@ -608,6 +631,20 @@ export default function AppLayout() {
       canSeeNavItem(item, user, permissions),
     ),
   ];
+
+  const [openParentKey, setOpenParentKey] = useState<string | null>(() => {
+    const activeParent = visibleNavItems.find(
+      (item) => item.children && item.children.some((c) => isChildActive(c, location.pathname))
+    );
+    return activeParent ? activeParent.key : null;
+  });
+
+  useEffect(() => {
+    const activeParent = visibleNavItems.find(
+      (item) => item.children && item.children.some((c) => isChildActive(c, location.pathname))
+    );
+    setOpenParentKey(activeParent ? activeParent.key : null);
+  }, [location.pathname]);
 
   const lastLoginLabel = user?.last_login
     ? (() => {
@@ -654,13 +691,13 @@ export default function AppLayout() {
 
   return (
     <Layout style={{ minHeight: "100vh", background: pageBg }}>
-      <a href="#pmt-main-content" className="pmt-skip-link">
+      <a href="#bms-main-content" className="bms-skip-link">
         Skip to main content
       </a>
 
       {isMobile && mobileNavOpen && (
         <div
-          className="pmt-mobile-backdrop visible"
+          className="bms-mobile-backdrop visible"
           aria-hidden
           onClick={() => setMobileNavOpen(false)}
         />
@@ -672,7 +709,7 @@ export default function AppLayout() {
         collapsedWidth={64}
         collapsed={!siderExpanded}
         trigger={null}
-        className={`pmt-app-sider${isMobile && mobileNavOpen ? " pmt-app-sider--open" : ""}`}
+        className={`bms-app-sider${isMobile && mobileNavOpen ? " bms-app-sider--open" : ""}`}
         style={{
           background: "#0a1628",
           position: "fixed",
@@ -701,7 +738,7 @@ export default function AppLayout() {
           <div style={{
             width: 34, height: 34,
             borderRadius: 9,
-            background: "#1a73e8",
+            background: "#ffffff",
             display: "flex", alignItems: "center", justifyContent: "center",
             flexShrink: 0,
             transition: "transform 0.18s cubic-bezier(0.34,1.56,0.64,1)",
@@ -710,9 +747,7 @@ export default function AppLayout() {
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.12) rotate(-4deg)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1) rotate(0deg)"; }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 4h2v-2h2v2h2v2h-2v2h-2v-2h-2v-2z" />
-            </svg>
+            <img src={logoImage} alt="Logo" width="28" height="28" style={{ objectFit: "contain" }} />
           </div>
           {siderExpanded && (
             <div style={{ overflow: "hidden" }}>
@@ -720,10 +755,10 @@ export default function AppLayout() {
                 color: "#fff", fontWeight: 700, fontSize: 14,
                 lineHeight: 1.2, whiteSpace: "nowrap",
               }}>
-                PMT
+                BMS
               </div>
               <div style={{ color: "rgba(255,255,255,0.3)", fontSize: 10, whiteSpace: "nowrap" }}>
-                Project Management
+                Business Management System
               </div>
             </div>
           )}
@@ -731,7 +766,7 @@ export default function AppLayout() {
 
         {/* ── Scrollable nav ── */}
         <div
-          className="pmt-nav-scroll"
+          className="bms-nav-scroll"
           style={{
             height: "calc(100vh - 64px)",
             overflowY: "auto",
@@ -742,7 +777,7 @@ export default function AppLayout() {
           }}
         >
           {siderExpanded && (
-            <div className="pmt-section-label">Navigation</div>
+            <div className="bms-section-label">Navigation</div>
           )}
 
           {visibleNavItems.map((item) => (
@@ -751,6 +786,8 @@ export default function AppLayout() {
               item={item}
               collapsed={!siderExpanded}
               onNavigate={closeMobileNav}
+              openParentKey={openParentKey}
+              setOpenParentKey={setOpenParentKey}
             />
           ))}
 
@@ -760,23 +797,23 @@ export default function AppLayout() {
 
       {/* ── Main area ───────────────────────────────────────────────────── */}
       <Layout style={{
-        marginLeft: siderWidth,
+        marginLeft: mainMargin,
         transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)",
         background: pageBg,
         height: "100vh",
+        minWidth: 0,
       }}>
 
         {/* Header */}
         <Header
-          className="pmt-app-header"
+          className="bms-app-header"
           style={{
-            padding: "0 24px",
+            padding: isMobile ? "0 12px" : "0 24px",
             background: headerBg,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            flexWrap: isMobile ? "wrap" : "nowrap",
-            rowGap: 8,
+            flexWrap: "nowrap",
             borderBottom: `1px solid ${headerBorder}`,
             height: 64,
             minHeight: 64,
@@ -799,14 +836,14 @@ export default function AppLayout() {
             {!isMobile && <GlobalSearch />}
           </Space>
 
-          <Space size={isMobile ? 6 : 12} wrap className="pmt-header-actions-compact">
-            {!isMobile && <ThemeToggle />}
+          <Space size={isMobile ? 6 : 12} className="bms-header-actions-compact">
+            <ThemeToggle />
 
             {!isMobile && canViewWorkspaceCalendar && (
               <Tooltip title="Workspace calendar">
                 <button
                   type="button"
-                  className="pmt-header-icon-btn"
+                  className="bms-header-icon-btn"
                   aria-label="Workspace calendar"
                   onClick={() => setCalendarOpen(true)}
                 >
@@ -819,7 +856,7 @@ export default function AppLayout() {
               <Tooltip title="Org Chart">
                 <button
                   type="button"
-                  className="pmt-header-icon-btn"
+                  className="bms-header-icon-btn"
                   aria-label="Organisation chart"
                   onClick={() => setOrgOpen(true)}
                 >
@@ -854,17 +891,17 @@ export default function AppLayout() {
                     size={32}
                     src={user?.profile_picture_url || undefined}
                     icon={!user?.profile_picture_url ? <UserOutlined /> : undefined}
-                    style={{ background: "var(--pmt-primary)", flexShrink: 0 }}
+                    style={{ background: "var(--bms-primary)", flexShrink: 0 }}
                   />
                   {!isMobile && (
-                    <div className="pmt-user-name-block" style={{ lineHeight: 1.3, textAlign: "left" }}>
+                    <div className="bms-user-name-block" style={{ lineHeight: 1.3, textAlign: "left" }}>
                       <Text style={{
                         fontSize: 13, fontWeight: 600, display: "block",
-                        color: "var(--pmt-text)",
+                        color: "var(--bms-text)",
                       }}>
                         {user?.full_name || user?.username}
                       </Text>
-                      <Text style={{ fontSize: 11, color: "var(--pmt-text-2)" }}>
+                      <Text style={{ fontSize: 11, color: "var(--bms-text-2)" }}>
                         {user?.designation || (user?.is_pmo ? "PMO" : user?.is_manager ? "Manager" : "Member")}
                       </Text>
                     </div>
@@ -877,7 +914,7 @@ export default function AppLayout() {
 
         {/* Page content */}
         <Content
-          id="pmt-main-content"
+          id="bms-main-content"
           style={{
             background: pageBg,
             overflow: "auto",
@@ -886,6 +923,29 @@ export default function AppLayout() {
           }}
         >
           <Outlet />
+          {(showAddClient || showAddProject) && (
+            <>
+              <style>{`
+                .ant-modal-root, .ant-drawer {
+                  display: none !important;
+                }
+              `}</style>
+              <div style={{
+                position: 'fixed',
+                top: 64,
+                left: isMobile ? 0 : (siderExpanded ? 240 : 64),
+                right: 0,
+                bottom: 0,
+                zIndex: 1040,
+                background: pageBg,
+                overflow: 'auto',
+                padding: 24,
+              }}>
+                {showAddClient && <ClientFormPage />}
+                {showAddProject && <ProjectFormPage />}
+              </div>
+            </>
+          )}
         </Content>
       </Layout>
 

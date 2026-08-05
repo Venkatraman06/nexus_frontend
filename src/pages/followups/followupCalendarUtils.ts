@@ -32,10 +32,10 @@ export function priorityColor(priority: string): string {
 
 export function statusColor(slug: string): string {
   const map: Record<string, string> = {
-    planning: "#14B8A6",
+    planning: "#8B5CF6",
     inprogress: "#3B82F6",
     completed: "#10B981",
-    cancelled: "#d96560",
+    cancelled: "#EF4444",
   };
   return map[slug] ?? "#6b7280";
 }
@@ -43,11 +43,16 @@ export function statusColor(slug: string): string {
 /** Type-based colors — matching the workspace calendar legend */
 const TYPE_COLORS: Record<string, string> = {
   EMAIL:      "#6366f1",
-  CALL:       "#f59e0b",
-  MEETING:    "#1677ff",
+  CALL:       "#0284c7",
+  MEETING:    "#2563eb",
   WHATSAPP:   "#10b981",
   SITE_VISIT: "#8b5cf6",
 };
+
+export function getTypeTagColor(type?: string): string {
+  if (!type) return "#0284c7";
+  return TYPE_COLORS[type.toUpperCase()] ?? "#0284c7";
+}
 
 /** Event fill: use type color so it matches the workspace calendar */
 export function eventColor(item: FollowUpItem): string {

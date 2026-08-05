@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Tag, Typography, Button, Input, message } from "antd";
 import {
   FireOutlined,
@@ -29,6 +29,18 @@ interface SocialPostViewModalProps {
 export default function SocialPostViewModal({ open, post, onClose, onPostUpdated }: SocialPostViewModalProps) {
   const [commentText, setCommentText] = useState("");
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (open && post?.id) {
+      const fetchDetails = async () => {
+        try {
+          const fresh = await socialFeedApi.retrieve(post.id);
+          onPostUpdated?.(fresh);
+        } catch { /* silent */ }
+      };
+      fetchDetails();
+    }
+  }, [open, post?.id]);
 
   const refreshPost = async () => {
     if (!post) return;
@@ -85,7 +97,7 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
               width: 36,
               height: 36,
               borderRadius: "50%",
-              background: post.created_by_avatar ? "transparent" : "var(--pmt-primary)",
+              background: post.created_by_avatar ? "transparent" : "var(--bms-primary)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -104,7 +116,7 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
           </div>
           <div>
             <Text strong style={{ fontSize: 13 }}>{post.created_by_name}</Text>
-            <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+            <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
               {dayjs(post.created_at).fromNow()}
             </div>
           </div>
@@ -113,8 +125,8 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
         {/* Content */}
         {post.content && (
           <div style={{
-            background: "var(--pmt-surface-2)",
-            border: "1px solid var(--pmt-border)",
+            background: "var(--bms-surface-2)",
+            border: "1px solid var(--bms-border)",
             borderRadius: 8,
             padding: "12px 14px",
             marginBottom: 14,
@@ -125,7 +137,7 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
 
         {/* Image */}
         {post.image_url && (
-          <div style={{ marginBottom: 14, borderRadius: 8, overflow: "hidden", border: "1px solid var(--pmt-border)" }}>
+          <div style={{ marginBottom: 14, borderRadius: 8, overflow: "hidden", border: "1px solid var(--bms-border)" }}>
             <img
               src={post.image_url}
               alt={post.title}
@@ -143,10 +155,10 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
             padding: "10px 12px",
             marginBottom: 14,
             borderRadius: 8,
-            border: "1px solid var(--pmt-border)",
-            background: "var(--pmt-surface-2)",
+            border: "1px solid var(--bms-border)",
+            background: "var(--bms-surface-2)",
           }}>
-            <PaperClipOutlined style={{ fontSize: 18, color: "var(--pmt-primary)" }} />
+            <PaperClipOutlined style={{ fontSize: 18, color: "var(--bms-primary)" }} />
             <Text style={{ flex: 1, fontSize: 13 }} ellipsis>
               {post.attachment_name || "Attachment"}
             </Text>
@@ -162,13 +174,13 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
         )}
 
         {/* Like & comment stats */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 14, fontSize: 12, color: "var(--pmt-text-3)" }}>
+        <div style={{ display: "flex", gap: 16, marginBottom: 14, fontSize: 12, color: "var(--bms-text-3)" }}>
           <span>❤ {post.like_count}</span>
           <span>💬 {post.comment_count}</span>
         </div>
 
         {/* Like button */}
-        <div style={{ borderTop: "1px solid var(--pmt-border)", paddingTop: 12, marginBottom: 12 }}>
+        <div style={{ borderTop: "1px solid var(--bms-border)", paddingTop: 12, marginBottom: 12 }}>
           <Button
             type="text"
             icon={post.is_liked_by_me ? <HeartFilled style={{ color: "#dc2626" }} /> : <HeartOutlined />}
@@ -181,7 +193,7 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
         </div>
 
         {/* Comments section */}
-        <div style={{ borderTop: "1px solid var(--pmt-border)", paddingTop: 12 }}>
+        <div style={{ borderTop: "1px solid var(--bms-border)", paddingTop: 12 }}>
           <Text strong style={{ fontSize: 13, display: "block", marginBottom: 10 }}>
             Comments ({post.comment_count})
           </Text>
@@ -200,7 +212,7 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
               style={{ borderRadius: 20, flex: 1 }}
               suffix={
                 <SendOutlined
-                  style={{ color: commentText.trim() ? "var(--pmt-primary)" : "var(--pmt-text-3)", cursor: commentText.trim() ? "pointer" : "not-allowed" }}
+                  style={{ color: commentText.trim() ? "var(--bms-primary)" : "var(--bms-text-3)", cursor: commentText.trim() ? "pointer" : "not-allowed" }}
                   onClick={() => {
                     if (commentText.trim()) {
                       commentMutation.mutate({ id: post.id, content: commentText.trim() });
@@ -222,8 +234,8 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
                     gap: 8,
                     padding: "8px 10px",
                     borderRadius: 8,
-                    background: "var(--pmt-surface-2)",
-                    border: "1px solid var(--pmt-border)",
+                    background: "var(--bms-surface-2)",
+                    border: "1px solid var(--bms-border)",
                   }}
                 >
                   <div
@@ -231,7 +243,7 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
                       width: 28,
                       height: 28,
                       borderRadius: "50%",
-                      background: "var(--pmt-primary)",
+                      background: "var(--bms-primary)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -246,11 +258,11 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
                       <Text strong style={{ fontSize: 11 }}>{(c as any).created_by_name || "Unknown"}</Text>
-                      <Text style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>
+                      <Text style={{ fontSize: 10, color: "var(--bms-text-3)" }}>
                         {dayjs(c.created_at).fromNow()}
                       </Text>
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--pmt-text)", whiteSpace: "pre-wrap" }}>
+                    <div style={{ fontSize: 12, color: "var(--bms-text)", whiteSpace: "pre-wrap" }}>
                       {c.content}
                     </div>
                   </div>
@@ -258,7 +270,7 @@ export default function SocialPostViewModal({ open, post, onClose, onPostUpdated
               ))}
             </div>
           ) : (
-            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 12, color: "var(--pmt-text-3)" }}>
+            <div style={{ textAlign: "center", padding: "16px 0", fontSize: 12, color: "var(--bms-text-3)" }}>
               No comments yet. Be the first to comment!
             </div>
           )}

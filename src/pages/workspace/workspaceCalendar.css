@@ -1,19 +1,19 @@
 /* Workspace Calendar - Hackers Infotech Style */
 
 :root {
-  --calendar-primary: var(--pmt-primary);
-  --calendar-primary-dark: var(--pmt-primary-hover);
-  --calendar-primary-tint: var(--pmt-primary-light);
-  --calendar-bg: var(--pmt-surface);
-  --calendar-sidebar: var(--pmt-bg);
-  --calendar-card: var(--pmt-surface);
-  --calendar-ink: var(--pmt-text);
-  --calendar-muted: var(--pmt-text-2);
-  --calendar-line: var(--pmt-border);
-  --calendar-hover: var(--pmt-primary-light);
+  --calendar-primary: var(--bms-primary);
+  --calendar-primary-dark: var(--bms-primary-hover);
+  --calendar-primary-tint: var(--bms-primary-light);
+  --calendar-bg: var(--bms-surface);
+  --calendar-sidebar: var(--bms-bg);
+  --calendar-card: var(--bms-surface);
+  --calendar-ink: #111827;
+  --calendar-muted: #374151;
+  --calendar-line: #94a3b8;
+  --calendar-hover: var(--bms-primary-light);
   --calendar-radius: 14px;
   --calendar-shadow: var(--shadow-sm);
-  --calendar-font: var(--pmt-font), system-ui;
+  --calendar-font: var(--bms-font), system-ui;
 }
 
 /* Calendar Grid */
@@ -29,9 +29,9 @@
 .cal-dow {
   font-size: 11px;
   text-transform: uppercase;
-  color: #70757a;
+  color: #111827;
   text-align: center;
-  font-weight: 500;
+  font-weight: 700;
   padding: 8px 0;
   border-right: 1px solid transparent; /* Align with cells */
 }
@@ -58,7 +58,8 @@
 }
 
 .cal-cell.other-month .cal-daynum {
-  color: #70757a;
+  color: #6b7280;
+  font-weight: 600;
 }
 
 .cal-daynum-wrapper {
@@ -68,9 +69,9 @@
 }
 
 .cal-daynum {
-  font-weight: 400;
+  font-weight: 700;
   font-size: 12px;
-  color: var(--calendar-ink);
+  color: #111827;
   font-family: var(--calendar-font);
   width: 24px;
   height: 24px;
@@ -88,7 +89,7 @@
 
 /* Event Pills */
 .cal-pill {
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   border-radius: 7px;
   padding: 3px 7px;
   margin-bottom: 4px;
@@ -142,16 +143,16 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   border-radius: 11px;
   margin-bottom: 8px;
-  border: 1px solid var(--pmt-border);
+  border: 1px solid var(--bms-border);
   transition: all 0.12s ease;
   cursor: pointer;
 }
 
 .agenda-item:hover {
-  background: var(--pmt-surface-2);
+  background: var(--bms-surface-2);
   border-color: var(--calendar-primary);
   box-shadow: var(--calendar-shadow);
   transform: translateX(2px);
@@ -203,7 +204,7 @@
 }
 
 .week-time-slot {
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   padding: 8px 10px;
   font-size: 11px;
   color: var(--calendar-muted);
@@ -213,20 +214,20 @@
 }
 
 .week-day-cell {
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   padding: 6px;
   min-height: 60px;
   position: relative;
 }
 
 .week-day-cell:hover {
-  background: var(--pmt-surface-2);
+  background: var(--bms-surface-2);
 }
 
 /* Operations Legend */
 .gcal-legend {
   padding: 12px;
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   border-radius: 11px;
   border: 1px solid var(--calendar-line);
 }
@@ -251,7 +252,7 @@
 }
 
 .gcal-legend-group-header:hover {
-  background: var(--pmt-surface-2);
+  background: var(--bms-surface-2);
 }
 
 .gcal-legend-group-label {
@@ -328,7 +329,7 @@
 /* Mini Calendar */
 .gcal-mini {
   padding: 12px;
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   border-radius: 11px;
   border: 1px solid var(--calendar-line);
 }

@@ -24,7 +24,7 @@ export default function PDFPreviewModal({ documentId, onClose }: Props) {
     try {
       // Fetch the preview HTML with the existing authenticated axios instance
       const response = await client.get(
-        `${financeApi.previewUrl(documentId).replace(/^.*\/pmt\/api\/v1/, "")}`,
+        `${financeApi.previewUrl(documentId).replace(/^.*\/bms\/api\/v1/, "")}`,
         { responseType: "blob" }
       );
       const blob = new Blob([response.data], { type: "text/html; charset=utf-8" });

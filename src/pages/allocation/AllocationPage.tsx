@@ -19,6 +19,7 @@ import {
   type AllocationCreatePayload,
   type ProjectDropdown,
 } from "@/services/allocation";
+import { renderProjectDropdown } from "@/components/common/DropdownRenderers";
 import PermGuard from "@/components/common/PermGuard";
 import { PERMS } from "@/constants/permissions";
 import { apiErrorMsg } from "@/utils/apiError";
@@ -255,7 +256,7 @@ export default function AllocationPage() {
           <AssigneeAvatar name={r.employee_name} size={32} />
           <div>
             <Text style={{ fontWeight: 500, display: "block" }}>{r.employee_name}</Text>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
               {r.employee_code}
               {r.designation_name ? ` · ${r.designation_name}` : ""}
             </Text>
@@ -281,7 +282,7 @@ export default function AllocationPage() {
       render: (_: any, r: Allocation) => (
         <div style={{ textAlign: "right" }}>
           <PercentChip value={Number(r.allocation_percentage)} mode="allocation" />
-          <Text style={{ fontSize: 11, color: "var(--pmt-text-2)", display: "block", marginTop: 4 }}>
+          <Text style={{ fontSize: 11, color: "var(--bms-text-2)", display: "block", marginTop: 4 }}>
             {r.daily_hours.toFixed(1)}h/day
           </Text>
         </div>
@@ -294,7 +295,7 @@ export default function AllocationPage() {
         <div>
           <Text style={{ fontSize: 13 }}>{dayjs(r.start_date).format("DD MMM YYYY")}</Text>
           <br />
-          <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
+          <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>
             {r.end_date ? `→ ${dayjs(r.end_date).format("DD MMM YYYY")}` : "→ Ongoing"}
           </Text>
         </div>
@@ -345,7 +346,7 @@ export default function AllocationPage() {
       <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
         <Col>
           <Title level={3} style={{ margin: 0 }}>Resource Allocation</Title>
-          <Text style={{ color: "var(--pmt-text-3)" }}>Manage and monitor team capacity</Text>
+          <Text style={{ color: "var(--bms-text-3)" }}>Manage and monitor team capacity</Text>
         </Col>
         <Col>
           <PermGuard permission={PERMS.PROJECT_ALLOCATION_CREATE}>
@@ -524,7 +525,7 @@ export default function AllocationPage() {
                 <div>
                   <Text style={{ fontSize: 13 }}>{opt.data.label}</Text>
                   {opt.data.description && (
-                    <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block" }}>
+                    <Text style={{ fontSize: 11, color: "var(--bms-text-3)", display: "block" }}>
                       {opt.data.description}
                     </Text>
                   )}
@@ -541,6 +542,7 @@ export default function AllocationPage() {
             <Select
               showSearch
               placeholder="Search by project name or code..."
+              dropdownRender={renderProjectDropdown}
               optionFilterProp="label"
               options={projects.map((p) => ({
                 value: p.id,

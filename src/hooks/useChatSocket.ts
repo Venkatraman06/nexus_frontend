@@ -15,7 +15,7 @@ const MAX_BACKOFF_MS = 15_000;
 function wsUrl(): string {
   const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
   const token = localStorage.getItem(ACCESS_TOKEN_KEY) ?? "";
-  return `${proto}//${window.location.host}/pmt/ws/chat/?token=${encodeURIComponent(token)}`;
+  return `${proto}//${window.location.host}/bms/ws/chat/?token=${encodeURIComponent(token)}`;
 }
 
 /**

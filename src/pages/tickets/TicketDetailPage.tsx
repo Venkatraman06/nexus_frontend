@@ -444,7 +444,7 @@ export default function TicketDetailPage() {
     if (!ticketId) return [];
     const parent = (allTickets as any[]).find((pt: any) => pt.id === ticketId);
     if (!parent) return [ticketId];
-    return [...buildHierarchy(parent.parent), parent.ticket_id];
+    return [...buildHierarchy(parent.parent), parent.title];
   };
 
   return (
@@ -751,7 +751,7 @@ export default function TicketDetailPage() {
 
           <FieldRow label="Parent" icon={<LinkOutlined />}>
                 <PermGuard permission={PERMS.PROJECT_TICKET_UPDATE} fallback={
-                  <span style={{ fontSize: 13, color: "var(--pmt-text)", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 13, color: "var(--bms-text)", display: "flex", alignItems: "center", gap: 6 }}>
                     {ticket.parent_ticket_id && (
                       <TypeIcon type={(allTickets as any[]).find((t: any) => t.id === ticket.parent)?.type || "TASK"} size={13} />
                     )}
@@ -765,16 +765,21 @@ export default function TicketDetailPage() {
                     style={{ width: "100%" }}
                     showSearch
                     allowClear
-                    placeholder={<span style={{ color: "var(--pmt-text-3)" }}>No parent</span>}
+                    placeholder={<span style={{ color: "var(--bms-text-3)" }}>No parent</span>}
                     notFoundContent={
-                      <div style={{ padding: 16, textAlign: "center", color: "var(--pmt-text-3)" }}>
+                      <div style={{ padding: 16, textAlign: "center", color: "var(--bms-text-3)" }}>
                         No tickets available
                       </div>
                     }
                     optionFilterProp="searchLabel"
                     getPopupContainer={(trigger) => trigger.parentElement || document.body}
                     options={(allTickets as any[])
-                      .filter((t: any) => !ticket.excluded_parent_ids?.includes(t.id))
+                      .filter((t: any) => {
+                        if (ticket.excluded_parent_ids?.includes(t.id)) return false;
+                        if (ticket.parent === t.id) return true;
+                        const slug = (t.workflow_state_slug || "").toLowerCase();
+                        return !(slug.includes("close") || slug.includes("done") || slug.includes("cancel") || slug.includes("resolve"));
+                      })
                       .map((t: any) => {
                         const hierarchy = buildHierarchy(t.parent);
                         const hierarchyStr = hierarchy.length > 0 ? hierarchy.join(" → ") : null;
@@ -801,12 +806,12 @@ export default function TicketDetailPage() {
                                       {t.ticket_id}
                                     </span>
                                     {t.parent_ticket_id && (
-                                      <span style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+                                      <span style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
                                         ← {t.parent_ticket_id}
                                       </span>
                                     )}
                                   </span>
-                                  <span style={{ fontSize: 12, color: "var(--pmt-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  <span style={{ fontSize: 12, color: "var(--bms-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                     {t.title}
                                   </span>
                                 </span>
@@ -826,7 +831,7 @@ export default function TicketDetailPage() {
                           <span style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 600, color: "#4f46e5" }}>
                             {raw.ticket_id}
                           </span>
-                          <span style={{ fontSize: 12, color: "var(--pmt-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 12, color: "var(--bms-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {raw.title}
                           </span>
                         </span>

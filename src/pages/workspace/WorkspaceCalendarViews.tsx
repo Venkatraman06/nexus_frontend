@@ -16,7 +16,7 @@ import {
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
-const BORDER = "1px solid var(--gcal-border, var(--pmt-border))";
+const BORDER = "1px solid var(--gcal-border, var(--bms-border))";
 
 // Time Constants
 const HOUR_END = 23;
@@ -172,25 +172,25 @@ function TimedBlocks({
               border: `1px solid ${op.border}`,
               borderRadius: 8,
               background: done ? "rgba(0,0,0,0.04)" : op.dot,
-              color: done ? "var(--pmt-text-3)" : "#fff",
+              color: done ? "var(--bms-text-3)" : "#fff",
               paddingLeft: isTodo ? 22 : 5,
               zIndex: col + 1,
             } as React.CSSProperties}
             title={`${eventTitle(ev)} · ${start.format("h:mm")} – ${end.format("h:mm A")}${cleanDesc ? `\n\nDescription: ${cleanDesc}` : ""}`}
           >
-            {/* Todo tick button for timed blocks */}
-            {isTodo && onToggleDone && isStart && (
+            {/* Tick button for timed blocks - To-Dos only */}
+            {isTodo && onToggleDone && isStart && !ev.is_due_reminder && (
               <span
                 className={`gcal-todo-tick gcal-todo-tick--timed${done ? " gcal-todo-tick--done" : ""}`}
                 style={{ 
-                  color: done ? "var(--pmt-text-3)" : op.dot,
+                  color: done ? "var(--bms-text-3)" : op.dot,
                   "--tick-bg": "#fff",
-                  "--tick-check": "#fff",
+                  "--tick-check": op.dot,
                   "--tick-hover-bg": "#fff",
                   "--tick-hover-check": op.dot
                 } as React.CSSProperties}
                 onClick={(e) => { e.stopPropagation(); onToggleDone(ev); }}
-                title={done ? "Mark as open" : "Mark as done"}
+                title={done ? "Mark as open (undo)" : "Mark as done"}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -226,7 +226,7 @@ function HourLabels({ hours }: { hours: number[] }) {
     <div style={{ paddingTop: 16 }}>
       {hours.map((h) => (
         <div key={h} style={{
-          height: HOUR_HEIGHT, fontSize: 11, color: "var(--pmt-text-3)", textAlign: "right",
+          height: HOUR_HEIGHT, fontSize: 11, color: "#70757a", textAlign: "right",
           paddingRight: 8, position: "relative"
         }}>
           <span style={{ position: "absolute", right: 8, top: -8, fontWeight: 500 }}>
@@ -250,10 +250,10 @@ export function CalendarDayView({
   const timed = timedEvents(events, cursor);
 
   return (
-    <div className="gcal-view-panel" style={{ maxHeight: 640, overflowY: "auto" }}>
-      <div style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--pmt-surface)" }}>
+    <div className="gcal-view-panel" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--bms-surface)" }}>
         <div style={{ display: "grid", gridTemplateColumns: "64px 1fr", borderBottom: BORDER }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-end", padding: "0 4px 16px", fontSize: 10, color: "#70757a", whiteSpace: "nowrap" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-end", padding: "0 4px 16px", fontSize: 10, color: "#70757a", fontWeight: 500, whiteSpace: "nowrap" }}>
             GMT{dayjs().format('Z')}
           </div>
         <div style={{ padding: "8px 4px", textAlign: "center", borderLeft: BORDER }}>
@@ -264,7 +264,7 @@ export function CalendarDayView({
             display: "inline-flex", alignItems: "center", justifyContent: "center",
             width: 46, height: 46, borderRadius: "50%", marginTop: 4,
             fontSize: 26, fontWeight: isToday ? 500 : 400,
-            background: isToday ? "var(--gcal-blue)" : "transparent", color: isToday ? "#fff" : "var(--pmt-text)",
+            background: isToday ? "var(--gcal-blue)" : "transparent", color: isToday ? "#fff" : "#3c4043",
             fontFamily: "'Google Sans', 'Inter', system-ui"
           }}>
             {cursor.date()}
@@ -273,7 +273,7 @@ export function CalendarDayView({
       </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "64px 1fr", paddingTop: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "64px 1fr", paddingTop: 0, flex: 1 }}>
         <HourLabels hours={hours} />
         <div className="gcal-day-column" style={{ paddingTop: 16 }}>
           {hours.map((h) => (
@@ -299,10 +299,10 @@ export function CalendarWeekView({
   const hours = hourSlots();
 
   return (
-    <div className="gcal-view-panel" style={{ maxHeight: 640, overflowY: "auto" }}>
-      <div style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--pmt-surface)" }}>
+    <div className="gcal-view-panel" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+      <div style={{ position: "sticky", top: 0, zIndex: 30, background: "var(--bms-surface)" }}>
         <div style={{ display: "grid", gridTemplateColumns: "64px repeat(7, 1fr)", borderBottom: BORDER }}>
-          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-end", padding: "0 4px 16px", fontSize: 10, color: "#70757a", whiteSpace: "nowrap" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "flex-end", padding: "0 4px 16px", fontSize: 10, color: "#70757a", fontWeight: 500, whiteSpace: "nowrap" }}>
             GMT{dayjs().format('Z')}
           </div>
         {days.map((day) => {
@@ -315,7 +315,7 @@ export function CalendarWeekView({
                 width: 46, height: 46, borderRadius: "50%", marginTop: 4,
                 fontSize: 26, fontWeight: isToday ? 500 : 400,
                 background: isToday ? "var(--gcal-blue)" : "transparent",
-                color: isToday ? "#fff" : "var(--pmt-text)",
+                color: isToday ? "#fff" : "#3c4043",
                 fontFamily: "'Google Sans', 'Inter', system-ui"
               }}>
                 {day.date()}
@@ -326,7 +326,7 @@ export function CalendarWeekView({
       </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "64px repeat(7, 1fr)", paddingTop: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "64px repeat(7, 1fr)", paddingTop: 0, flex: 1 }}>
         <HourLabels hours={hours} />
         {days.map((day) => {
           const isDayToday = day.isSame(today, "day");
@@ -353,11 +353,11 @@ export function CalendarWeekView({
 
 // ─── MonthView spanning bar helpers ──────────────────────────────────────────
 
-const ROW_H = 130;
+const ROW_H = 160;
 const DATE_H = 34;
 const BAR_H = 22;
 const BAR_GAP = 2;
-const MAX_BARS = 3;
+const MAX_BARS = 4;
 
 interface MonthBar {
   ev: WorkspaceCalendarEvent;
@@ -474,7 +474,7 @@ export function CalendarMonthView({
           <div
             key={week[0].format("YYYY-MM-DD")}
             className="gcal-week"
-            style={{ position: "relative", minHeight: ROW_H }}
+            style={{ position: "relative", flex: 1, minHeight: 120 }}
           >            {/* Cell backgrounds + date numbers */}
             {week.map((day) => {
               const key = day.format("YYYY-MM-DD");
@@ -508,7 +508,7 @@ export function CalendarMonthView({
                     isWeekend && inMonth && "gcal-day--weekend",
                     isToday && inMonth && "gcal-day--today-highlight",
                   ].filter(Boolean).join(" ")}
-                  style={{ minHeight: ROW_H }}
+                  style={{ flex: 1, minHeight: 120 }}
                   onClick={() => onDaySelect?.(key)}
                   onDoubleClick={() => onDayOpen?.(key)}
                   onDragOver={(e) => { if (canDrop) { e.preventDefault(); onDayDragEnter?.(key); } }}
@@ -523,7 +523,7 @@ export function CalendarMonthView({
                       isSelected && !isToday && "gcal-day-num--sel",
                       !inMonth && "gcal-day-num--out",
                     ].filter(Boolean).join(" ")}>
-                      {day.date()}
+                      {day.date() === 1 ? day.format("D MMM") : day.date()}
                     </span>
                     {canAdd && (
                       <button
@@ -539,7 +539,7 @@ export function CalendarMonthView({
                           border: "none",
                           background: "transparent",
                           cursor: "pointer",
-                          color: "var(--pmt-text-3)",
+                          color: "var(--bms-text-3)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -551,65 +551,29 @@ export function CalendarMonthView({
                     )}
                   </div>
 
-                  {/* +N more as Popover */}
-                  {overflow[day.day()] > 0 && hiddenEvents.length > 0 && (
-                    <Popover
-                      content={
-                        <div style={{ minWidth: 220, maxHeight: 280, overflowY: "auto", padding: 4 }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--pmt-text)", marginBottom: 8 }}>
-                            {day.format("ddd, MMM D")} — {hiddenEvents.length} more
-                          </div>
-                          {hiddenEvents.map((ev) => {
-                            const op = operationStyle(ev);
-                            const done = isDone(ev);
-                            return (
-                              <button
-                                key={`${ev.source}-${ev.id}`}
-                                type="button"
-                                className="gcal-more-popover-item"
-                                onClick={(e) => { e.stopPropagation(); onSelect(ev); }}
-                              >
-                                <span style={{
-                                  width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-                                  background: done ? "var(--pmt-border)" : op.dot,
-                                  border: done ? `1px solid ${op.dot}` : "none",
-                                }} />
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div className={done ? "gcal-todo-strikethrough gcal-todo-strikethrough--active" : ""} style={{
-                                    fontSize: 12, fontWeight: 600, color: done ? "var(--pmt-text-3)" : "var(--pmt-text)",
-                                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                                  }}>
-                                    {eventTitle(ev)}
-                                  </div>
-                                  <div style={{ fontSize: 10, color: "var(--pmt-text-3)", marginTop: 1 }}>
-                                    {formatEventTime(ev.start_time) && `${formatEventTime(ev.start_time)} · `}
-                                    {op.label}
-                                  </div>
-                                </div>
-                                <Tag style={{
-                                  borderRadius: 4, fontSize: 9, fontWeight: 600, margin: 0,
-                                  background: op.dot, color: "#fff", border: `1px solid ${op.dot}`,
-                                  lineHeight: "16px", padding: "0 4px", flexShrink: 0,
-                                }}>
-                                  {op.label}
-                                </Tag>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      }
-                      trigger={["click"]}
-                      placement="bottom"
+                  {/* +N exceeded count badge -> click opens Day View */}
+                  {overflow[day.day()] > 0 && (
+                    <button
+                      type="button"
+                      className="gcal-more"
+                      style={{
+                        position: "absolute",
+                        bottom: 4,
+                        left: 6,
+                        right: 6,
+                        width: "calc(100% - 12px)",
+                        textAlign: "center",
+                        cursor: "pointer",
+                        zIndex: 10,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDayOpen?.(key);
+                      }}
+                      title={`View ${day.format("MMMM D")} in Day View`}
                     >
-                      <button
-                        type="button"
-                        className="gcal-more"
-                        style={{ position: "absolute", bottom: 4, left: 6, right: 6, width: "calc(100% - 12px)", textAlign: "center" }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        +{overflow[day.day()]} more
-                      </button>
-                    </Popover>
+                      +{overflow[day.day()]}
+                    </button>
                   )}
                 </div>
               );
@@ -648,8 +612,8 @@ export function CalendarMonthView({
                 ? (done ? "rgba(156,163,175,0.15)" : "#ffe4e6")
                 : (done ? "rgba(0,0,0,0.08)" : op.dot);
               const barColor = bar.ev.is_due_reminder
-                ? (done ? "var(--pmt-text-3)" : "#be123c")
-                : (done ? "var(--pmt-text-3)" : "#fff");
+                ? (done ? "var(--bms-text-3)" : "#be123c")
+                : (done ? "var(--bms-text-3)" : "#fff");
 
               return (
                 <button
@@ -673,7 +637,7 @@ export function CalendarMonthView({
                     height: BAR_H,
                     background: barBg,
                     color: barColor,
-                    border: isMultiDay ? "none" : `1px solid ${done ? "var(--pmt-border)" : op.dot}30`,
+                    border: isMultiDay ? "none" : `1px solid ${done ? "var(--bms-border)" : op.dot}30`,
                     borderRadius,
                     padding: "0 10px 0 6px",
                     fontSize: 11,
@@ -693,15 +657,15 @@ export function CalendarMonthView({
                   } as React.CSSProperties}
                 >
 
-                  {/* Todo tick for month bars */}
+                  {/* Tick button for month bars - To-Dos only */}
                   {isTodo && onToggleDone && !bar.ev.is_due_reminder && (
                     <span 
                       className={`gcal-todo-tick${done ? " gcal-todo-tick--done" : ""} ${bar.ev.is_due_reminder ? "gcal-todo-tick--schedule" : "gcal-todo-tick--bar"}`}
                       style={{
                         marginRight: 6,
-                        color: bar.ev.is_due_reminder ? "#be123c" : (done ? "var(--pmt-text-3)" : "#fff"),
+                        color: bar.ev.is_due_reminder ? "#be123c" : (done ? "var(--bms-text-3)" : "#fff"),
                         "--tick-bg": "#fff",
-                        "--tick-check": "#fff",
+                        "--tick-check": op.dot,
                         "--tick-hover-bg": "#fff",
                         "--tick-hover-check": op.dot,
                       } as React.CSSProperties}
@@ -711,7 +675,7 @@ export function CalendarMonthView({
                           onToggleDone(bar.ev);
                         }
                       }}
-                      title={done ? "Mark as open" : "Mark as done"}
+                      title={done ? "Mark as open (undo)" : "Mark as done"}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => {
@@ -729,7 +693,7 @@ export function CalendarMonthView({
                     ? (
                       <>
                         {time && <span style={{ opacity: 0.9, marginRight: 4, fontSize: 11, fontWeight: 600 }}>{time}</span>}
-                        <span className={done ? "gcal-todo-strikethrough gcal-todo-strikethrough--active" : ""} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontWeight: 600, color: bar.ev.is_due_reminder ? "#be123c" : (done ? "var(--pmt-text-3)" : "#fff") }}>
+                        <span className={done ? "gcal-todo-strikethrough gcal-todo-strikethrough--active" : ""} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, fontWeight: 600, color: bar.ev.is_due_reminder ? "#be123c" : (done ? "var(--bms-text-3)" : "#fff") }}>
                           {title}
                         </span>
 
@@ -836,25 +800,27 @@ export function CalendarScheduleView({
                     className={`gcal-schedule-card${isTodo && done ? " gcal-todo-pill--done" : ""}${isTodo && !done && !isDueReminder ? " gcal-todo-pill" : ""}`}
                     style={{
                       background: isDueReminder ? "#ffe4e6" : (done ? "rgba(0,0,0,0.03)" : op.dot),
-                      border: `1px solid ${isDueReminder ? "#fecdd3" : (done ? "var(--pmt-border)" : op.dot)}`,
+                      border: `1px solid ${isDueReminder ? "#fecdd3" : (done ? "var(--bms-border)" : op.dot)}`,
                       borderRadius: 4,
                       padding: isTodo && !isDueReminder ? "8px 14px 8px 10px" : "10px 12px",
-                      color: isDueReminder ? "#be123c" : (done ? "var(--pmt-text-3)" : "#fff"),
+                      color: isDueReminder ? "#be123c" : (done ? "var(--bms-text-3)" : "#fff"),
                       opacity: done ? 0.75 : 1,
                     }}
                   >
-                    {/* Todo tick in schedule view */}
+                    {/* Tick button in schedule view - To-Dos only */}
                     {isTodo && onToggleDone && !isDueReminder && (
                       <span
                         className={`gcal-todo-tick gcal-todo-tick--schedule${done ? " gcal-todo-tick--done" : ""}`}
                         style={{ 
-                          color: done ? "var(--pmt-text-3)" : "#fff", 
+                          color: done ? "var(--bms-text-3)" : op.dot, 
                           flexShrink: 0,
-                          "--tick-bg": "transparent",
-                          "--tick-check": op.dot
+                          "--tick-bg": "#fff",
+                          "--tick-check": op.dot,
+                          "--tick-hover-bg": "#fff",
+                          "--tick-hover-check": op.dot
                         } as React.CSSProperties}
                         onClick={(e) => { e.stopPropagation(); onToggleDone(ev); }}
-                        title={done ? "Mark as open" : "Mark as done"}
+                        title={done ? "Mark as open (undo)" : "Mark as done"}
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => {
@@ -870,19 +836,19 @@ export function CalendarScheduleView({
                     {!isDueReminder && (
                       <span
                         className="gcal-event-dot"
-                        style={{ background: done ? "var(--pmt-border)" : op.dot }}
+                        style={{ background: done ? "var(--bms-border)" : op.dot }}
                       />
                     )}
                     <div>
                       <div className={done ? "gcal-todo-strikethrough gcal-todo-strikethrough--active" : ""} style={{
                         fontWeight: 600,
-                        color: isDueReminder ? "#be123c" : (done ? "var(--pmt-text-3)" : "#fff"),
+                        color: isDueReminder ? "#be123c" : (done ? "var(--bms-text-3)" : "#fff"),
                         fontSize: 13,
                         fontFamily: "'Google Sans', 'Inter', system-ui",
                       }}>
                         {eventTitle(ev)}
                       </div>
-                      <div style={{ fontSize: 11, color: isDueReminder ? "#be123c" : (done ? "var(--pmt-text-3)" : "rgba(255,255,255,0.75)") }}>
+                      <div style={{ fontSize: 11, color: isDueReminder ? "#be123c" : (done ? "var(--bms-text-3)" : "rgba(255,255,255,0.75)") }}>
                         {op.label}{ev.assignee_name ? ` · ${ev.assignee_name}` : ""}
                       </div>
                     </div>

@@ -25,7 +25,7 @@ interface TreeNode extends OrgNode { children: TreeNode[] }
 const CARD_W    = 170;
 const SIBLING_G = 36;
 const STEM_H    = 30;
-const LINE_CLR  = "var(--pmt-border)";
+const LINE_CLR  = "var(--bms-border)";
 
 // ── Tree helpers ──────────────────────────────────────────────────────────────
 function buildSubtree(nodes: OrgNode[], rootId: string): TreeNode {
@@ -62,6 +62,28 @@ function countDescendants(nodes: OrgNode[], nodeId: string): number {
   return directs.reduce((sum, d) => sum + 1 + countDescendants(nodes, d.id), 0);
 }
 
+function toTitleCase(str: string | null | undefined): string {
+  if (!str) return "";
+  return str
+    .trim()
+    .split(/\s+/)
+    .map((word) => {
+      const clean = word.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+      if (clean === "it") return word.replace(/it/i, "IT");
+      if (clean === "hr") return word.replace(/hr/i, "HR");
+      if (clean === "hrms") return word.replace(/hrms/i, "HRMS");
+      if (clean === "ceo") return word.replace(/ceo/i, "CEO");
+      if (clean === "cto") return word.replace(/cto/i, "CTO");
+      if (clean === "cfo") return word.replace(/cfo/i, "CFO");
+      if (clean === "coo") return word.replace(/coo/i, "COO");
+      if (clean === "pmo") return word.replace(/pmo/i, "PMO");
+      if (clean === "qa") return word.replace(/qa/i, "QA");
+      if (clean === "ui" || clean === "ux") return word.toUpperCase();
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(" ");
+}
+
 // ── Node card ─────────────────────────────────────────────────────────────────
 function NodeCard({
   node, isRoot = false, isParent = false, reportCount = 0, onNavigate,
@@ -72,9 +94,11 @@ function NodeCard({
   reportCount?: number;
   onNavigate?: (id: string) => void;
 }) {
-  const av = avatarPastel(node.name);
-  const borderColor = isRoot ? "var(--org-root-border)" : isParent ? "var(--org-parent-border)" : "var(--pmt-border)";
-  const bgColor     = isRoot ? "var(--org-root-bg)" : isParent ? "var(--org-parent-bg)" : "var(--pmt-surface)";
+  const nodeName = toTitleCase(node.name || "—");
+  const nodeDesig = toTitleCase(node.designation || "");
+  const av = avatarPastel(nodeName);
+  const borderColor = isRoot ? "var(--org-root-border)" : isParent ? "var(--org-parent-border)" : "var(--bms-border)";
+  const bgColor     = isRoot ? "var(--org-root-bg)" : isParent ? "var(--org-parent-bg)" : "var(--bms-surface)";
   const shadow      = isRoot
     ? "var(--org-root-shadow)"
     : isParent
@@ -85,15 +109,15 @@ function NodeCard({
     ? "org-card__designation-pill org-card__designation-pill--root"
     : isParent
     ? "org-card__designation-pill org-card__designation-pill--parent"
-    : node.designation
+    : nodeDesig
     ? "org-card__designation-pill org-card__designation-pill--default"
     : "org-card__designation-pill org-card__designation-pill--empty";
 
   const showReports = reportCount > 0 && !isRoot && !isParent;
   const tooltipTitle = [
-    node.name,
+    nodeName,
     node.employee_code,
-    node.designation,
+    nodeDesig,
     showReports ? `${reportCount} direct/indirect reports` : null,
   ].filter(Boolean).join(" · ");
 
@@ -132,19 +156,19 @@ function NodeCard({
         {/* Fixed avatar slot */}
         <div className="org-card__avatar-wrap">
           {node.avatar ? (
-            <img src={node.avatar} alt={node.name} />
+            <img src={node.avatar} alt={nodeName} />
           ) : (
             <div
               className="org-card__initials"
               style={{ background: av.bg, border: `2px solid ${av.border}`, color: av.text }}
             >
-              {initialsFromName(node.name)}
+              {initialsFromName(nodeName)}
             </div>
           )}
         </div>
 
         {/* Fixed name slot — always 2 lines max */}
-        <div className="org-card__name">{node.name || "—"}</div>
+        <div className="org-card__name">{nodeName}</div>
 
         {/* Fixed code slot — always reserved */}
         <div className={`org-card__code${node.employee_code ? "" : " org-card__code--empty"}`}>
@@ -153,8 +177,8 @@ function NodeCard({
 
         {/* Fixed designation slot — always reserved, full text on hover */}
         <div className="org-card__designation">
-          <Tooltip title={node.designation || undefined} placement="bottom">
-            <span className={designationClass}>{node.designation || "—"}</span>
+          <Tooltip title={nodeDesig || undefined} placement="bottom">
+            <span className={designationClass}>{nodeDesig || "—"}</span>
           </Tooltip>
         </div>
 
@@ -314,7 +338,7 @@ function FocusedTree({
 
       {directReports.length === 0 && (
         <div style={{
-          marginTop: 14, fontSize: 12, color: "var(--pmt-text-3)",
+          marginTop: 14, fontSize: 12, color: "var(--bms-text-3)",
           display: "flex", alignItems: "center", gap: 6,
         }}>
           <UserOutlined /> No direct reports
@@ -452,9 +476,9 @@ export default function OrgChart({
   if (!tree.length) {
     return (
       <Empty
-        image={<TeamOutlined style={{ fontSize: 52, color: "var(--pmt-border)" }} />}
+        image={<TeamOutlined style={{ fontSize: 52, color: "var(--bms-border)" }} />}
         description={
-          <span style={{ color: "var(--pmt-text-3)", fontSize: 13 }}>
+          <span style={{ color: "var(--bms-text-3)", fontSize: 13 }}>
             {rootId ? "No reporting structure found" : "No hierarchy configured"}
           </span>
         }
@@ -493,8 +517,8 @@ export default function OrgChart({
       {rootId && (
         <div style={{
           display: "flex", gap: 10, marginBottom: 12,
-          padding: "10px 14px", background: "var(--pmt-surface)",
-          borderRadius: 8, border: "1px solid var(--pmt-border)", flexWrap: "wrap",
+          padding: "10px 14px", background: "var(--bms-surface)",
+          borderRadius: 8, border: "1px solid var(--bms-border)", flexWrap: "wrap",
         }}>
           <Tag icon={<UserOutlined />}   color="blue">Direct Reports: {directCount}</Tag>
           <Tag icon={<TeamOutlined />} color="purple">Total in Team: {totalCount}</Tag>
@@ -518,7 +542,7 @@ export default function OrgChart({
       {renderContent(onNavigate, zoom)}
 
       {/* Legend */}
-      <div style={{ marginTop: 10, display: "flex", gap: 20, fontSize: 11, color: "var(--pmt-text-3)", flexWrap: "wrap" }}>
+      <div style={{ marginTop: 10, display: "flex", gap: 20, fontSize: 11, color: "var(--bms-text-3)", flexWrap: "wrap" }}>
         {focusedMode ? (
           <>
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#7c3aed", marginRight: 4, verticalAlign: "middle" }} />Purple = manager</span>
@@ -542,13 +566,13 @@ export default function OrgChart({
         width="96vw"
         style={{ top: 16, maxWidth: "none" }}
         styles={{ body: { padding: 0 }, content: { borderRadius: 14, overflow: "hidden" } }}
-        closeIcon={<FullscreenExitOutlined style={{ fontSize: 18, color: "var(--pmt-text-2)" }} />}
+        closeIcon={<FullscreenExitOutlined style={{ fontSize: 18, color: "var(--bms-text-2)" }} />}
         destroyOnClose={false}
         title={
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 40 }}>
             <Space>
               <TeamOutlined style={{ color: "#3b82f6", fontSize: 18 }} />
-              <span style={{ fontWeight: 700, fontSize: 15, color: "var(--pmt-text)" }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: "var(--bms-text)" }}>
                 {rootId && focusedMode ? "Reporting Structure" : rootId ? "Team Hierarchy" : "Organisation Chart"}
               </span>
               {rootId && (

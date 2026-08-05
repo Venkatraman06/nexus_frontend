@@ -105,7 +105,7 @@ export default function MyTimesheetPage({ embedded = false }: { embedded?: boole
 //   const isAdmin = useAuthStore((s) =>
 //   s.user?.is_staff === true ||
 //   s.user?.is_pmo === true ||
-//   (s.permissions ?? []).includes("pmt.project.report.utilization"),
+//   (s.permissions ?? []).includes("bms.project.report.utilization"),
 // );
 const isAdmin = useAuthStore((s) =>
   s.user?.is_staff === true ||
@@ -604,12 +604,12 @@ const isAdmin = useAuthStore((s) =>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
-                <tr style={{ background: "var(--pmt-surface-2)" }}>
+                <tr style={{ background: "var(--bms-surface-2)" }}>
                   {["Day", "Date", "Check In", "Check Out", "Working Hrs", "Logged Hrs", "Status"].map((h) => (
                     <th key={h} style={{
                       padding: "8px 10px", textAlign: "left",
-                      borderBottom: "1px solid var(--pmt-border)",
-                      fontWeight: 600, color: "var(--pmt-text)",
+                      borderBottom: "1px solid var(--bms-border)",
+                      fontWeight: 600, color: "var(--bms-text)",
                     }}>
                       {h}
                     </th>
@@ -652,32 +652,32 @@ const isAdmin = useAuthStore((s) =>
                       key={d.date}
                       style={{
                         background: d.is_holiday
-                          ? "color-mix(in srgb, var(--pmt-warning) 15%, var(--pmt-surface))"
+                          ? "color-mix(in srgb, var(--bms-warning) 15%, var(--bms-surface))"
                           : d.is_on_leave
-                            ? d.leave_is_paid === false ? "color-mix(in srgb, var(--pmt-danger) 15%, var(--pmt-surface))" : "color-mix(in srgb, #a78bfa 15%, var(--pmt-surface))"
+                            ? d.leave_is_paid === false ? "color-mix(in srgb, var(--bms-danger) 15%, var(--bms-surface))" : "color-mix(in srgb, #a78bfa 15%, var(--bms-surface))"
                             : "transparent",
-                        borderBottom: "1px solid var(--pmt-border)",
+                        borderBottom: "1px solid var(--bms-border)",
                       }}
                     >
-                      <td style={{ padding: "7px 10px", fontWeight: 500, color: "var(--pmt-text)" }}>{d.day_name.slice(0, 3)}</td>
-                      <td style={{ padding: "7px 10px", color: "var(--pmt-text)" }}>{dayjs(d.date).format("DD MMM")}</td>
-                      <td style={{ padding: "7px 10px", color: "var(--pmt-success)" }}>
-                        {d.check_in ?? <span style={{ color: "var(--pmt-text-3)" }}>—</span>}
+                      <td style={{ padding: "7px 10px", fontWeight: 500, color: "var(--bms-text)" }}>{d.day_name.slice(0, 3)}</td>
+                      <td style={{ padding: "7px 10px", color: "var(--bms-text)" }}>{dayjs(d.date).format("DD MMM")}</td>
+                      <td style={{ padding: "7px 10px", color: "var(--bms-success)" }}>
+                        {d.check_in ?? <span style={{ color: "var(--bms-text-3)" }}>—</span>}
                       </td>
-                      <td style={{ padding: "7px 10px", color: "var(--pmt-danger)" }}>
-                        {d.check_out ?? <span style={{ color: "var(--pmt-text-3)" }}>—</span>}
+                      <td style={{ padding: "7px 10px", color: "var(--bms-danger)" }}>
+                        {d.check_out ?? <span style={{ color: "var(--bms-text-3)" }}>—</span>}
                       </td>
-                      <td style={{ padding: "7px 10px", color: "var(--pmt-text)" }}>
+                      <td style={{ padding: "7px 10px", color: "var(--bms-text)" }}>
                         {d.working_hours > 0
                           ? <span style={{ fontWeight: 600 }}>{d.working_hours}h</span>
-                          : <span style={{ color: "var(--pmt-text-3)" }}>—</span>
+                          : <span style={{ color: "var(--bms-text-3)" }}>—</span>
                         }
                       </td>
-                      <td style={{ padding: "7px 10px", color: "var(--pmt-text)" }}>
-                        <span style={{ fontWeight: 600, color: mismatch ? "var(--pmt-warning)" : "inherit" }}>
+                      <td style={{ padding: "7px 10px", color: "var(--bms-text)" }}>
+                        <span style={{ fontWeight: 600, color: mismatch ? "var(--bms-warning)" : "inherit" }}>
                           {d.is_holiday ? "0h" : `${d.total_hours}h`}
                         </span>
-                        {mismatch && <span style={{ color: "var(--pmt-warning)", marginLeft: 4 }}>⚠</span>}
+                        {mismatch && <span style={{ color: "var(--bms-warning)", marginLeft: 4 }}>⚠</span>}
                       </td>
                       <td style={{ padding: "7px 10px" }}>{statusCell}</td>
                     </tr>

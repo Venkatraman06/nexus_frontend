@@ -112,12 +112,12 @@ export function PastelEventChip({
   const isSolidBlock = isMultiDay || isAllDay || isTodo;
   const isDueReminder = ev.is_due_reminder;
 
-  let bg = done ? (isSolidBlock ? "linear-gradient(rgba(0,0,0,0.04), rgba(0,0,0,0.04)), var(--pmt-surface)" : "transparent") : (isSolidBlock ? `linear-gradient(${op.dot}20, ${op.dot}20), var(--pmt-surface)` : "transparent");
-  let textColor = done ? "var(--pmt-text-3)" : "var(--pmt-text)";
+  let bg = done ? (isSolidBlock ? "linear-gradient(rgba(0,0,0,0.04), rgba(0,0,0,0.04)), var(--bms-surface)" : "transparent") : (isSolidBlock ? `linear-gradient(${op.dot}20, ${op.dot}20), var(--bms-surface)` : "transparent");
+  let textColor = done ? "var(--bms-text-3)" : "var(--bms-text)";
 
   if (isDueReminder) {
     bg = done ? "rgba(156,163,175,0.10)" : "#ffe4e6"; // light rose/red background
-    textColor = done ? "var(--pmt-text-3)" : "#be123c"; // dark rose/red text
+    textColor = done ? "var(--bms-text-3)" : "#be123c"; // dark rose/red text
   }
 
   let borderRadius = "4px";
@@ -169,7 +169,7 @@ export function PastelEventChip({
       {!isSolidBlock && !isTodo && (
         <span style={{
           width: 8, height: 8, borderRadius: "50%",
-          background: done ? "var(--pmt-border)" : op.dot,
+          background: done ? "var(--bms-border)" : op.dot,
           marginRight: 4, flexShrink: 0,
         }} />
       )}
@@ -179,12 +179,12 @@ export function PastelEventChip({
         <span
           className={`gcal-todo-tick${done ? " gcal-todo-tick--done" : ""}`}
           style={{ 
-            color: done ? "var(--pmt-text-3)" : op.dot, 
+            color: op.dot, 
             marginRight: 4,
-            "--tick-bg": "#fff",
+            "--tick-bg": done ? op.dot : "#fff",
             "--tick-check": "#fff",
-            "--tick-hover-bg": "#fff",
-            "--tick-hover-check": op.dot
+            "--tick-hover-bg": op.dot,
+            "--tick-hover-check": "#fff"
           } as React.CSSProperties}
           onClick={(e) => {
             e.stopPropagation();

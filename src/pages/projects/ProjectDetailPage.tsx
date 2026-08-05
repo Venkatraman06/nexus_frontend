@@ -23,6 +23,7 @@ import PermGuard from "@/components/common/PermGuard";
 import { PERMS } from "@/constants/permissions";
 import { apiErrorMsg } from "@/utils/apiError";
 import { Avatar, Tooltip } from "antd";
+import { renderClientDropdown } from "@/components/common/DropdownRenderers";
 
 dayjs.extend(relativeTime);
 
@@ -37,11 +38,11 @@ function ActionBadge({ action }: { action: string }) {
 function HistoryEntry({ entry }: { entry: ProjectHistoryEntry }) {
   const changeKeys = Object.keys(entry.changes);
   return (
-    <div style={{ display: "flex", gap: 12, padding: "14px 0", borderBottom: "1px solid var(--pmt-border)" }}>
+    <div style={{ display: "flex", gap: 12, padding: "14px 0", borderBottom: "1px solid var(--bms-border)" }}>
       <Avatar
         src={entry.changed_by_avatar ?? undefined}
         icon={<span>?</span>}
-        style={{ flexShrink: 0, background: "var(--pmt-surface-2)" }}
+        style={{ flexShrink: 0, background: "var(--bms-surface-2)" }}
       />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -57,7 +58,7 @@ function HistoryEntry({ entry }: { entry: ProjectHistoryEntry }) {
               const { old: oldVal, new: newVal } = entry.changes[label];
               return (
                 <div key={label} style={{
-                  background: "var(--pmt-surface-2)", borderRadius: 6, padding: "6px 10px",
+                  background: "var(--bms-surface-2)", borderRadius: 6, padding: "6px 10px",
                   fontSize: 12, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center",
                 }}>
                   <Text strong style={{ minWidth: 100 }}>{label}</Text>
@@ -218,7 +219,7 @@ export default function ProjectDetailPage() {
         <div style={{ flex: 1, minWidth: 200 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <Title level={3} style={{ margin: 0 }}>{project.name}</Title>
-            <Tag style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--pmt-primary)" }}>
+            <Tag style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--bms-primary)" }}>
               {project.code}
             </Tag>
             {!project.is_active && (
@@ -300,7 +301,7 @@ export default function ProjectDetailPage() {
         .rte-content ul { padding-left: 20px; margin: 4px 0; }
         .rte-content ol { padding-left: 20px; margin: 4px 0; }
         .rte-content p  { margin: 0 0 4px; }
-        .project-overview__desc { font-size: 14px; line-height: 1.7; color: var(--pmt-text); }
+        .project-overview__desc { font-size: 14px; line-height: 1.7; color: var(--bms-text); }
       `}</style>
     </div>
   );

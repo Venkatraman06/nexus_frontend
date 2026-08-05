@@ -96,7 +96,7 @@ export default function AddClientModal({ open, onClose, onSuccess }: AddClientMo
     <Modal
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <BankOutlined style={{ color: "var(--pmt-primary)" }} />
+          <BankOutlined style={{ color: "var(--bms-primary)" }} />
           <span>Add Client</span>
         </div>
       }

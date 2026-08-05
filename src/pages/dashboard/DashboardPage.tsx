@@ -88,7 +88,7 @@ function ProjectTypeChart({ data }: { data: PMODashboard["projects"]["project_ty
   const sorted = [...data].sort((a, b) => a.business_type.localeCompare(b.business_type));
   const total = sorted.reduce((s, d) => s + d.count, 0);
   const pieData = sorted.map((d, i) => ({
-    type: d.business_type,
+    business_type: d.business_type,
     value: d.count,
     color: PROJECT_TYPE_COLORS[i % PROJECT_TYPE_COLORS.length],
   }));
@@ -100,13 +100,17 @@ function ProjectTypeChart({ data }: { data: PMODashboard["projects"]["project_ty
           data={pieData}
           theme={isDark ? "dark" : "light"}
           angleField="value"
-          colorField="type"
-          color={({ type }: any) => pieData.find((p) => p.type === type)?.color ?? "#ccc"}
+          colorField="business_type"
+          color={({ business_type }: any) => pieData.find((p) => p.business_type === business_type)?.color ?? "#ccc"}
           radius={0.85}
           innerRadius={0.6}
           label={false}
           legend={false}
           height={180}
+          tooltip={{
+            title: (d: any) => d.business_type,
+            items: [{ field: "value", name: "Count" }],
+          }}
           statistic={{
             title: { content: "Active", style: { color: isDark ? "#9aa0a6" : "#5f6368" } },
             content: { content: String(total), style: { color: isDark ? "#e8eaed" : "#202124" } },
@@ -119,7 +123,7 @@ function ProjectTypeChart({ data }: { data: PMODashboard["projects"]["project_ty
           return (
             <div key={d.business_type} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 10, height: 10, borderRadius: 2, background: color, flexShrink: 0 }} />
-              <Text style={{ fontSize: 12, flex: 1, color: "var(--pmt-text)" }}>{d.business_type}</Text>
+              <Text style={{ fontSize: 12, flex: 1, color: "var(--bms-text)" }}>{d.business_type}</Text>
               <Text style={{ fontSize: 12, fontWeight: 600, color }}>{d.count}</Text>
               <div style={{ width: 60 }}>
                 <Progress percent={d.pct} strokeColor={color} showInfo={false} size="small" />
@@ -139,7 +143,7 @@ function TicketTypeChart({ data }: { data: PMODashboard["ticket_by_type"] }) {
 
   const total = data.reduce((s, d) => s + d.count, 0);
   const pieData = data.map((d, i) => ({
-    type: d.type,
+    ticket_type: d.type,
     value: d.count,
     color: PROJECT_BAR_COLORS[i % PROJECT_BAR_COLORS.length],
   }));
@@ -151,13 +155,17 @@ function TicketTypeChart({ data }: { data: PMODashboard["ticket_by_type"] }) {
           data={pieData}
           theme={isDark ? "dark" : "light"}
           angleField="value"
-          colorField="type"
-          color={({ type }: any) => pieData.find((p) => p.type === type)?.color ?? "#ccc"}
+          colorField="ticket_type"
+          color={({ ticket_type }: any) => pieData.find((p) => p.ticket_type === ticket_type)?.color ?? "#ccc"}
           radius={0.85}
           innerRadius={0.6}
           label={false}
           legend={false}
           height={150}
+          tooltip={{
+            title: (d: any) => d.ticket_type,
+            items: [{ field: "value", name: "Count" }],
+          }}
           statistic={{
             title: { content: "Total", style: { color: isDark ? "#9aa0a6" : "#5f6368" } },
             content: { content: String(total), style: { color: isDark ? "#e8eaed" : "#202124" } },
@@ -170,7 +178,7 @@ function TicketTypeChart({ data }: { data: PMODashboard["ticket_by_type"] }) {
           return (
             <div key={d.type} style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
-              <Text style={{ fontSize: 12, flex: 1, color: "var(--pmt-text)" }}>{d.type}</Text>
+              <Text style={{ fontSize: 12, flex: 1, color: "var(--bms-text)" }}>{d.type}</Text>
               <Text style={{ fontSize: 12, fontWeight: 600, color }}>{d.count}</Text>
             </div>
           );
@@ -249,7 +257,7 @@ export default function DashboardPage() {
       title: "Project", key: "name", ellipsis: true,
       render: (_: unknown, r: PortfolioProject) => (
         <div>
-          <code style={{ fontSize: 11, color: "var(--pmt-primary)", marginRight: 6 }}>{r.code}</code>
+          <code style={{ fontSize: 11, color: "var(--bms-primary)", marginRight: 6 }}>{r.code}</code>
           <Text strong style={{ fontSize: 13 }}>{r.name}</Text>
           <div><Text type="secondary" style={{ fontSize: 11 }}>{r.client ?? "—"}</Text></div>
         </div>
@@ -279,7 +287,7 @@ export default function DashboardPage() {
       title: "Due", key: "due", width: 90,
       render: (_: unknown, r: PortfolioProject) => {
         if (r.days_left == null) return "—";
-        const color = r.days_left < 0 ? "var(--pmt-danger)" : r.days_left < 14 ? "var(--pmt-warning)" : undefined;
+        const color = r.days_left < 0 ? "var(--bms-danger)" : r.days_left < 14 ? "var(--bms-warning)" : undefined;
         return (
           <span style={{ fontSize: 12, color }}>
             {r.days_left < 0 ? `${Math.abs(r.days_left)}d late` : `${r.days_left}d`}

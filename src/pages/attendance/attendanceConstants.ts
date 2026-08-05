@@ -16,26 +16,26 @@ export interface AttendanceRow {
 }
 
 export const STATUS_STYLE: Record<string, { color: string; bg: string; label: string }> = {
-  PRESENT:    { color: "var(--pmt-success)", bg: "rgba(22, 163, 74, 0.15)", label: "Present"    },
-  WFH:        { color: "var(--pmt-primary)", bg: "rgba(37, 99, 235, 0.15)", label: "WFH"        },
-  ABSENT:     { color: "var(--pmt-danger)", bg: "var(--pmt-danger-bg)", label: "Absent"     },
-  HALF_DAY:   { color: "var(--pmt-warning)", bg: "rgba(217, 119, 6, 0.15)", label: "Half Day"   },
+  PRESENT:    { color: "var(--bms-success)", bg: "rgba(22, 163, 74, 0.15)", label: "Present"    },
+  WFH:        { color: "var(--bms-primary)", bg: "rgba(37, 99, 235, 0.15)", label: "WFH"        },
+  ABSENT:     { color: "var(--bms-danger)", bg: "var(--bms-danger-bg)", label: "Absent"     },
+  HALF_DAY:   { color: "var(--bms-warning)", bg: "rgba(217, 119, 6, 0.15)", label: "Half Day"   },
   ON_LEAVE:   { color: "#7c3aed", bg: "rgba(124, 58, 237, 0.15)", label: "On Leave"   },
   HOLIDAY:    { color: "#0d9488", bg: "rgba(13, 148, 136, 0.15)", label: "Holiday"    },
-  WEEKEND:    { color: "var(--pmt-text-3)", bg: "var(--pmt-surface-2)", label: "Weekend"    },
-  NOT_MARKED: { color: "var(--pmt-text-3)", bg: "var(--pmt-surface)", label: "Not Marked" },
+  WEEKEND:    { color: "var(--bms-text-3)", bg: "var(--bms-surface-2)", label: "Weekend"    },
+  NOT_MARKED: { color: "var(--bms-text-3)", bg: "var(--bms-surface)", label: "Not Marked" },
 };
 
 /** Single-letter codes shown in the monthly matrix cells */
 export const STATUS_CELL: Record<string, { code: string; textColor: string; bg: string; showInfo?: boolean }> = {
-  PRESENT:    { code: "P", textColor: "var(--pmt-success)", bg: "var(--pmt-surface)" },
-  WFH:        { code: "P", textColor: "var(--pmt-primary)", bg: "rgba(37, 99, 235, 0.15)" },
-  ABSENT:     { code: "A", textColor: "var(--pmt-danger)", bg: "var(--pmt-danger-bg)" },
-  HALF_DAY:   { code: "H", textColor: "var(--pmt-warning)", bg: "rgba(217, 119, 6, 0.15)" },
-  ON_LEAVE:   { code: "L", textColor: "#7c3aed", bg: "var(--pmt-surface)", showInfo: true },
+  PRESENT:    { code: "P", textColor: "var(--bms-success)", bg: "var(--bms-surface)" },
+  WFH:        { code: "P", textColor: "var(--bms-primary)", bg: "rgba(37, 99, 235, 0.15)" },
+  ABSENT:     { code: "A", textColor: "var(--bms-danger)", bg: "var(--bms-danger-bg)" },
+  HALF_DAY:   { code: "H", textColor: "var(--bms-warning)", bg: "rgba(217, 119, 6, 0.15)" },
+  ON_LEAVE:   { code: "L", textColor: "#7c3aed", bg: "var(--bms-surface)", showInfo: true },
   HOLIDAY:    { code: "H", textColor: "#0d9488", bg: "rgba(13, 148, 136, 0.15)" },
-  WEEKEND:    { code: "",  textColor: "var(--pmt-text-3)", bg: "var(--pmt-surface-2)" },
-  NOT_MARKED: { code: "",  textColor: "var(--pmt-text-3)", bg: "var(--pmt-surface)" },
+  WEEKEND:    { code: "",  textColor: "var(--bms-text-3)", bg: "var(--bms-surface-2)" },
+  NOT_MARKED: { code: "",  textColor: "var(--bms-text-3)", bg: "var(--bms-surface)" },
 };
 
 export const MATRIX_LEGEND = [
@@ -58,7 +58,7 @@ export function downloadAttendanceExport(year: number, month: number) {
       const pad = (n: number) => String(n).padStart(2, "0");
       const ts = `${year}_${pad(month)}_${new Date().toISOString().slice(0, 10).replace(/-/g, "_")}`;
       link.href = URL.createObjectURL(blob);
-      link.download = `attendance_report_${ts}.csv`;
+      link.download = `attendance_report_${ts}.xlsx`;
       link.click();
       URL.revokeObjectURL(link.href);
     });

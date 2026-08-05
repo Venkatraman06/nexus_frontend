@@ -116,10 +116,9 @@ const ClientManagement: React.FC = () => {
     setIsLoading(true);
     setLoadError(false);
     try {
-        const data = await get<any>('/clients/');
-if (requestId !== fetchRequest.current) return;
-const list = Array.isArray(data) ? data : (data?.data?.results ?? data?.results ?? []);
-setClients(list.filter(isValidClient));
+      const data = await get<unknown>('/clients/');
+      if (requestId !== fetchRequest.current) return;
+      setClients(Array.isArray(data) ? data.filter(isValidClient) : []);
     } catch {
       if (requestId !== fetchRequest.current) return;
       setLoadError(true);

@@ -67,6 +67,18 @@ export interface PolicyDocument {
   uploaded_by_name: string | null;
   created_at: string;
   updated_at: string;
+  // Acknowledgment fields (injected by list endpoint)
+  is_acknowledged_by_me?: boolean;
+  acknowledgment_count?: number;
+}
+
+export interface PolicyAcknowledgment {
+  id: string;
+  employee: string;
+  employee_name: string;
+  employee_code: string;
+  profile_picture_url?: string | null;
+  acknowledged_at: string;
 }
 
 export const policyApi = {
@@ -82,6 +94,12 @@ export const policyApi = {
 
   togglePublish: (id: string, isPublished: boolean) =>
     patch<PolicyDocument>(`/policy-documents/${id}/`, { is_published: isPublished }),
+
+  acknowledge: (id: string) =>
+    post<{ acknowledged: boolean; created: boolean }>(`/policy-documents/${id}/acknowledge/`, {}),
+
+  getAcknowledgments: (id: string) =>
+    get<PolicyAcknowledgment[]>(`/policy-documents/${id}/acknowledgments/`),
 };
 
 export const DOCUMENT_TYPE_OPTIONS: { label: string; value: DocumentType }[] = [

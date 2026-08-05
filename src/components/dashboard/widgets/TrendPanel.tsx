@@ -11,7 +11,7 @@ export default function TrendPanel({ children, footer }: TrendPanelProps) {
     <div>
       {children}
       {footer && (
-        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--pmt-border)" }}>
+        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--bms-border)" }}>
           {footer}
         </div>
       )}

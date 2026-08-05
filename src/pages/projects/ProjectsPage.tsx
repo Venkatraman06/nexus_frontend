@@ -1,9 +1,10 @@
+import { renderClientDropdown } from "@/components/common/DropdownRenderers";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table, Button, Tag, Space, Modal, Form, Input, Select,
   DatePicker, InputNumber, Tooltip, Typography, Card, Row, Col,
-  message, Spin, Switch, Segmented,
+  message, Spin, Switch, Segmented, Divider,
 } from "antd";
 import {
   PlusOutlined, EditOutlined, EyeOutlined, ReloadOutlined,
@@ -23,6 +24,7 @@ import { PERMS } from "@/constants/permissions";
 import dayjs from "dayjs";
 import { apiErrorMsg } from "@/utils/apiError";
 import AssigneeAvatar from "@/components/common/AssigneeAvatar";
+import CreateClientModal from "@/components/clients/CreateClientModal";
 
 const { Title, Text } = Typography;
 
@@ -65,12 +67,16 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("board");
   const [modalOpen, setModalOpen] = useState(false);
+
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [generatingCode, setGeneratingCode] = useState(false);
   const [form] = Form.useForm();
+  const [clientModalOpen, setClientModalOpen] = useState(false);
+  const [clientSelectOpen, setClientSelectOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const [addClientOpen, setAddClientOpen] = useState(false);
 
   // ── Master dropdowns ────────────────────────────────────────────────────────
   const { data: businessTypes = [] } = useQuery<BusinessTypeDropdown[]>({
@@ -131,6 +137,17 @@ export default function ProjectsPage() {
       message.success(editProject ? "Project updated" : "Project created");
     },
     onError: (e: any) => message.error(apiErrorMsg(e, "Failed to save project")),
+  });
+
+  const createClientMutation = useMutation({
+    mutationFn: (values: any) => projectsApi.createClient(values),
+    onSuccess: (newClient: any) => {
+      queryClient.invalidateQueries({ queryKey: ["dd", "clients"] });
+      setClientModalOpen(false);
+      message.success("Client created successfully");
+      form.setFieldValue("client", newClient.id);
+    },
+    onError: (e: any) => message.error(apiErrorMsg(e, "Failed to create client")),
   });
 
   const transitionMutation = useMutation({
@@ -201,7 +218,7 @@ export default function ProjectsPage() {
             ellipsis
             style={{
               fontFamily: "ui-monospace, monospace", fontWeight: 600,
-              fontSize: 12, color: "var(--pmt-text-2, #5f6368)", cursor: "pointer",
+              fontSize: 12, color: "var(--bms-text-2, #5f6368)", cursor: "pointer",
             }}
             onClick={() => navigate(`/projects/${r.id}`)}
           >
@@ -217,7 +234,7 @@ export default function ProjectsPage() {
           <Text
             strong
             ellipsis
-            style={{ cursor: "pointer", color: "var(--pmt-text, #202124)", maxWidth: "100%" }}
+            style={{ cursor: "pointer", color: "var(--bms-text, #202124)", maxWidth: "100%" }}
             onClick={() => navigate(`/projects/${r.id}`)}
           >
             {v}
@@ -458,7 +475,7 @@ export default function ProjectsPage() {
                 {editProject ? (
                   <Input
                     readOnly
-                    style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--pmt-primary)", background: "var(--pmt-surface-2)", cursor: "not-allowed" }}
+                    style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--bms-primary)", background: "var(--bms-surface-2)", cursor: "not-allowed" }}
                   />
                 ) : (
                   <Input
@@ -542,6 +559,9 @@ export default function ProjectsPage() {
               options={toOptions(clients as any[])}
               filterOption={filterOpt}
               allowClear
+              open={clientSelectOpen}
+              onDropdownVisibleChange={setClientSelectOpen}
+              dropdownRender={renderClientDropdown}
             />
           </Form.Item>
 
@@ -580,7 +600,7 @@ export default function ProjectsPage() {
                   prefix="₹"
                   placeholder="e.g. 500000"
                   formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                  parser={(v) => Number(v?.replace(/,/g, "") || 0)}
+                  parser={(v: any) => Number(String(v)?.replace(/,/g, "") || 0)}
                 />
               </Form.Item>
             </Col>
@@ -595,6 +615,13 @@ export default function ProjectsPage() {
           </Form.Item>
         </Form>
       </Modal>
+
+      <CreateClientModal
+        open={clientModalOpen}
+        onCancel={() => setClientModalOpen(false)}
+        onOk={(v) => createClientMutation.mutate(v)}
+        confirmLoading={createClientMutation.isPending}
+      />
     </div>
   );
 }

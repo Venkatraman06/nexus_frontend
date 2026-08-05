@@ -20,6 +20,7 @@ export interface WorkspaceCalendarEvent {
   comments?: string;
   note?: string;
   is_due_reminder?: boolean;
+  updated_at?: string | null;
 }
 
 export const workspaceApi = {

@@ -6,7 +6,6 @@ import { PERMS } from "@/constants/permissions";
 import { get } from "@/services/api";
 import { resolveLandingPath } from "@/utils/access";
 import AppLayout from "@/components/layout/AppLayout";
-import CRMPage from '@/pages/crm/CRMPage'; 
 import RequirePermission from "@/components/common/RequirePermission";
 import LoginPage from "@/pages/auth/LoginPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
@@ -23,6 +22,8 @@ import AllocationPage from "@/pages/allocation/AllocationPage";
 import EmployeesPage from "@/pages/employees/EmployeesPage";
 import EmployeeDetailPage from "@/pages/employees/EmployeeDetailPage";
 import ReportsPage from "@/pages/reports/ReportsPage";
+import ClientFormPage from "@/pages/clients/ClientFormPage";
+import ProjectFormPage from "@/pages/projects/ProjectFormPage";
 import ClientPage from "@/pages/clients/ClientPage";
 import MasterPage from "@/pages/master/MasterPage";
 import EmployeeDashboardPage from "@/pages/dashboard/EmployeeDashboardPage";
@@ -53,6 +54,7 @@ import MeetingsPage from "@/pages/workspace/MeetingsPage";
 import WorkspaceDashboardPage from "@/pages/workspace/WorkspaceDashboardPage";
 import ExecutiveDashboardPage from "@/pages/dashboard/ExecutiveDashboardPage";
 import SalesPage from "@/pages/sales/SalesPage";
+import CRMPage from "@/pages/crm/CRMPage";
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token       = useAuthStore((s) => s.token);
   const user        = useAuthStore((s) => s.user);
@@ -97,7 +99,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
   if (bootstrapping && (!user || permissions.length === 0)) {
     return (
-      <div className="pmt-auth-bootstrap" role="status" aria-live="polite" aria-label="Loading your workspace">
+      <div className="bms-auth-bootstrap" role="status" aria-live="polite" aria-label="Loading your workspace">
         <Spin size="large" />
       </div>
     );
@@ -148,6 +150,8 @@ export default function App() {
         } />
         <Route path="attendance/admin" element={<RequirePermission permission={PERMS.HRMS_ATTENDANCE_MANAGE}><AttendanceHRPage /></RequirePermission>} />
         <Route path="employees/:id" element={<RequirePermission permission={PERMS.HRMS_EMPLOYEE_VIEW}><EmployeeDetailPage /></RequirePermission>} />
+                <Route path="clients/new" element={<RequirePermission permission={PERMS.PROJECT_CLIENT_VIEW}><ClientFormPage /></RequirePermission>} />
+        <Route path="projects/new" element={<RequirePermission permission={PERMS.PROJECT_VIEW}><ProjectFormPage /></RequirePermission>} />
         <Route path="clients" element={<RequirePermission permission={PERMS.PROJECT_CLIENT_VIEW}><ClientPage /></RequirePermission>} />
         <Route path="projects" element={<RequirePermission permission={PERMS.PROJECT_VIEW}><ProjectsPage /></RequirePermission>} />
         <Route path="projects/:id" element={<RequirePermission permission={PERMS.PROJECT_VIEW}><ProjectDetailPage /></RequirePermission>} />
@@ -167,6 +171,7 @@ export default function App() {
             PERMS.MASTER_CLIENT_VIEW,
             PERMS.MASTER_PROJECT_VIEW,
             PERMS.MASTER_WORKFLOW_VIEW,
+            PERMS.CRM_EXPENSE_VIEW,
           ]}>
             <MasterPage />
           </RequirePermission>
@@ -179,9 +184,15 @@ export default function App() {
         <Route path="master/rate-card" element={<RequirePermission permission={PERMS.MASTER_HRMS_VIEW}><MasterPage defaultTab="rate-card" /></RequirePermission>} />
         <Route path="master/holiday" element={<RequirePermission permission={PERMS.MASTER_HRMS_VIEW}><MasterPage defaultTab="holiday" /></RequirePermission>} />
         <Route path="master/leave-type" element={<RequirePermission permission={PERMS.MASTER_HRMS_VIEW}><MasterPage defaultTab="leave-type" /></RequirePermission>} />
+        <Route path="master/reimbursement" element={<RequirePermission anyOf={[PERMS.MASTER_HRMS_VIEW, PERMS.CRM_EXPENSE_VIEW]}><MasterPage defaultTab="reimbursement" /></RequirePermission>} />
+        <Route path="master/reimbursement-config" element={<Navigate to="/master/reimbursement" replace />} />
+        <Route path="master/reimbursements" element={<Navigate to="/master/reimbursement" replace />} />
+        <Route path="reimbursement" element={<Navigate to="/expenses" replace />} />
+        <Route path="reimbursements" element={<Navigate to="/expenses" replace />} />
         <Route path="master/client-category" element={<RequirePermission permission={PERMS.MASTER_CLIENT_VIEW}><MasterPage defaultTab="client-category" /></RequirePermission>} />
         <Route path="master/business-type" element={<RequirePermission permission={PERMS.MASTER_PROJECT_VIEW}><MasterPage defaultTab="business-type" /></RequirePermission>} />
         <Route path="master/billing-type" element={<RequirePermission permission={PERMS.MASTER_PROJECT_VIEW}><MasterPage defaultTab="billing-type" /></RequirePermission>} />
+        <Route path="master/followup-type" element={<RequirePermission permission={PERMS.MASTER_PROJECT_VIEW}><MasterPage defaultTab="followup-type" /></RequirePermission>} />
         <Route path="master/workflow" element={<RequirePermission permission={PERMS.MASTER_WORKFLOW_VIEW}><MasterPage defaultTab="workflow" /></RequirePermission>} />
         <Route path="employees/hr-compliance" element={<RequirePermission permission={PERMS.HRMS_COMPLIANCE_VIEW}><HRCompliancePage /></RequirePermission>} />
         <Route path="policy-documents" element={<RequirePermission permission={PERMS.POLICY_VIEW}><PolicyDocumentsPage /></RequirePermission>} />
@@ -198,27 +209,27 @@ export default function App() {
         <Route path="payment/receivables"        element={<RequirePermission permission={PERMS.PAYMENT_DASHBOARD_VIEW}><ReceivableSummaryPage /></RequirePermission>} />
         <Route path="payment/client-receivables" element={<Navigate to="/payment/receivables" replace />} />
         <Route path="payment/project-receivables" element={<Navigate to="/payment/receivables" replace />} />
-        <Route path="expenses" element={<RequirePermission permission={PERMS.CRM_EXPENSE_VIEW}><ExpensesPage /></RequirePermission>} />
+        <Route path="expenses" element={
+          <RequirePermission anyOf={[PERMS.DASHBOARD_OWN, PERMS.CRM_EXPENSE_VIEW]}>
+            <ExpensesPage />
+          </RequirePermission>
+        } />
         <Route path="followups" element={<Navigate to="/workspace/followups" replace />} />
-        <Route path="workspace/dashboard" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><WorkspaceDashboardPage /></RequirePermission>} />
-        <Route path="workspace/todos" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><TodosPage /></RequirePermission>} />
-        <Route path="workspace/dashboard" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><WorkspaceDashboardPage /></RequirePermission>} />
-        <Route path="workspace/followups" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><FollowUpsPage /></RequirePermission>} />
-        <Route path="workspace/meetings" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><MeetingsPage /></RequirePermission>} />
-        <Route path="workspace/calendar" element={<RequirePermission permission={PERMS.CRM_FOLLOWUP_VIEW}><WorkspaceCalendarPage /></RequirePermission>} />
-        <Route path="crm" element={<CRMPage />} />
-<Route path="crm/dashboard" element={<CRMPage />} />
-<Route path="crm/leads" element={<CRMPage />} />
-<Route path="crm/tasks" element={<CRMPage />} />
-<Route path="crm/followups" element={<CRMPage />} />
-<Route path="crm/documents" element={<CRMPage />} />
-<Route path="crm/clients" element={<CRMPage />} />
+        <Route path="workspace/dashboard" element={<WorkspaceDashboardPage />} />
+        <Route path="workspace/todos" element={<TodosPage />} />
+        <Route path="workspace/followups" element={<FollowUpsPage />} />
+        <Route path="workspace/meetings" element={<MeetingsPage />} />
+        <Route path="workspace/calendar" element={<WorkspaceCalendarPage />} />
         <Route path="sales" element={<SalesPage />} />
         <Route path="sales/dashboard" element={<SalesPage />} />
         <Route path="sales/opportunities" element={<SalesPage />} />
         <Route path="sales/quotes" element={<SalesPage />} />
         <Route path="sales/proposals" element={<SalesPage />} />
         <Route path="sales/documents" element={<SalesPage />} />
+        <Route path="crm" element={<CRMPage />} />
+        <Route path="crm/leads" element={<CRMPage />} />
+        <Route path="crm/clients" element={<CRMPage />} />
+        <Route path="crm/documents" element={<CRMPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/roles" element={<RequirePermission permission={PERMS.ROLE_VIEW}><RoleManagementPage /></RequirePermission>} />
         <Route path="settings/roles/:roleId" element={<RequirePermission permission={PERMS.ROLE_VIEW}><RoleDetailPage /></RequirePermission>} />

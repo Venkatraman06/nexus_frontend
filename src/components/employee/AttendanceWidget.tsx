@@ -134,8 +134,8 @@ export default function AttendanceWidget({
         </Tooltip>
       ) : today.check_out ? (
         <div className="emp-attendance__done">
-          <CheckCircleOutlined style={{ color: "var(--pmt-success)", marginRight: 6 }} />
-          <Text style={{ color: "var(--pmt-success)", fontSize: 13 }}>Day completed</Text>
+          <CheckCircleOutlined style={{ color: "var(--bms-success)", marginRight: 6 }} />
+          <Text style={{ color: "var(--bms-success)", fontSize: 13 }}>Day completed</Text>
         </div>
       ) : (
         <div className="emp-attendance__actions">
@@ -207,13 +207,13 @@ export default function AttendanceWidget({
           <Divider style={{ margin: "10px 0" }} />
           <div className="emp-attendance__month">
             {[
-              { label: "Present", value: month.present, color: "var(--pmt-success)" },
+              { label: "Present", value: month.present, color: "var(--bms-success)" },
               { label: "Leave", value: month.on_leave, color: "#7c3aed" },
-              { label: "WFH", value: month.wfh, color: "var(--pmt-primary)" },
+              { label: "WFH", value: month.wfh, color: "var(--bms-primary)" },
             ].map(({ label, value, color }) => (
               <div key={label} className="emp-attendance__month-stat">
                 <div style={{ fontSize: 18, fontWeight: 700, color }}>{value}</div>
-                <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{label}</div>
+                <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>{label}</div>
               </div>
             ))}
           </div>
@@ -278,7 +278,7 @@ export function WorkHoursStats({ stats }: { stats: import("./types").WorkStats }
           ].map(({ label, value }) => (
             <div key={label} className="emp-work-stats__pill">
               <div style={{ fontSize: 16, fontWeight: 700 }}>{value}</div>
-              <div style={{ fontSize: 10, color: "var(--pmt-text-2)" }}>{label}</div>
+              <div style={{ fontSize: 10, color: "var(--bms-text-2)" }}>{label}</div>
             </div>
           ))}
         </div>

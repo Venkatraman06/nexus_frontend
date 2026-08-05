@@ -79,7 +79,7 @@ export default function ExecutivePipelinePanel({ pipeline, animate = true }: Pro
         </div>
         <div className="exec-funnel-kpis__item exec-funnel-kpis__item--reveal" style={{ animationDelay: animate ? "640ms" : undefined }}>
           <Text type="secondary">New this FY</Text>
-          <strong style={{ color: "var(--pmt-primary)" }}>
+          <strong style={{ color: "var(--bms-primary)" }}>
             {animate ? <AnimatedNumber value={pipeline.fy_new} duration={900} /> : pipeline.fy_new}
           </strong>
         </div>

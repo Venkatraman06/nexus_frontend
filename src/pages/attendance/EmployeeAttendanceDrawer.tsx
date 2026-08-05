@@ -46,10 +46,10 @@ interface TrackerResponse {
 }
 
 const EVENT_META: Record<string, { color: string; icon: React.ReactNode; bg: string }> = {
-  CHECK_IN:    { color: "var(--pmt-success)", bg: "rgba(22, 163, 74, 0.15)", icon: <LoginOutlined />       },
-  CHECK_OUT:   { color: "var(--pmt-danger)", bg: "var(--pmt-danger-bg)", icon: <LogoutOutlined />      },
-  BREAK_START: { color: "var(--pmt-warning)", bg: "rgba(245, 158, 11, 0.15)", icon: <PauseCircleOutlined /> },
-  BREAK_END:   { color: "var(--pmt-primary)", bg: "rgba(59, 130, 246, 0.15)", icon: <PlayCircleOutlined />  },
+  CHECK_IN:    { color: "var(--bms-success)", bg: "rgba(22, 163, 74, 0.15)", icon: <LoginOutlined />       },
+  CHECK_OUT:   { color: "var(--bms-danger)", bg: "var(--bms-danger-bg)", icon: <LogoutOutlined />      },
+  BREAK_START: { color: "var(--bms-warning)", bg: "rgba(245, 158, 11, 0.15)", icon: <PauseCircleOutlined /> },
+  BREAK_END:   { color: "var(--bms-primary)", bg: "rgba(59, 130, 246, 0.15)", icon: <PlayCircleOutlined />  },
 };
 
 class MapErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -150,7 +150,7 @@ export default function EmployeeAttendanceDrawer({ open, empId, selDate, onClose
   const drawerTitle = data ? (
     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
       <div style={{
-        width: 36, height: 36, borderRadius: "50%", background: "var(--pmt-primary)",
+        width: 36, height: 36, borderRadius: "50%", background: "var(--bms-primary)",
         display: "flex", alignItems: "center", justifyContent: "center", color: "#fff",
         fontSize: 15, fontWeight: 700, flexShrink: 0,
       }}>
@@ -158,7 +158,7 @@ export default function EmployeeAttendanceDrawer({ open, empId, selDate, onClose
       </div>
       <div>
         <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.2 }}>{data.employee.full_name}</div>
-        <div style={{ fontSize: 12, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{data.employee.employee_code}</div>
+        <div style={{ fontSize: 12, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{data.employee.employee_code}</div>
       </div>
       <Tag style={{ marginLeft: "auto", marginRight: 0 }}>{selDate.format("DD MMM YYYY")}</Tag>
     </div>
@@ -196,14 +196,14 @@ export default function EmployeeAttendanceDrawer({ open, empId, selDate, onClose
                   {[
                     { label: "Check In", value: rec.check_in ?? "—", color: "#059669", icon: <LoginOutlined /> },
                     { label: "Check Out", value: rec.check_out ?? "—", color: "#dc2626", icon: <LogoutOutlined /> },
-                    { label: "Working", value: `${rec.working_hours}h`, color: "var(--pmt-primary)", icon: <ClockCircleOutlined /> },
+                    { label: "Working", value: `${rec.working_hours}h`, color: "var(--bms-primary)", icon: <ClockCircleOutlined /> },
                     { label: "Break", value: `${rec.total_break_minutes}m`, color: "#f59e0b", icon: <CoffeeOutlined /> },
                   ].map(({ label, value, color, icon }) => (
                     <Col span={6} key={label}>
                       <Card size="small" style={{ borderRadius: 10, textAlign: "center" }}>
                         <div style={{ color, fontSize: 16, marginBottom: 2 }}>{icon}</div>
                         <div style={{ fontSize: 16, fontWeight: 700, color }}>{value}</div>
-                        <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{label}</div>
+                        <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>{label}</div>
                       </Card>
                     </Col>
                   ))}
@@ -214,7 +214,7 @@ export default function EmployeeAttendanceDrawer({ open, empId, selDate, onClose
                   <Empty description="No events recorded" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 ) : (
                   <div style={{ position: "relative", paddingLeft: 28 }}>
-                    <div style={{ position: "absolute", left: 9, top: 8, bottom: 8, width: 2, background: "var(--pmt-border)" }} />
+                    <div style={{ position: "absolute", left: 9, top: 8, bottom: 8, width: 2, background: "var(--bms-border)" }} />
                     {data.events.map((ev, idx) => {
                       const meta = EVENT_META[ev.type] ?? EVENT_META.CHECK_IN;
                       return (
@@ -229,7 +229,7 @@ export default function EmployeeAttendanceDrawer({ open, empId, selDate, onClose
                           <div style={{ background: meta.bg, borderRadius: 8, padding: "7px 11px", border: `1px solid ${meta.color}22` }}>
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
                               <Text strong style={{ fontSize: 12, color: meta.color }}>{ev.label}</Text>
-                              <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{ev.time}</Text>
+                              <Text style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{ev.time}</Text>
                             </div>
                           </div>
                         </div>

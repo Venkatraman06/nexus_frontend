@@ -92,7 +92,7 @@
 
 .org-card__avatar-wrap img {
   object-fit: cover;
-  border: 2.5px solid var(--pmt-border);
+  border: 2.5px solid var(--bms-border);
 }
 
 .org-card__initials {
@@ -108,7 +108,7 @@
   width: 100%;
   font-size: 12px;
   font-weight: 700;
-  color: var(--pmt-text);
+  color: var(--bms-text);
   text-align: center;
   line-height: 17px;
   display: -webkit-box;
@@ -122,7 +122,7 @@
   height: 14px;
   width: 100%;
   font-size: 10px;
-  color: var(--pmt-text-3);
+  color: var(--bms-text-3);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   text-align: center;
   line-height: 14px;
@@ -169,12 +169,12 @@
 }
 
 .org-card__designation-pill--default {
-  color: var(--pmt-text-2);
-  background: var(--pmt-surface-2);
+  color: var(--bms-text-2);
+  background: var(--bms-surface-2);
 }
 
 .org-card__designation-pill--empty {
-  color: var(--pmt-text-3);
+  color: var(--bms-text-3);
   background: transparent;
 }
 
@@ -183,7 +183,7 @@
   margin-top: auto;
   padding-top: 4px;
   font-size: 10px;
-  color: var(--pmt-text-3);
+  color: var(--bms-text-3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,8 +200,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  background: var(--pmt-surface);
-  border: 1px solid var(--pmt-border);
+  background: var(--bms-surface);
+  border: 1px solid var(--bms-border);
   border-radius: 8px;
   padding: 4px 10px;
   box-shadow: var(--shadow-sm);
@@ -212,7 +212,7 @@
   text-align: center;
   font-size: 12px;
   font-weight: 600;
-  color: var(--pmt-text-2);
+  color: var(--bms-text-2);
   cursor: pointer;
   padding: 0 2px;
 }
@@ -220,24 +220,24 @@
 .org-zoom-bar__divider {
   width: 1px;
   height: 16px;
-  background: var(--pmt-border);
+  background: var(--bms-border);
   margin: 0 2px;
 }
 
 .org-zoom-bar button.ant-btn-text {
-  color: var(--pmt-text-2);
+  color: var(--bms-text-2);
 }
 
 .org-zoom-bar button.ant-btn-text:disabled {
-  color: var(--pmt-text-3);
+  color: var(--bms-text-3);
   opacity: 0.5;
 }
 
 .org-canvas {
   overflow: auto;
   border-radius: 12px;
-  border: 1px solid var(--pmt-border);
-  background: var(--pmt-bg);
-  background-image: radial-gradient(circle, var(--pmt-border) 1px, transparent 1px);
+  border: 1px solid var(--bms-border);
+  background: var(--bms-bg);
+  background-image: radial-gradient(circle, var(--bms-border) 1px, transparent 1px);
   background-size: 24px 24px;
 }

@@ -81,16 +81,16 @@ function SCard({ label, value, color }: { label: string; value: string | number;
     <div style={{
       flex: 1,
       // ✅ FIX: was background: "#fff", border: "1px solid #eaecf0"
-      background: "var(--pmt-surface)",
+      background: "var(--bms-surface)",
       borderRadius: 12,
-      border: "1px solid var(--pmt-border)",
+      border: "1px solid var(--bms-border)",
       padding: "16px 20px",
       minWidth: 150,
     }}>
       {/* ✅ FIX: was color: "#9ca3af" */}
-      <Text style={{ fontSize: 12, color: "var(--pmt-text-3)", display: "block", marginBottom: 4 }}>{label}</Text>
+      <Text style={{ fontSize: 12, color: "var(--bms-text-3)", display: "block", marginBottom: 4 }}>{label}</Text>
       {/* ✅ FIX: was color: "#111827" */}
-      <div style={{ fontSize: 24, fontWeight: 700, color: color ?? "var(--pmt-text)" }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: color ?? "var(--bms-text)" }}>{value}</div>
     </div>
   );
 }
@@ -298,22 +298,22 @@ function PayrollModal({ open, record, onClose, onDone }: {
         )}
 
         {/* ── Earnings ── */}
-        <Divider orientation="left" style={{ fontSize: 11, color: "var(--pmt-text-3)", borderColor: "var(--pmt-border)", margin: "8px 0 12px" }}>
+        <Divider orientation="left" style={{ fontSize: 11, color: "var(--bms-text-3)", borderColor: "var(--bms-border)", margin: "8px 0 12px" }}>
           EARNINGS
         </Divider>
         <Row gutter={12}>
           <Col span={8}>
-            <Form.Item name="basic_salary" label={<span>Basic Salary <Tooltip title="40% of monthly CTC"><InfoCircleOutlined style={{ color: "var(--pmt-text-3)" }} /></Tooltip></span>}>
+            <Form.Item name="basic_salary" label={<span>Basic Salary <Tooltip title="40% of monthly CTC"><InfoCircleOutlined style={{ color: "var(--bms-text-3)" }} /></Tooltip></span>}>
               <InputNumber {...inp} prefix="₹" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="hra" label={<span>HRA <Tooltip title="20% of monthly CTC (50% of Basic)"><InfoCircleOutlined style={{ color: "var(--pmt-text-3)" }} /></Tooltip></span>}>
+            <Form.Item name="hra" label={<span>HRA <Tooltip title="20% of monthly CTC (50% of Basic)"><InfoCircleOutlined style={{ color: "var(--bms-text-3)" }} /></Tooltip></span>}>
               <InputNumber {...inp} prefix="₹" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="allowances" label={<span>Allowances <Tooltip title="40% of monthly CTC"><InfoCircleOutlined style={{ color: "var(--pmt-text-3)" }} /></Tooltip></span>}>
+            <Form.Item name="allowances" label={<span>Allowances <Tooltip title="40% of monthly CTC"><InfoCircleOutlined style={{ color: "var(--bms-text-3)" }} /></Tooltip></span>}>
               <InputNumber {...inp} prefix="₹" />
             </Form.Item>
           </Col>
@@ -325,17 +325,17 @@ function PayrollModal({ open, record, onClose, onDone }: {
         </Row>
 
         {/* ── Deductions ── */}
-        <Divider orientation="left" style={{ fontSize: 11, color: "var(--pmt-text-3)", borderColor: "var(--pmt-border)", margin: "8px 0 12px" }}>
+        <Divider orientation="left" style={{ fontSize: 11, color: "var(--bms-text-3)", borderColor: "var(--bms-border)", margin: "8px 0 12px" }}>
           DEDUCTIONS
         </Divider>
         <Row gutter={12}>
           <Col span={8}>
-            <Form.Item name="pf" label={<span>PF <Tooltip title="12% of Basic (auto-calculated)"><InfoCircleOutlined style={{ color: "var(--pmt-text-3)" }} /></Tooltip></span>}>
+            <Form.Item name="pf" label={<span>PF <Tooltip title="12% of Basic (auto-calculated)"><InfoCircleOutlined style={{ color: "var(--bms-text-3)" }} /></Tooltip></span>}>
               <InputNumber {...inp} prefix="₹" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="tds" label={<span>TDS <Tooltip title="Income Tax — new regime slab"><InfoCircleOutlined style={{ color: "var(--pmt-text-3)" }} /></Tooltip></span>}>
+            <Form.Item name="tds" label={<span>TDS <Tooltip title="Income Tax — new regime slab"><InfoCircleOutlined style={{ color: "var(--bms-text-3)" }} /></Tooltip></span>}>
               <InputNumber {...inp} prefix="₹" />
             </Form.Item>
           </Col>
@@ -352,7 +352,7 @@ function PayrollModal({ open, record, onClose, onDone }: {
         </Row>
 
         {/* ── Attendance ── */}
-        <Divider orientation="left" style={{ fontSize: 11, color: "var(--pmt-text-3)", borderColor: "var(--pmt-border)", margin: "8px 0 12px" }}>
+        <Divider orientation="left" style={{ fontSize: 11, color: "var(--bms-text-3)", borderColor: "var(--bms-border)", margin: "8px 0 12px" }}>
           ATTENDANCE
         </Divider>
         <Row gutter={12}>
@@ -364,20 +364,20 @@ function PayrollModal({ open, record, onClose, onDone }: {
         {/* ── Live Net Salary ── */}
         <div style={{
           // ✅ FIX: was hardcoded "#eff6ff"/"#f9fafb" backgrounds and "#e5e7eb"/"#bfdbfe" borders
-          background: net > 0 ? "#1677ff0d" : "var(--pmt-surface-2)",
+          background: net > 0 ? "#1677ff0d" : "var(--bms-surface-2)",
           borderRadius: 10, padding: "14px 18px", marginBottom: 16,
-          border: `1px solid ${net > 0 ? "#1677ff33" : "var(--pmt-border)"}`,
+          border: `1px solid ${net > 0 ? "#1677ff33" : "var(--bms-border)"}`,
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
           <div>
             {/* ✅ FIX: was color: "#9ca3af" */}
-            <div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginBottom: 2 }}>Net Salary</div>
-            <strong style={{ fontSize: 22, color: net > 0 ? "#1d4ed8" : "var(--pmt-text-3)" }}>
+            <div style={{ fontSize: 11, color: "var(--bms-text-3)", marginBottom: 2 }}>Net Salary</div>
+            <strong style={{ fontSize: 22, color: net > 0 ? "#1d4ed8" : "var(--bms-text-3)" }}>
               ₹{net.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </strong>
           </div>
           {/* ✅ FIX: was color: "#6b7280" */}
-          <div style={{ textAlign: "right", fontSize: 12, color: "var(--pmt-text-2)" }}>
+          <div style={{ textAlign: "right", fontSize: 12, color: "var(--bms-text-2)" }}>
             <div>Gross: <strong style={{ color: "#059669" }}>₹{gross.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</strong></div>
             <div>Deductions: <strong style={{ color: "#dc2626" }}>₹{deductions.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</strong></div>
           </div>
@@ -455,7 +455,7 @@ function PayrollModal({ open, record, onClose, onDone }: {
         )}
 
         {/* ✅ FIX: was border-top: "1px solid #f3f4f6" */}
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", borderTop: "1px solid var(--pmt-border)", paddingTop: 16 }}>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", borderTop: "1px solid var(--bms-border)", paddingTop: 16 }}>
           <Button onClick={onClose}>Cancel</Button>
           <Button type="primary" htmlType="submit" loading={mutation.isPending} icon={<DollarOutlined />}>
             Save Payroll
@@ -506,7 +506,7 @@ export default function PayrollPage() {
 
   const downloadPDF = async (id: string, name: string, monthName: string, year: number) => {
     try {
-      const res = await fetch(`/pmt/api/v1/payroll/${id}/payslip-pdf/`, {
+      const res = await fetch(`/bms/api/v1/payroll/${id}/payslip-pdf/`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("kc_access_token") ?? ""}` },
       });
       if (!res.ok) { message.error("Failed to generate PDF"); return; }
@@ -525,19 +525,19 @@ export default function PayrollPage() {
       title: "Employee", key: "employee",
       render: (_: any, r: PayrollRow) => (
         <div>
-          <Text strong style={{ fontSize: 13, color: "var(--pmt-text)" }}>{r.employee_name}</Text>
+          <Text strong style={{ fontSize: 13, color: "var(--bms-text)" }}>{r.employee_name}</Text>
           {/* ✅ FIX: was color: "#9ca3af" */}
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{r.employee_code} {r.designation && `· ${r.designation}`}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{r.employee_code} {r.designation && `· ${r.designation}`}</div>
         </div>
       ),
     },
     {
       title: "Period", key: "period",
-      render: (_: any, r: PayrollRow) => <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>{r.month_name} {r.year}</Text>,
+      render: (_: any, r: PayrollRow) => <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>{r.month_name} {r.year}</Text>,
     },
     {
       title: "Gross", dataIndex: "gross_total",
-      render: (v: string) => <Text style={{ fontSize: 13, color: "var(--pmt-text)" }}>{fmt(v)}</Text>,
+      render: (v: string) => <Text style={{ fontSize: 13, color: "var(--bms-text)" }}>{fmt(v)}</Text>,
     },
     {
       title: "Deductions", dataIndex: "total_deductions",
@@ -627,9 +627,9 @@ export default function PayrollPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", rowGap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>Payroll</Title>
+          <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>Payroll</Title>
           {/* ✅ FIX: was color: "#6b7280" */}
-          <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>Manage employee salary &amp; payslips</Text>
+          <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>Manage employee salary &amp; payslips</Text>
         </div>
         <Space wrap>
           <Select value={yearFilter} onChange={setYearFilter} style={{ width: 90 }}>
@@ -662,9 +662,9 @@ export default function PayrollPage() {
       {/* Table */}
       <div style={{
         // ✅ FIX: was background: "#fff", border: "1px solid #eaecf0"
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
         borderRadius: 12,
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         overflow: "hidden",
       }}>
         <Table

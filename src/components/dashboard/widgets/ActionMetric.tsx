@@ -27,8 +27,8 @@ interface ActionMetricProps {
 }
 
 const ACCENT_COLOR: Record<MetricAccent, string> = {
-  default: "var(--pmt-text-2)",
-  neutral: "var(--pmt-primary)",
+  default: "var(--bms-text-2)",
+  neutral: "var(--bms-primary)",
   success: "#059669",
   warning: "#f59e0b",
   danger: "#dc2626",

@@ -4,21 +4,23 @@ import {
   Table, Typography, Tag, Space, Button, Modal, Form,
   Input, DatePicker, Upload, Empty, message,
   Popconfirm, Tooltip, Switch, Row, Col, Card, Statistic,
+  Avatar, List, Badge,
 } from "antd";
 import {
   PlusOutlined, UploadOutlined, DownloadOutlined,
-  DeleteOutlined, FileProtectOutlined, EyeOutlined,
-  StopOutlined,
+  DeleteOutlined, FileProtectOutlined,
+  CheckCircleOutlined, TeamOutlined, CheckOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { UploadFile } from "antd";
 
-import { policyApi, type PolicyDocument } from "@/services/compliance";
+import { policyApi, type PolicyDocument, type PolicyAcknowledgment } from "@/services/compliance";
 import { PERMS } from "@/constants/permissions";
 import PermGuard from "@/components/common/PermGuard";
 import { usePermission } from "@/hooks/usePermission";
 import { apiErrorMsg } from "@/utils/apiError";
 import ActiveStatusSwitch from "@/components/common/ActiveStatusSwitch";
+import AssigneeAvatar from "@/components/common/AssigneeAvatar";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -31,9 +33,19 @@ export default function PolicyDocumentsPage() {
   const [form]                      = Form.useForm();
   const qc                          = useQueryClient();
 
+  // Acknowledgment modal state (HR admin only)
+  const [ackModalPolicy, setAckModalPolicy] = useState<PolicyDocument | null>(null);
+
   const { data: policies = [], isLoading } = useQuery({
     queryKey: ["policy-documents"],
     queryFn: () => policyApi.list(),
+  });
+
+  // HR: fetch acknowledgments list for a selected policy
+  const { data: acknowledgments = [], isLoading: acksLoading } = useQuery({
+    queryKey: ["policy-acknowledgments", ackModalPolicy?.id],
+    queryFn: () => policyApi.getAcknowledgments(ackModalPolicy!.id),
+    enabled: !!ackModalPolicy && canUpload,
   });
 
   const uploadMut = useMutation({
@@ -67,6 +79,16 @@ export default function PolicyDocumentsPage() {
     onError: (e) => message.error(apiErrorMsg(e)),
   });
 
+  // Employee: acknowledge a policy
+  const acknowledgeMut = useMutation({
+    mutationFn: (id: string) => policyApi.acknowledge(id),
+    onSuccess: () => {
+      message.success("Policy acknowledged successfully!");
+      qc.invalidateQueries({ queryKey: ["policy-documents"] });
+    },
+    onError: (e) => message.error(apiErrorMsg(e, "Failed to acknowledge")),
+  });
+
   const handleUpload = async () => {
     try {
       const values = await form.validateFields();
@@ -91,6 +113,7 @@ export default function PolicyDocumentsPage() {
 
   const published = policies.filter((p) => p.is_published);
   const unpublished = policies.filter((p) => !p.is_published);
+  const totalAcks = policies.reduce((sum, p) => sum + (p.acknowledgment_count ?? 0), 0);
 
   const columns = [
     {
@@ -121,6 +144,55 @@ export default function PolicyDocumentsPage() {
       dataIndex: "created_at",
       key: "created_at",
       render: (d: string) => dayjs(d).format("DD MMM YYYY"),
+    },
+    // Acknowledgment column
+    {
+      title: "Acknowledgment",
+      key: "acknowledgment",
+      width: 180,
+      render: (_: any, row: PolicyDocument) => {
+        const ackButtonOrBadge = row.is_acknowledged_by_me ? (
+          <Tag
+            color="success"
+            icon={<CheckCircleOutlined />}
+            style={{ borderRadius: 8, fontWeight: 600, display: "inline-flex", alignItems: "center" }}
+          >
+            Acknowledged
+          </Tag>
+        ) : (
+          <Button
+            size="small"
+            type="primary"
+            icon={<CheckOutlined />}
+            loading={acknowledgeMut.isPending && acknowledgeMut.variables === row.id}
+            onClick={() => acknowledgeMut.mutate(row.id)}
+            style={{ borderRadius: 6, background: "#52c41a", borderColor: "#52c41a" }}
+          >
+            Acknowledge
+          </Button>
+        );
+
+        if (canUpload) {
+          // HR Admin: show both their own acknowledgment button/badge and the team list button
+          return (
+            <Space direction="vertical" size={6} style={{ display: "flex", alignItems: "flex-start" }}>
+              {ackButtonOrBadge}
+              <Button
+                size="small"
+                icon={<TeamOutlined />}
+                type={row.acknowledgment_count ? "primary" : "default"}
+                ghost={!!row.acknowledgment_count}
+                onClick={() => setAckModalPolicy(row)}
+                style={{ borderRadius: 6 }}
+              >
+                {row.acknowledgment_count ?? 0} Acknowledged
+              </Button>
+            </Space>
+          );
+        }
+
+        return ackButtonOrBadge;
+      },
     },
     ...(canUpload ? [{
       title: "Published",
@@ -184,12 +256,12 @@ export default function PolicyDocumentsPage() {
         <div>
           <Space align="center">
             <FileProtectOutlined style={{ fontSize: 24, color: "#1677ff" }} />
-            <Title level={3} style={{ margin: 0, color: "var(--pmt-text)" }}>Policy Documents</Title>
+            <Title level={3} style={{ margin: 0, color: "var(--bms-text)" }}>Policy Documents</Title>
           </Space>
           <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
             {canUpload
               ? "Manage company-wide policy documents. Published policies are visible to all employees."
-              : "View and download active company policy documents."}
+              : "View, download and acknowledge active company policy documents."}
           </Text>
         </div>
         <PermGuard permission={PERMS.POLICY_CREATE}>
@@ -206,7 +278,7 @@ export default function PolicyDocumentsPage() {
       {/* Summary cards (HR only) */}
       {canUpload && (
         <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={6}>
             <Card size="small">
               <Statistic
                 title="Total Policies"
@@ -215,7 +287,7 @@ export default function PolicyDocumentsPage() {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={6}>
             <Card size="small">
               <Statistic
                 title="Published (Active)"
@@ -224,12 +296,22 @@ export default function PolicyDocumentsPage() {
               />
             </Card>
           </Col>
-          <Col xs={24} sm={8}>
+          <Col xs={24} sm={6}>
             <Card size="small">
               <Statistic
                 title="Unpublished"
                 value={unpublished.length}
                 valueStyle={{ color: "#8c9ab0", fontSize: 28 }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={6}>
+            <Card size="small">
+              <Statistic
+                title="Total Acknowledgments"
+                value={totalAcks}
+                valueStyle={{ color: "#fa8c16", fontSize: 28 }}
+                prefix={<CheckCircleOutlined />}
               />
             </Card>
           </Col>
@@ -269,7 +351,7 @@ export default function PolicyDocumentsPage() {
             loading={uploadMut.isPending}
           >
             Upload
-          </Button>
+          </Button>,
         ]}
         width={520}
       >
@@ -315,8 +397,8 @@ export default function PolicyDocumentsPage() {
           </Form.Item>
 
           <div style={{
-            background: "var(--pmt-surface-2)",
-            border: "1px solid var(--pmt-border)",
+            background: "var(--bms-surface-2)",
+            border: "1px solid var(--bms-border)",
             borderRadius: 10,
             padding: "12px 16px",
             display: "flex",
@@ -334,6 +416,84 @@ export default function PolicyDocumentsPage() {
             </Form.Item>
           </div>
         </Form>
+      </Modal>
+
+      {/* HR Admin: Who Acknowledged Modal */}
+      <Modal
+        title={
+          <Space>
+            <CheckCircleOutlined style={{ color: "#52c41a" }} />
+            <span>Acknowledgments — {ackModalPolicy?.title}</span>
+          </Space>
+        }
+        open={!!ackModalPolicy}
+        onCancel={() => setAckModalPolicy(null)}
+        footer={
+          <Button onClick={() => setAckModalPolicy(null)}>Close</Button>
+        }
+        width={520}
+      >
+        {acksLoading ? (
+          <div style={{ textAlign: "center", padding: 32 }}>
+            <Text type="secondary">Loading...</Text>
+          </div>
+        ) : acknowledgments.length === 0 ? (
+          <Empty description="No employees have acknowledged this policy yet." style={{ padding: 32 }} />
+        ) : (
+          <>
+            <div style={{
+              background: "#f6ffed",
+              border: "1px solid #b7eb8f",
+              borderRadius: 8,
+              padding: "8px 16px",
+              marginBottom: 16,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}>
+              <CheckCircleOutlined style={{ color: "#52c41a", fontSize: 16 }} />
+              <Text style={{ color: "#389e0d", fontWeight: 600 }}>
+                {acknowledgments.length} employee{acknowledgments.length !== 1 ? "s" : ""} acknowledged this policy
+              </Text>
+            </div>
+            <List
+              dataSource={acknowledgments}
+              renderItem={(ack: PolicyAcknowledgment) => (
+                <List.Item
+                  key={ack.id}
+                  style={{ padding: "10px 0", borderBottom: "1px solid var(--bms-border)" }}
+                >
+                  <List.Item.Meta
+                    avatar={
+                      <AssigneeAvatar
+                        name={ack.employee_name}
+                        src={ack.profile_picture_url}
+                        size={36}
+                      />
+                    }
+                    title={
+                      <Space>
+                        <Text strong style={{ fontSize: 13 }}>{ack.employee_name}</Text>
+                        {ack.employee_code && (
+                          <Tag style={{ fontSize: 11 }}>{ack.employee_code}</Tag>
+                        )}
+                      </Space>
+                    }
+                    description={
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Acknowledged on {dayjs(ack.acknowledged_at).format("DD MMM YYYY, h:mm A")}
+                      </Text>
+                    }
+                  />
+                  <Badge
+                    status="success"
+                    text={<Text style={{ fontSize: 11, color: "#52c41a" }}>Acknowledged</Text>}
+                  />
+                </List.Item>
+              )}
+            />
+          </>
+        )}
       </Modal>
     </div>
   );

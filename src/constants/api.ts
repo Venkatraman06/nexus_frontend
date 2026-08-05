@@ -1,4 +1,4 @@
-export const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/pmt/api/v1";
+export const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/bms/api/v1";
 
 export const ENDPOINTS = {
   // Auth
@@ -90,10 +90,12 @@ export const ENDPOINTS = {
     TIMESHEET_TEAM_EXPORT:       "/timesheets/team/export/",
     TIMESHEET_REQUEST_CHANGES:   "/timesheets/reporting/request-changes/",
 
-  // CRM — Company Expenses
+  // CRM — Company Expenses & Employee Reimbursements
   CRM_EXPENSES:        "/expenses/",
   CRM_EXPENSE_SUMMARY: "/expenses/summary/",
+  CRM_REIMBURSEMENTS:  "/reimbursements/",
 
   // CRM — Todo / Follow-up
   CRM_FOLLOWUPS: "/followups/",
 } as const;
+

@@ -56,7 +56,7 @@ export default function SocialPostCard({ post, showActions = true, onEdit, compa
   });
 
   const isOwner = post.created_by_id === currentUserId;
-  const hasManagePerm = permissions.includes("pmt.social_feed.manage" as never);
+  const hasManagePerm = permissions.includes("bms.social_feed.manage" as never);
 
   const stateColor = SOCIAL_POST_WORKFLOW_COLORS[post.workflow_state_slug] || "#6B7280";
   const stateLabel = SOCIAL_POST_WORKFLOW_LABELS[post.workflow_state_slug] || post.workflow_state_name;
@@ -69,8 +69,8 @@ export default function SocialPostCard({ post, showActions = true, onEdit, compa
     <Card
       style={{
         borderRadius: 12,
-        border: "1px solid var(--pmt-border)",
-        background: "var(--pmt-surface)",
+        border: "1px solid var(--bms-border)",
+        background: "var(--bms-surface)",
         marginBottom: 16,
       }}
       styles={{
@@ -121,7 +121,7 @@ export default function SocialPostCard({ post, showActions = true, onEdit, compa
           {post.title}
         </Text>
         {post.content && (
-          <PostContent content={post.content} style={{ fontSize: compact ? 13 : 14, color: "var(--pmt-text-2)" }} />
+          <PostContent content={post.content} style={{ fontSize: compact ? 13 : 14, color: "var(--bms-text-2)" }} />
         )}
       </div>
 
@@ -145,9 +145,9 @@ export default function SocialPostCard({ post, showActions = true, onEdit, compa
             alignItems: "center",
             gap: 8,
             padding: "8px 12px",
-            background: "var(--pmt-surface-2)",
+            background: "var(--bms-surface-2)",
             borderRadius: 8,
-            border: "1px solid var(--pmt-border)",
+            border: "1px solid var(--bms-border)",
             marginBottom: 12,
           }}
         >
@@ -167,7 +167,7 @@ export default function SocialPostCard({ post, showActions = true, onEdit, compa
               alignItems: "center",
               gap: 20,
               paddingTop: 10,
-              borderTop: "1px solid var(--pmt-border)",
+              borderTop: "1px solid var(--bms-border)",
             }}
           >
             <Tooltip title={post.is_liked_by_me ? "Unlike" : "Like"}>
@@ -225,7 +225,7 @@ export default function SocialPostCard({ post, showActions = true, onEdit, compa
                   </Avatar>
                   <div>
                     <Text strong style={{ fontSize: 12 }}>{c.created_by_name}</Text>
-                    <Text style={{ fontSize: 12, color: "var(--pmt-text-2)", marginLeft: 6 }}>
+                    <Text style={{ fontSize: 12, color: "var(--bms-text-2)", marginLeft: 6 }}>
                       {c.content}
                     </Text>
                   </div>

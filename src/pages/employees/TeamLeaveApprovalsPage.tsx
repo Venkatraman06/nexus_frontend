@@ -5,7 +5,7 @@ import {
   Table, Typography, Space, Button, Modal, Form,
   Input, Select, Spin, Empty, message, Tag, Badge,
 } from "antd";
-import { FilterOutlined, ReloadOutlined, TeamOutlined } from "@ant-design/icons";
+import { FilterOutlined, ReloadOutlined, TeamOutlined, MedicineBoxOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { get, post } from "@/services/api";
 
@@ -24,7 +24,13 @@ interface TeamLeaveRow {
   acknowledged_by?: string | null;
   ack_project?: string | null;
   created_at: string;
+  reporting_level: string;
   can_approve: boolean;
+  can_ack?: boolean;
+  can_view_only: boolean;
+  medical_certificate?: string | null;
+  is_emergency?: boolean;
+  exempt_from_balance?: boolean;
 }
 
 interface TeamLeaveResponse {
@@ -55,7 +61,10 @@ function ReviewModal({ open, record, onClose, onDone }: {
       form.resetFields();
       onDone();
     },
-    onError: (e: any) => message.error(e?.response?.data?.detail ?? "Failed to update leave request"),
+    onError: (e: any) => {
+      const msg = e?.response?.data?.detail || e?.response?.data?.message || (typeof e?.response?.data === "string" ? e.response.data : "Failed to update leave request");
+      message.error(msg);
+    },
   });
 
   if (!record) return null;
@@ -74,11 +83,11 @@ function ReviewModal({ open, record, onClose, onDone }: {
       width={520}
     >
       <div style={{
-        background: "var(--pmt-surface-2)",
+        background: "var(--bms-surface-2)",
         borderRadius: 10,
         padding: "12px 16px",
         marginBottom: 16,
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
         gap: "8px 16px",
@@ -92,14 +101,14 @@ function ReviewModal({ open, record, onClose, onDone }: {
           { label: "Applied On", value: record.created_at },
         ].map(({ label, value }) => (
           <div key={label}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{label}</Text>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pmt-text)" }}>{value}</div>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{label}</Text>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--bms-text)" }}>{value}</div>
           </div>
         ))}
         {record.acknowledged_by && (
           <div style={{ gridColumn: "1 / -1" }}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Acknowledged by</Text>
-            <div style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Acknowledged by</Text>
+            <div style={{ fontSize: 13, color: "var(--bms-text-2)" }}>
               {record.acknowledged_by}
               {record.ack_project ? ` · ${record.ack_project}` : ""}
             </div>
@@ -107,11 +116,55 @@ function ReviewModal({ open, record, onClose, onDone }: {
         )}
         {record.reason && (
           <div style={{ gridColumn: "1 / -1" }}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Reason</Text>
-            <div style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>{record.reason}</div>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Reason</Text>
+            <div style={{ fontSize: 13, color: "var(--bms-text-2)" }}>{record.reason}</div>
           </div>
         )}
       </div>
+
+      {/* Emergency + Proof Certificate Info Banner */}
+      {record.is_emergency && (
+        <div style={{
+          padding: "10px 14px", borderRadius: 8, marginBottom: 16,
+          background: record.medical_certificate ? "#f0fdf4" : "#fffbeb",
+          border: `1px solid ${record.medical_certificate ? "#86efac" : "#fcd34d"}`,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <MedicineBoxOutlined style={{ color: record.medical_certificate ? "#059669" : "#d97706" }} />
+              <Text style={{ fontSize: 13, fontWeight: 600, color: record.medical_certificate ? "#059669" : "#d97706" }}>
+                {record.medical_certificate
+                  ? "Emergency Proof Uploaded (Balance will NOT be deducted)"
+                  : "Emergency Leave (No proof attached)"}
+              </Text>
+            </div>
+            {record.medical_certificate && (
+              <a href={record.medical_certificate} target="_blank" rel="noreferrer"
+                style={{ fontSize: 12, fontWeight: 600, color: "#1677ff" }}>
+                View Proof ↗
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Document info for non-emergency leaves */}
+      {!record.is_emergency && record.medical_certificate && (
+        <div style={{
+          padding: "10px 14px", borderRadius: 8, marginBottom: 16,
+          background: "#f0f8ff", border: "1px solid #bae0ff",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Text style={{ fontSize: 13, fontWeight: 600, color: "#0958d9" }}>
+              Document Attached
+            </Text>
+            <a href={record.medical_certificate} target="_blank" rel="noreferrer"
+              style={{ fontSize: 12, fontWeight: 600, color: "#1677ff" }}>
+              View Document ↗
+            </a>
+          </div>
+        </div>
+      )}
 
       <Form form={form} layout="vertical" onFinish={(v) =>
         mutation.mutate({ id: record.id, status: v.status, remarks: v.remarks || "" })
@@ -185,7 +238,7 @@ export default function TeamLeaveApprovalsPage() {
       dataIndex: "reason",
       key: "reason",
       ellipsis: true,
-      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text>,
+      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text>,
     },
     {
       title: "Status",
@@ -225,11 +278,11 @@ export default function TeamLeaveApprovalsPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", rowGap: 12 }}>
         <div>
-          <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>
+          <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>
             <TeamOutlined style={{ marginRight: 8 }} />
             Team Leave Approvals
           </Title>
-          <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>
+          <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>
             Approve or reject leave requests from your direct reports
           </Text>
         </div>

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Table, Typography, Space, Button, Modal, Form, Input, Select, Empty, Spin, Tag, Badge, message,
+  Table, Typography, Space, Button, Modal, Form, Input, Select, Empty, Spin, Tag, Badge, message, Tooltip
 } from "antd";
-import { FilterOutlined, ReloadOutlined, EyeOutlined } from "@ant-design/icons";
+import { FilterOutlined, ReloadOutlined, EyeOutlined, MedicineBoxOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { get, post } from "@/services/api";
 import { LeaveStatusBadge } from "./leaveStatus.tsx";
@@ -24,9 +24,13 @@ interface TeamLeaveRow {
   acknowledged_by?: string | null;
   ack_project?: string | null;
   created_at: string;
-  reporting_level: "direct" | "indirect";
+  reporting_level: string;
   can_approve: boolean;
+  can_ack?: boolean;
   can_view_only: boolean;
+  medical_certificate?: string | null;
+  is_emergency?: boolean;
+  exempt_from_balance?: boolean;
 }
 
 interface TeamLeaveResponse {
@@ -51,7 +55,10 @@ function ReviewModal({ open, record, onClose, onDone }: {
       form.resetFields();
       onDone();
     },
-    onError: (e: any) => message.error(e?.response?.data?.detail ?? "Failed to update leave request"),
+    onError: (e: any) => {
+      const msg = e?.response?.data?.detail || e?.response?.data?.message || (typeof e?.response?.data === "string" ? e.response.data : "Failed to update leave request");
+      message.error(msg);
+    },
   });
 
   if (!record) return null;
@@ -65,8 +72,8 @@ function ReviewModal({ open, record, onClose, onDone }: {
       width={520}
     >
       <div style={{
-        background: "var(--pmt-surface-2)", borderRadius: 10, padding: "12px 16px",
-        marginBottom: 16, border: "1px solid var(--pmt-border)",
+        background: "var(--bms-surface-2)", borderRadius: 10, padding: "12px 16px",
+        marginBottom: 16, border: "1px solid var(--bms-border)",
         display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 16px",
       }}>
         {[
@@ -77,17 +84,61 @@ function ReviewModal({ open, record, onClose, onDone }: {
           { label: "Days", value: `${record.days_count} day(s)` },
         ].map(({ label, value }) => (
           <div key={label}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{label}</Text>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{label}</Text>
             <div style={{ fontSize: 13, fontWeight: 500 }}>{value}</div>
           </div>
         ))}
         {record.reason && (
           <div style={{ gridColumn: "1 / -1" }}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Reason</Text>
-            <div style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>{record.reason}</div>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Reason</Text>
+            <div style={{ fontSize: 13, color: "var(--bms-text-2)" }}>{record.reason}</div>
           </div>
         )}
       </div>
+
+      {/* Emergency + Proof Certificate Info Banner */}
+      {record.is_emergency && (
+        <div style={{
+          padding: "10px 14px", borderRadius: 8, marginBottom: 16,
+          background: record.medical_certificate ? "#f0fdf4" : "#fffbeb",
+          border: `1px solid ${record.medical_certificate ? "#86efac" : "#fcd34d"}`,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <MedicineBoxOutlined style={{ color: record.medical_certificate ? "#059669" : "#d97706" }} />
+              <Text style={{ fontSize: 13, fontWeight: 600, color: record.medical_certificate ? "#059669" : "#d97706" }}>
+                {record.medical_certificate
+                  ? "Emergency Proof Uploaded (Balance will NOT be deducted)"
+                  : "Emergency Leave (No proof attached)"}
+              </Text>
+            </div>
+            {record.medical_certificate && (
+              <a href={record.medical_certificate} target="_blank" rel="noreferrer"
+                style={{ fontSize: 12, fontWeight: 600, color: "#1677ff" }}>
+                View Proof ↗
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Document info for non-emergency leaves */}
+      {!record.is_emergency && record.medical_certificate && (
+        <div style={{
+          padding: "10px 14px", borderRadius: 8, marginBottom: 16,
+          background: "#f0f8ff", border: "1px solid #bae0ff",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Text style={{ fontSize: 13, fontWeight: 600, color: "#0958d9" }}>
+              Document Attached
+            </Text>
+            <a href={record.medical_certificate} target="_blank" rel="noreferrer"
+              style={{ fontSize: 12, fontWeight: 600, color: "#1677ff" }}>
+              View Document ↗
+            </a>
+          </div>
+        </div>
+      )}
       <Form form={form} layout="vertical" onFinish={(v) =>
         mutation.mutate({ id: record.id, status: v.status, remarks: v.remarks || "" })
       }>
@@ -146,7 +197,7 @@ export default function TeamLeaveTab() {
         <div>
           <Text strong style={{ fontSize: 13 }}>{r.employee}</Text>
           {r.employee_code && (
-            <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
+            <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>{r.employee_code}</div>
           )}
         </div>
       ),
@@ -189,7 +240,7 @@ export default function TeamLeaveTab() {
       dataIndex: "reason",
       key: "reason",
       ellipsis: true,
-      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text>,
+      render: (v: string) => <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text>,
     },
     {
       title: "Status",
@@ -202,21 +253,24 @@ export default function TeamLeaveTab() {
       title: "Action",
       key: "action",
       width: 120,
-      render: (_: unknown, record: TeamLeaveRow) =>
-        record.can_approve ? (
-          <Button type="primary" size="small" onClick={() => setReviewRecord(record)}>
-            Review
-          </Button>
-        ) : (
-          <Tag icon={<EyeOutlined />} style={{ margin: 0, fontSize: 11 }}>View only</Tag>
-        ),
+      render: (_: unknown, record: TeamLeaveRow) => (
+        <Space size={4}>
+          {record.can_approve ? (
+            <Button type="primary" size="small" onClick={() => setReviewRecord(record)}>
+              Review
+            </Button>
+          ) : (
+            <Tag icon={<EyeOutlined />} style={{ margin: 0, fontSize: 11 }}>View only</Tag>
+          )}
+        </Space>
+      ),
     },
   ];
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
-        <Text style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>
+        <Text style={{ fontSize: 13, color: "var(--bms-text-2)" }}>
           Direct reports ({data?.direct_count ?? meta?.direct_count ?? 0}) — you can approve.
           {" "}Indirect ({data?.indirect_count ?? meta?.indirect_count ?? 0}) — view only.
         </Text>

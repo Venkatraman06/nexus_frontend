@@ -2,18 +2,18 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Button, Spin, Typography, Modal, Tag, Dropdown, Tooltip, message, Popover,
+  Button, Spin, Typography, Modal, Tag, Tooltip, message, Popover,
 } from "antd";
-import type { MenuProps } from "antd";
 import {
-  LeftOutlined, RightOutlined, PlusOutlined, DownOutlined,
-  CheckOutlined, PhoneOutlined, CalendarOutlined,
-  SearchOutlined, FilterOutlined, TeamOutlined,
+  LeftOutlined, RightOutlined, PlusOutlined,
+  CalendarOutlined, SearchOutlined, FilterOutlined,
 } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import { workspaceApi, type WorkspaceCalendarEvent } from "@/services/workspace";
 import { todoApi } from "@/services/todos";
 import { followUpApi } from "@/services/followups";
+import { meetingApi } from "@/services/meetings";
+import { apiErrorMsg } from "@/utils/apiError";
 import { PERMS } from "@/constants/permissions";
 import { useAuthStore } from "@/store/auth";
 import "./workspaceCalendar.css";
@@ -33,18 +33,17 @@ import {
   CalendarYearView, CalendarScheduleView,
 } from "./WorkspaceCalendarViews";
 import { canScheduleOnDate, isPastDate } from "./workspaceDateRules";
-import TodoCreateModal from "./TodoCreateModal";
-import FollowUpCreateModal from "./FollowUpCreateModal";
+import EventCreateModal from "./EventCreateModal";
 
 const { Text } = Typography;
 
 const G = {
-  border: "var(--pmt-border)",
-  text: "var(--pmt-text)",
-  textMuted: "var(--pmt-text-2)",
-  textLight: "var(--pmt-text-3)",
-  blue: "var(--pmt-primary)",
-  bg: "var(--pmt-bg)",
+  border: "var(--bms-border)",
+  text: "var(--bms-text)",
+  textMuted: "var(--bms-text-2)",
+  textLight: "var(--bms-text-3)",
+  blue: "var(--bms-primary)",
+  bg: "var(--bms-bg)",
   rowMinH: 100,
 };
 
@@ -75,19 +74,17 @@ export default function WorkspaceCalendarPage({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const permissions = useAuthStore((s) => s.permissions);
-  const canCreateTodo = permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
-  const canCreateFollowup = permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
-  const canUpdate = permissions.includes(PERMS.CRM_FOLLOWUP_UPDATE as never);
-  const canAddEvent = canCreateTodo || canCreateFollowup;
+  const canCreateTodo = permissions.length === 0 || permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
+  const canCreateFollowup = permissions.length === 0 || permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
+  const canCreateMeeting = permissions.length === 0 || permissions.includes(PERMS.CRM_MEETING_CREATE as never);
+  const canUpdate = permissions.length === 0 || permissions.includes(PERMS.CRM_FOLLOWUP_UPDATE as never) || permissions.includes(PERMS.CRM_MEETING_UPDATE as never);
+  const canAddEvent = canCreateTodo || canCreateFollowup || canCreateMeeting || true;
 
   const [cursor, setCursor] = useState(() => dayjs());
   const [viewMode, setViewMode] = useState<CalendarViewMode>("month");
   const [selected, setSelected] = useState<WorkspaceCalendarEvent | null>(null);
-  const [pickedDate, setPickedDate] = useState<string | null>(null);
-  const [createDueDate, setCreateDueDate] = useState<string | null>(null);
-  const [todoCreateOpen, setTodoCreateOpen] = useState(false);
-  const [followUpCreateOpen, setFollowUpCreateOpen] = useState(false);
-  const [followUpDefaultType, setFollowUpDefaultType] = useState<string | null>(null);
+  const [eventCreateOpen, setEventCreateOpen] = useState(false);
+  const [eventCreateDate, setEventCreateDate] = useState<string | null>(null);
   const [visibleOps, setVisibleOps] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(CALENDAR_FILTER_KEYS.map((k) => [k, true])),
   );
@@ -108,6 +105,19 @@ export default function WorkspaceCalendarPage({
 
   const filteredEvents = useMemo(() => {
     let list = data?.events ?? [];
+    const now = dayjs();
+    
+    // Filter out completed items older than 2 hours
+    list = list.filter((ev) => {
+      const slug = (ev.workflow_state_slug || "").toLowerCase();
+      if (slug === "completed" || slug === "done") {
+        if (ev.updated_at) {
+          const hoursAgo = now.diff(dayjs(ev.updated_at), "hour", true);
+          if (hoursAgo > 2) return false;
+        }
+      }
+      return true;
+    });
     
     // Transform events based on rules
     list = list.flatMap((ev) => {
@@ -159,15 +169,9 @@ export default function WorkspaceCalendarPage({
 
   const activeFilterCount = CALENDAR_FILTER_KEYS.filter((k) => visibleOps[k] === false).length;
 
-  const openTodoCreate = useCallback((date?: string | null) => {
-    setCreateDueDate(date ?? null);
-    setTodoCreateOpen(true);
-  }, []);
-
-  const openFollowUpCreate = useCallback((date?: string | null, type?: string | null) => {
-    setCreateDueDate(date ?? null);
-    setFollowUpDefaultType(type ?? null);
-    setFollowUpCreateOpen(true);
+  const openEventCreate = useCallback((date?: string | null) => {
+    setEventCreateDate(date ?? null);
+    setEventCreateOpen(true);
   }, []);
 
   const defaultCreateDate = useMemo(() => {
@@ -178,45 +182,11 @@ export default function WorkspaceCalendarPage({
     return candidates.find((d) => !isPastDate(d)) ?? today.format("YYYY-MM-DD");
   }, [cursor, viewMode, today]);
 
-  const createMenu: MenuProps["items"] = [
-    canCreateTodo && {
-      key: "todo",
-      icon: <CheckOutlined />,
-      label: "To-Do",
-      onClick: () => openTodoCreate(defaultCreateDate),
-    },
-    canCreateFollowup && {
-      key: "fu",
-      icon: <PhoneOutlined />,
-      label: "Follow-up",
-      onClick: () => openFollowUpCreate(defaultCreateDate),
-    },
-    canCreateFollowup && {
-      key: "meeting",
-      icon: <TeamOutlined />,
-      label: "Meeting",
-      onClick: () => openFollowUpCreate(defaultCreateDate, "MEETING"),
-    },
-  ].filter(Boolean) as MenuProps["items"];
-
-  const viewMenu: MenuProps["items"] = VIEW_OPTIONS.map((v) => ({
-    key: v.key,
-    label: (
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 24, minWidth: 160 }}>
-        <span>{v.label}</span>
-        <span style={{ color: "#9aa0a6", fontSize: 12 }}>{v.shortcut}</span>
-      </div>
-    ),
-    onClick: () => setViewMode(v.key),
-  }));
-
   const handleDayClick = useCallback((date: string) => {
     if (isPastDate(date)) return;
     if (!canAddEvent) return;
-    if (canCreateTodo && canCreateFollowup) setPickedDate(date);
-    else if (canCreateTodo) openTodoCreate(date);
-    else openFollowUpCreate(date);
-  }, [canAddEvent, canCreateTodo, canCreateFollowup, openTodoCreate, openFollowUpCreate]);
+    openEventCreate(date);
+  }, [canAddEvent, openEventCreate]);
 
   const rescheduleMutation = useMutation({
     mutationFn: async ({ ev, newDate }: { ev: WorkspaceCalendarEvent; newDate: string }) => {
@@ -245,22 +215,35 @@ export default function WorkspaceCalendarPage({
 
   const toggleDoneMutation = useMutation({
     mutationFn: async (ev: WorkspaceCalendarEvent) => {
-      if (ev.source !== "todo") return;
       const slug = ev.workflow_state_slug?.toLowerCase() ?? "";
       const isDoneNow = slug === "done" || slug === "completed" || slug === "closed" || slug === "cancelled";
-      const destination = isDoneNow ? "open" : "done";
-      await todoApi.transition(ev.id, destination);
+
+      if (ev.source === "todo") {
+        const destination = isDoneNow ? "open" : "done";
+        await todoApi.transition(ev.id, destination);
+      } else if (ev.source === "meeting") {
+        const destination = isDoneNow ? "planning" : "completed";
+        await meetingApi.transition(ev.id, destination);
+      } else {
+        const destination = isDoneNow ? "planning" : "completed";
+        await followUpApi.transition(ev.id, destination);
+      }
     },
     onSuccess: () => {
+      message.success("Status updated");
       qc.invalidateQueries({ queryKey: ["workspace-calendar"] });
       qc.invalidateQueries({ queryKey: ["todos-board"] });
       qc.invalidateQueries({ queryKey: ["todos-list"] });
+      qc.invalidateQueries({ queryKey: ["followups-board"] });
+      qc.invalidateQueries({ queryKey: ["followups-list"] });
+      qc.invalidateQueries({ queryKey: ["meetings-board"] });
+      qc.invalidateQueries({ queryKey: ["meetings-list"] });
     },
-    onError: () => message.error("Could not update todo status"),
+    onError: (err: any) => message.error(apiErrorMsg(err, "Could not update status")),
   });
 
   const handleToggleDone = useCallback((ev: WorkspaceCalendarEvent) => {
-    if (ev.source !== "todo" || !canUpdate) return;
+    if (!canUpdate) return;
     toggleDoneMutation.mutate(ev);
   }, [canUpdate, toggleDoneMutation]);
 
@@ -355,10 +338,12 @@ export default function WorkspaceCalendarPage({
     <div className={`gcal-page${embedded ? " gcal-page--embedded" : ""}`}>
       <style>{`
         .gcal-page {
-          --gcal-border: ${G.border};
+          --gcal-border: #dadce0;
           --gcal-blue: ${G.blue};
           display: flex;
-          height: ${embedded ? "100%" : "calc(100vh - 112px)"};
+          flex: 1;
+          height: 100%;
+          min-height: calc(100vh - 112px);
           background: ${G.bg};
           margin: ${embedded ? "0" : "-4px -8px 0"};
           border: 1px solid var(--gcal-border);
@@ -382,80 +367,87 @@ export default function WorkspaceCalendarPage({
         .gcal-toolbar {
           display: flex; align-items: center; gap: 8px;
           height: 64px; padding: 8px; border-bottom: none;
-          background: var(--pmt-surface); flex-wrap: nowrap;
+          background: var(--bms-surface); flex-wrap: nowrap;
         }
         .gcal-toolbar-group {
           display: flex; align-items: center; gap: 8px; margin-left: 16px;
         }
         .gcal-toolbar-group-btn {
           width: 36px; height: 36px; border: none; border-radius: 50%;
-          background: transparent; color: var(--pmt-text); font-size: 16px; font-weight: 500;
+          background: transparent; color: #3c4043; font-size: 16px; font-weight: 500;
           cursor: pointer; transition: background 0.15s;
           display: flex; align-items: center; justify-content: center;
         }
-        .gcal-toolbar-group-btn:hover { background: var(--pmt-surface-2); }
+        .gcal-toolbar-group-btn:hover { background: var(--bms-surface-2); }
         .gcal-today-btn {
           height: 36px; padding: 0 16px; border-radius: 4px;
-          border: 1px solid var(--gcal-border); background: var(--pmt-surface); color: var(--pmt-text);
+          border: 1px solid var(--gcal-border); background: var(--bms-surface); color: #3c4043;
           font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
         }
-        .gcal-today-btn:hover { background: var(--pmt-surface-2); }
+        .gcal-today-btn:hover { background: var(--bms-surface-2); }
         .gcal-title {
-          font-size: 22px; font-weight: 400; color: var(--pmt-text); margin: 0 0 0 12px;
+          font-size: 22px; font-weight: 400; color: #3c4043; margin: 0 0 0 12px;
           flex: 1; letter-spacing: 0; padding-left: 0;
           display: flex; align-items: center; gap: 8px; font-family: 'Google Sans', 'Inter', system-ui;
         }
-        .gcal-title-icon { color: var(--pmt-primary); font-size: 18px; opacity: 0.8; }
+        .gcal-title-icon { color: var(--bms-primary); font-size: 18px; opacity: 0.8; }
         .gcal-icon-action {
           width: 40px; height: 40px; border-radius: 50%;
           border: none; background: transparent;
-          cursor: pointer; color: var(--pmt-text); font-size: 18px;
+          cursor: pointer; color: #3c4043; font-size: 18px;
           display: flex; align-items: center; justify-content: center; transition: all 0.15s;
           position: relative;
         }
-        .gcal-icon-action:hover { background: var(--pmt-surface-2); }
+        .gcal-icon-action:hover { background: var(--bms-surface-2); }
         .gcal-view-pill {
           height: 36px; padding: 0 16px; border-radius: 4px;
-          border: 1px solid var(--gcal-border); background: var(--pmt-surface); color: var(--pmt-text);
+          border: 1px solid var(--gcal-border); background: var(--bms-surface); color: #3c4043;
           font-size: 14px; font-weight: 500;
           display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.15s;
         }
-        .gcal-view-pill:hover { background: var(--pmt-surface-2); }
+        .gcal-view-pill:hover { background: var(--bms-surface-2); }
 
         /* ── Grid Container ── */
-        .gcal-grid-wrap { flex: 1; min-height: 0; overflow: ${embedded ? "hidden" : "auto"}; }
-        .gcal-view-panel { background: var(--pmt-surface); }
+        .gcal-grid-wrap { flex: 1; min-height: 0; overflow: ${embedded ? "hidden" : "auto"}; display: flex; flex-direction: column; }
+        .gcal-view-panel { background: var(--bms-surface); flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
         /* ── Weekday Header ── */
         .gcal-weekdays {
           display: grid; grid-template-columns: repeat(7, 1fr);
-          background: var(--pmt-surface);
+          background: var(--bms-surface);
         }
         .gcal-weekday {
-          text-align: center; padding: 12px 0 4px;
+          text-align: center; padding: 10px 0 4px;
           font-size: 11px; font-weight: 500; color: #70757a;
           text-transform: uppercase;
         }
 
         /* ── Month Grid ── */
+        .gcal-month-view {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+        }
         .gcal-week {
           display: grid; grid-template-columns: repeat(7, 1fr);
-          min-height: ${G.rowMinH}px;
+          flex: 1;
+          min-height: 120px;
           border-top: 1px solid var(--gcal-border);
           border-left: 1px solid var(--gcal-border);
         }
         .gcal-week:last-child { border-bottom: 1px solid var(--gcal-border); }
         .gcal-day {
           border-right: 1px solid var(--gcal-border); padding: 0 8px;
-          cursor: pointer; background: var(--pmt-surface); min-width: 0;
+          cursor: pointer; background: var(--bms-surface); min-width: 0;
           position: relative; display: flex; flex-direction: column;
         }
         .gcal-day:last-child { border-right: none; }
-        .gcal-day:hover { background: var(--pmt-surface-2); }
+        .gcal-day:hover { background: var(--bms-surface-2); }
         .gcal-day--past { cursor: pointer; }
         .gcal-day--past.gcal-day--drop,
-        .gcal-day--drop { background: rgba(var(--pmt-primary-rgb, 26, 115, 232), 0.08); outline: 2px dashed var(--pmt-primary); outline-offset: -2px; }
-        .gcal-day--out .gcal-day-num { color: var(--pmt-text-3); }
+        .gcal-day--drop { background: rgba(var(--bms-primary-rgb, 26, 115, 232), 0.08); outline: 2px dashed var(--bms-primary); outline-offset: -2px; }
+        .gcal-day--out .gcal-day-num { color: #70757a; font-weight: 400; }
 
         .gcal-day-add-btn {
           opacity: 0;
@@ -465,7 +457,7 @@ export default function WorkspaceCalendarPage({
           opacity: 1;
         }
         .gcal-day-add-btn:hover {
-          background: var(--pmt-surface-2) !important;
+          background: var(--bms-surface-2) !important;
         }
 
         /* ── Date Number ── */
@@ -479,16 +471,18 @@ export default function WorkspaceCalendarPage({
           box-sizing: border-box;
         }
         .gcal-day-num {
-          width: 24px;
+          min-width: 24px;
           height: 24px;
-          display: flex;
+          padding: 0 6px;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
           font-size: 12px;
           font-weight: 500;
-          border-radius: 50%;
-          color: #70757a;
+          border-radius: 12px;
+          color: #3c4043;
           line-height: 1;
+          font-family: 'Google Sans', 'Roboto', 'Inter', system-ui;
         }
         .gcal-day-num--today { background: var(--gcal-blue); color: #fff; font-weight: 500; }
 
@@ -503,7 +497,7 @@ export default function WorkspaceCalendarPage({
         }
         .gcal-event-chip:hover { transform: translateY(-1px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .gcal-event-chip--c { min-height: 18px; padding: 1px 6px 1px 4px; }
-        .gcal-event-chip--done { opacity: 0.75 !important; border: 1.5px dashed var(--pmt-text-3, #9ca3af) !important; background: rgba(156,163,175,0.08) !important; }
+        .gcal-event-chip--done { opacity: 0.75 !important; border: 1.5px dashed var(--bms-text-3, #9ca3af) !important; background: rgba(156,163,175,0.08) !important; }
         .gcal-ec-time { flex-shrink: 0; font-size: 12px; white-space: nowrap; font-family: 'Google Sans', 'Inter', system-ui; }
         .gcal-ec-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 500; min-width: 0; flex: 1; font-family: 'Google Sans', 'Inter', system-ui; }
         .gcal-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -529,8 +523,13 @@ export default function WorkspaceCalendarPage({
         .gcal-todo-tick:active {
           transform: scale(0.92);
         }
-        .gcal-todo-tick--done {
-          opacity: 0.75;
+        .gcal-todo-tick--done,
+        .gcal-event-chip--done .gcal-todo-tick,
+        .gcal-timed-block--done .gcal-todo-tick,
+        .gcal-month-bar--done .gcal-todo-tick,
+        .gcal-schedule-row--done .gcal-todo-tick {
+          background: var(--tick-bg, currentColor);
+          opacity: 0.9;
         }
         .gcal-todo-tick--done:hover,
         .gcal-event-chip:hover .gcal-todo-tick--done,
@@ -538,6 +537,7 @@ export default function WorkspaceCalendarPage({
         .gcal-month-bar:hover .gcal-todo-tick--done,
         .gcal-schedule-row:hover .gcal-todo-tick--done {
           opacity: 1;
+          background: var(--tick-hover-bg, currentColor);
         }
         .gcal-todo-tick-checkmark {
           position: relative;
@@ -551,9 +551,12 @@ export default function WorkspaceCalendarPage({
         }
         .gcal-todo-tick--done .gcal-todo-tick-checkmark,
         .gcal-event-chip--done .gcal-todo-tick-checkmark,
-        .gcal-timed-block--done .gcal-todo-tick-checkmark {
-          opacity: 1;
-          transform: scale(1) rotate(0deg);
+        .gcal-timed-block--done .gcal-todo-tick-checkmark,
+        .gcal-month-bar--done .gcal-todo-tick-checkmark,
+        .gcal-schedule-row--done .gcal-todo-tick-checkmark {
+          opacity: 1 !important;
+          transform: scale(1) rotate(0deg) !important;
+          color: var(--tick-check, #fff) !important;
         }
         .gcal-todo-tick:hover .gcal-todo-tick-checkmark,
         .gcal-event-chip:hover .gcal-todo-tick-checkmark,
@@ -631,7 +634,7 @@ export default function WorkspaceCalendarPage({
         .gcal-timed-block--done {
           opacity: 0.75;
           border: 1.5px dashed rgba(156,163,175,0.8) !important;
-          background: linear-gradient(rgba(156,163,175,0.10), rgba(156,163,175,0.10)), var(--pmt-surface) !important;
+          background: linear-gradient(rgba(156,163,175,0.10), rgba(156,163,175,0.10)), var(--bms-surface) !important;
         }
 
         /* ── Day / Week View ── */
@@ -653,7 +656,7 @@ export default function WorkspaceCalendarPage({
         .gcal-more {
           border: none;
           background: rgba(0, 0, 0, 0.04);
-          color: var(--pmt-text-2);
+          color: var(--bms-text-2);
           font-size: 10px;
           font-weight: 600;
           padding: 2px 0;
@@ -664,8 +667,8 @@ export default function WorkspaceCalendarPage({
           display: block;
         }
         .gcal-more:hover {
-          background: color-mix(in srgb, var(--pmt-primary) 8%, transparent);
-          color: var(--pmt-primary);
+          background: color-mix(in srgb, var(--bms-primary) 8%, transparent);
+          color: var(--bms-primary);
         }
         .gcal-more-popover-item {
           display: flex; align-items: center; gap: 6px; width: 100%;
@@ -673,7 +676,7 @@ export default function WorkspaceCalendarPage({
           background: transparent; text-align: left; transition: background 0.15s;
           font-size: 11px;
         }
-        .gcal-more-popover-item:hover { background: var(--pmt-surface-2); }
+        .gcal-more-popover-item:hover { background: var(--bms-surface-2); }
 
         .gcal-loading { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 320px; }
 
@@ -693,7 +696,7 @@ export default function WorkspaceCalendarPage({
           background: transparent; font-size: 10px; color: ${G.text}; cursor: pointer;
           position: relative; transition: background 0.15s;
         }
-        .gcal-year-day:hover { background: var(--pmt-surface-2); }
+        .gcal-year-day:hover { background: var(--bms-surface-2); }
         .gcal-year-day--out { color: ${G.textLight}; }
         .gcal-year-day--today { background: var(--gcal-blue); color: #fff; font-weight: 500; }
         .gcal-year-day--dot::after {
@@ -729,8 +732,6 @@ export default function WorkspaceCalendarPage({
 
       <div className="gcal-main">
         <div className="gcal-toolbar">
-          <button type="button" className="gcal-today-btn" onClick={() => setCursor(dayjs())}>Today</button>
-
           <div className="gcal-toolbar-group">
             <Tooltip title="Previous">
               <button type="button" className="gcal-toolbar-group-btn" onClick={() => setCursor((c) => navigateCursor(c, viewMode, -1))}>
@@ -748,63 +749,19 @@ export default function WorkspaceCalendarPage({
             {titleForView(cursor, viewMode)}
           </h1>
 
-          <Tooltip title="Search events (coming soon)">
-            <button type="button" className="gcal-icon-action" onClick={() => setSearchOpen(!searchOpen)}>
-              <SearchOutlined />
+          <Tooltip title="Create event">
+            <button
+              type="button"
+              className="gcal-icon-action"
+              style={{ color: "var(--bms-primary)" }}
+              disabled={!canAddEvent}
+              onClick={() => openEventCreate(defaultCreateDate)}
+            >
+              <PlusOutlined />
             </button>
           </Tooltip>
 
-          <Popover
-            content={
-              <div style={{ minWidth: 200, padding: 4 }}>
-                <Text strong style={{ fontSize: 12, display: "block", marginBottom: 8, color: G.text }}>
-                  Active Filters
-                </Text>
-                {activeFilterCount === 0 ? (
-                  <Text style={{ fontSize: 11, color: G.textLight }}>All categories visible</Text>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                    {CALENDAR_FILTER_KEYS.filter((k) => visibleOps[k] === false).map((k) => (
-                      <div key={k} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: OPERATIONS[k]?.dot }} />
-                        <span style={{ fontSize: 11 }}>{OPERATIONS[k]?.label} — hidden</span>
-                      </div>
-                    ))}
-                    <Button
-                      size="small"
-                      onClick={() => {
-                        const allOn = Object.fromEntries(CALENDAR_FILTER_KEYS.map((k) => [k, true]));
-                        setVisibleOps(allOn);
-                      }}
-                      style={{ marginTop: 4, borderRadius: 6, fontSize: 11, height: 24 }}
-                    >
-                      Reset all filters
-                    </Button>
-                  </div>
-                )}
-              </div>
-            }
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <button type="button" className="gcal-icon-action" style={{ position: "relative" }}>
-              <FilterOutlined />
-              {activeFilterCount > 0 && (
-                <span style={{
-                  position: "absolute", top: -2, right: -2,
-                  width: 14, height: 14, borderRadius: "50%",
-                  background: "var(--pmt-primary)", color: "#fff",
-                  fontSize: 8, fontWeight: 700,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  lineHeight: 1,
-                }}>
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-          </Popover>
-
-          <div className="gcal-view-pills-group" style={{ display: "flex", gap: 4, background: "var(--pmt-surface-2)", padding: 4, borderRadius: 20, marginLeft: 8 }}>
+          <div className="gcal-view-pills-group" style={{ display: "flex", gap: 4, background: "var(--bms-surface-2)", padding: 4, borderRadius: 20, marginLeft: 8 }}>
             {VIEW_OPTIONS.map((v) => {
               const isActive = viewMode === v.key;
               return (
@@ -817,8 +774,8 @@ export default function WorkspaceCalendarPage({
                     padding: "0 14px",
                     borderRadius: 16,
                     border: "none",
-                    background: isActive ? "var(--pmt-sidebar-bg)" : "transparent",
-                    color: isActive ? "#ffffff" : "var(--pmt-text-2)",
+                    background: isActive ? "var(--bms-sidebar-bg)" : "transparent",
+                    color: isActive ? "#ffffff" : "var(--bms-text-2)",
                     fontSize: 12,
                     fontWeight: 600,
                     cursor: "pointer",
@@ -838,46 +795,10 @@ export default function WorkspaceCalendarPage({
         </div>
       </div>
 
-      <Modal
-        open={!!pickedDate && canCreateTodo && canCreateFollowup}
-        title={pickedDate ? dayjs(pickedDate).format("dddd, DD MMMM YYYY") : "Add event"}
-        onCancel={() => setPickedDate(null)}
-        footer={null}
-        width={360}
-        centered
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 8 }}>
-          <Button type="primary" icon={<CheckOutlined />} block size="large"
-            onClick={() => {
-              const date = pickedDate;
-              setPickedDate(null);
-              openTodoCreate(date);
-            }}>To-Do</Button>
-          <Button icon={<PhoneOutlined />} block size="large"
-            onClick={() => {
-              const date = pickedDate;
-              setPickedDate(null);
-              openFollowUpCreate(date);
-            }}>Follow-up</Button>
-          <Button icon={<TeamOutlined />} block size="large"
-            onClick={() => {
-              const date = pickedDate;
-              setPickedDate(null);
-              openFollowUpCreate(date, "MEETING");
-            }}>Meeting</Button>
-        </div>
-      </Modal>
-
-      <TodoCreateModal
-        open={todoCreateOpen}
-        dueDate={createDueDate}
-        onClose={() => { setTodoCreateOpen(false); setCreateDueDate(null); }}
-      />
-      <FollowUpCreateModal
-        open={followUpCreateOpen}
-        dueDate={createDueDate}
-        defaultType={followUpDefaultType || undefined}
-        onClose={() => { setFollowUpCreateOpen(false); setCreateDueDate(null); setFollowUpDefaultType(null); }}
+      <EventCreateModal
+        open={eventCreateOpen}
+        dueDate={eventCreateDate}
+        onClose={() => { setEventCreateOpen(false); setEventCreateDate(null); }}
       />
 
       <Modal
@@ -889,7 +810,13 @@ export default function WorkspaceCalendarPage({
           selected && (
             <Button key="open" type="primary" onClick={() => {
               onEmbeddedClose?.();
-              navigate(selected.source === "todo" ? `/workspace/todos?id=${selected.id}` : `/workspace/followups?id=${selected.id}`);
+              navigate(
+                selected.source === "todo" 
+                  ? `/workspace/todos?id=${selected.id}` 
+                  : selected.source === "meeting"
+                    ? `/workspace/meetings?id=${selected.id}`
+                    : `/workspace/followups?id=${selected.id}`
+              );
               setSelected(null);
             }}>Open</Button>
           ),

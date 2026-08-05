@@ -270,14 +270,14 @@ export default function GlobalSearch() {
 
   return (
     <>
-      <div ref={wrapRef} className="pmt-global-search">
+      <div ref={wrapRef} className="bms-global-search">
         <div
-          className="pmt-global-search-input-wrap"
+          className="bms-global-search-input-wrap"
           onFocus={() => query.trim().length >= 2 && setOpen(true)}
         >
-          <SearchOutlined style={{ color: "var(--pmt-text-3)", fontSize: 14, flexShrink: 0 }} />
+          <SearchOutlined style={{ color: "var(--bms-text-3)", fontSize: 14, flexShrink: 0 }} />
           <input
-            className="pmt-global-search-input"
+            className="bms-global-search-input"
             value={query}
             onChange={handleChange}
             onFocus={() => query.trim().length >= 2 && setOpen(true)}
@@ -294,7 +294,7 @@ export default function GlobalSearch() {
               aria-label="Clear search"
               style={{
                 cursor: "pointer",
-                color: "var(--pmt-text-3)",
+                color: "var(--bms-text-3)",
                 fontSize: 12,
                 flexShrink: 0,
                 lineHeight: 1,
@@ -309,15 +309,15 @@ export default function GlobalSearch() {
         </div>
 
         {open && query.trim().length >= 2 && (
-          <div className="pmt-global-search-dropdown">
+          <div className="bms-global-search-dropdown">
             {results.length === 0 && !loading ? (
-              <div className="pmt-global-search-empty">
+              <div className="bms-global-search-empty">
                 No employees found for &ldquo;{query.trim()}&rdquo;
               </div>
             ) : (
               <>
-                <div style={{ padding: "8px 12px 4px", borderBottom: "1px solid var(--pmt-border)" }}>
-                  <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <div style={{ padding: "8px 12px 4px", borderBottom: "1px solid var(--bms-border)" }}>
+                  <Text style={{ fontSize: 11, color: "var(--bms-text-3)", fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5 }}>
                     Employees · {results.length} result{results.length !== 1 ? "s" : ""}
                   </Text>
                 </div>
@@ -351,10 +351,10 @@ export default function GlobalSearch() {
                         gap: 12,
                         padding: "10px 14px",
                         cursor: "pointer",
-                        borderBottom: "1px solid var(--pmt-border)",
+                        borderBottom: "1px solid var(--bms-border)",
                         transition: "background 0.1s",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--pmt-surface-2)")}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bms-surface-2)")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                     >
                       {emp.profile_picture_url ? (
@@ -379,7 +379,7 @@ export default function GlobalSearch() {
                           <span style={{
                             fontSize: 13,
                             fontWeight: 600,
-                            color: "var(--pmt-text)",
+                            color: "var(--bms-text)",
                             lineHeight: 1.3,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
@@ -414,8 +414,8 @@ export default function GlobalSearch() {
                           <span style={{
                             fontSize: 10,
                             fontFamily: "monospace",
-                            color: "var(--pmt-text-2)",
-                            background: "var(--pmt-surface-2)",
+                            color: "var(--bms-text-2)",
+                            background: "var(--bms-surface-2)",
                             padding: "1px 6px",
                             borderRadius: 4,
                             flexShrink: 0,
@@ -425,10 +425,10 @@ export default function GlobalSearch() {
                           </span>
                           {meta && (
                             <>
-                              <span style={{ color: "var(--pmt-text-3)", flexShrink: 0, lineHeight: 1 }}>·</span>
+                              <span style={{ color: "var(--bms-text-3)", flexShrink: 0, lineHeight: 1 }}>·</span>
                               <span style={{
                                 fontSize: 11,
-                                color: "var(--pmt-text-3)",
+                                color: "var(--bms-text-3)",
                                 lineHeight: 1.3,
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",

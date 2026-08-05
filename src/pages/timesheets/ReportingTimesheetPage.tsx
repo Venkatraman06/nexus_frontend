@@ -219,7 +219,7 @@ export default function ReportingTimesheetPage({ embedded = false }: { embedded?
       subtitle: `Week of ${dayjs(m.week_start).format("DD MMM YYYY")}`,
       badge: { label: m.status, color: "warning" },
       meta: "Not submitted",
-      metaColor: "var(--pmt-warning)",
+      metaColor: "var(--bms-warning)",
     }));
   }, [dashboard]);
 
@@ -398,7 +398,7 @@ export default function ReportingTimesheetPage({ embedded = false }: { embedded?
         <div style={{ marginBottom: 16 }}>
           <DashboardPanel
             title="Missing submissions"
-            extra={<WarningOutlined style={{ color: "var(--pmt-warning)" }} />}
+            extra={<WarningOutlined style={{ color: "var(--bms-warning)" }} />}
           >
             <WorkQueue items={missingQueue} emptyTitle="No missing timesheets" />
           </DashboardPanel>
@@ -461,7 +461,7 @@ export default function ReportingTimesheetPage({ embedded = false }: { embedded?
       >
         {/* Filter bar */}
         <div className="dash-filter-bar">
-          <FilterOutlined style={{ color: "var(--pmt-text-3)" }} />
+          <FilterOutlined style={{ color: "var(--bms-text-3)" }} />
           <DatePicker
             picker="week"
             placeholder="Week"
@@ -598,7 +598,7 @@ export default function ReportingTimesheetPage({ embedded = false }: { embedded?
         </p>
         <Input.TextArea
           rows={3}
-          placeholder="e.g. Please split the Monday entry — 3h on PMT-101, 2h on PMT-205"
+          placeholder="e.g. Please split the Monday entry — 3h on BMS-101, 2h on BMS-205"
           value={rcComment}
           onChange={(e) => setRcComment(e.target.value)}
           style={{ marginTop: 4 }}

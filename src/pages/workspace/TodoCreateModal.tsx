@@ -7,6 +7,7 @@ import { get } from "@/services/api";
 import { ENDPOINTS } from "@/constants/api";
 import { useAuthStore } from "@/store/auth";
 import { isTimeWindowInvalid } from "@/pages/workspace/workspaceDateRules";
+import { apiErrorMsg } from "@/utils/apiError";
 import AssigneeAvatar from "@/components/common/AssigneeAvatar";
 import GoogleColorPicker from "@/components/common/GoogleColorPicker";
 import ClockTimePicker from "@/components/common/ClockTimePicker";
@@ -25,9 +26,9 @@ function PriorityPicker({ value, onChange }: { value?: string; onChange?: (v: st
             onClick={() => onChange?.(p.value)}
             style={{
               padding: "8px 4px", borderRadius: 8,
-              border: `2px solid ${active ? p.border : "var(--pmt-border)"}`,
-              background: active ? p.bg : "var(--pmt-surface)",
-              color: active ? p.text : "var(--pmt-text-2)",
+              border: `2px solid ${active ? p.border : "var(--bms-border)"}`,
+              background: active ? p.bg : "var(--bms-surface)",
+              color: active ? p.text : "var(--bms-text-2)",
               fontWeight: active ? 700 : 500, fontSize: 12, cursor: "pointer",
             }}
           >
@@ -87,14 +88,7 @@ export default function TodoCreateModal({
       onClose();
     },
     onError: (err: any) => {
-      const data = err?.response?.data;
-      const msg =
-        (Array.isArray(data?.due_date) ? data.due_date[0] : data?.due_date) ||
-        (Array.isArray(data?.end_time) ? data.end_time[0] : data?.end_time) ||
-        (Array.isArray(data?.title) ? data.title[0] : data?.title) ||
-        data?.detail ||
-        "Failed to create to-do";
-      message.error(msg);
+      message.error(apiErrorMsg(err, "Failed to create to-do"));
     },
   });
 
@@ -123,7 +117,7 @@ export default function TodoCreateModal({
         due_date: endDateStr,
         start_time: startTimeStr,
         end_time: endTimeStr,
-        content: values.content || "",
+        comments: values.comments || "",
       };
       createMutation.mutate(payload);
     });
@@ -197,9 +191,9 @@ export default function TodoCreateModal({
                         const sDt = sDate.hour(start.hour()).minute(start.minute()).second(0);
                         const eDt = eDate.hour(end.hour()).minute(end.minute()).second(0);
                         if (eDt.isAfter(sDt)) return Promise.resolve();
-                        return Promise.reject(new Error("End must be after start"));
+                        return Promise.reject(new Error("Enter a valid time range"));
                       }
-                      if (!end.isAfter(start)) return Promise.reject(new Error("End must be after start"));
+                      if (!end.isAfter(start)) return Promise.reject(new Error("Enter a valid time range"));
                     }
                     return Promise.resolve();
                   },
@@ -212,7 +206,7 @@ export default function TodoCreateModal({
         </Row>
         <Row gutter={12}>
           <Col span={12}>
-            <Form.Item name="assignees" label="Assignees">
+            <Form.Item name="assignees" label="Assignees" rules={[{ required: true, message: "Assignees are required" }]}>
               <Select
                 mode="multiple"
                 allowClear
@@ -239,10 +233,10 @@ export default function TodoCreateModal({
         <Form.Item name="description" label="Description" rules={[{ required: true, message: "Description is required" }]}>
           <TextArea rows={3} placeholder="What needs to be done?" />
         </Form.Item>
-        <Form.Item name="content" label="Content">
-          <TextArea rows={4} placeholder="Detailed content" />
+        <Form.Item name="comments" label="Comment">
+          <TextArea rows={4} placeholder="Detailed comment" />
         </Form.Item>
-        <Form.Item name="color" label="Color">
+        <Form.Item name="color" label="Event Color">
           <GoogleColorPicker />
         </Form.Item>
       </Form>

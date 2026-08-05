@@ -202,10 +202,10 @@ export default function RoleDetailPage() {
                   style={{
                     padding: "12px 16px",
                     cursor: "pointer",
-                    borderLeft: active ? "3px solid var(--pmt-primary)" : "3px solid transparent",
-                    background: active ? "color-mix(in srgb, var(--pmt-primary) 15%, var(--pmt-surface))" : "transparent",
+                    borderLeft: active ? "3px solid var(--bms-primary)" : "3px solid transparent",
+                    background: active ? "color-mix(in srgb, var(--bms-primary) 15%, var(--bms-surface))" : "transparent",
                     fontWeight: active ? 600 : 400,
-                    color: active ? "var(--pmt-primary)" : "var(--pmt-text)",
+                    color: active ? "var(--bms-primary)" : "var(--bms-text)",
                   }}
                 >
                   {cat.category_label}

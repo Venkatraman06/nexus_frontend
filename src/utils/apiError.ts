@@ -1,29 +1,36 @@
-/** Extract a human-readable message from an Axios error with the custom exception handler format. */
+/** Extract a human-readable message from an Axios error or API response */
 export function apiErrorMsg(e: any, fallback = "An error occurred"): string {
   const d = e?.response?.data;
   if (!d) return e?.message || fallback;
 
-  // Plain error string from some endpoints
+  // String response or string error
+  if (typeof d === "string") return d;
   if (typeof d?.error === "string") return d.error;
+  if (typeof d?.detail === "string") return d.detail;
+  if (Array.isArray(d?.detail) && d.detail.length > 0) return String(d.detail[0]);
+  if (typeof d?.message === "string" && d.message !== "Internal server error") return d.message;
 
-  const errors = d?.errors;
-  if (typeof errors === "string") return errors;
-
-  // Custom exception handler: { message, errors: { detail | field: [...] } }
-  const errDetail = errors?.detail;
-  if (typeof errDetail === "string") return errDetail;
-  if (Array.isArray(errDetail) && errDetail.length > 0) return errDetail[0] as string;
-
-  // Validation errors: { errors: { field: ["msg"] } } or { errors: ["msg"] }
-  if (Array.isArray(errors) && errors.length > 0) {
-    return typeof errors[0] === "string" ? errors[0] : String(errors[0]);
-  }
-  if (errors && typeof errors === "object") {
-    const firstField = Object.values(errors)[0];
-    if (Array.isArray(firstField) && firstField.length > 0) return firstField[0] as string;
-    if (typeof firstField === "string") return firstField;
+  // Custom exception handler format: { message, errors: { ... } } or DRF validation dict
+  const errorsObj = d?.errors || d;
+  if (typeof errorsObj === "string") return errorsObj;
+  if (Array.isArray(errorsObj) && errorsObj.length > 0) {
+    return typeof errorsObj[0] === "string" ? errorsObj[0] : String(errorsObj[0]);
   }
 
-  if (d?.message && d.message !== "Internal server error") return d.message;
+  if (errorsObj && typeof errorsObj === "object") {
+    const messages: string[] = [];
+    for (const [key, val] of Object.entries(errorsObj)) {
+      if (key === "message" || key === "status_code" || key === "code") continue;
+      if (Array.isArray(val) && val.length > 0) {
+        messages.push(String(val[0]));
+      } else if (typeof val === "string" && val.trim()) {
+        messages.push(val);
+      }
+    }
+    if (messages.length > 0) {
+      return messages.join(" | ");
+    }
+  }
+
   return fallback;
 }

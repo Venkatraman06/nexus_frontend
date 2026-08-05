@@ -119,8 +119,8 @@ export function MyRegularizationRequests() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: 100,
-      render: (s: string) => <Tag color={STATUS_COLOR[s]}>{s}</Tag>,
+      width: 110,
+      render: (s: string) => <Tag style={{ whiteSpace: "nowrap" }} color={STATUS_COLOR[s]}>{s}</Tag>,
     },
     {
       title: "Reviewer Note",
@@ -133,7 +133,7 @@ export function MyRegularizationRequests() {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <Text style={{ fontSize: 13, color: "var(--pmt-text-2)" }}>
+        <Text style={{ fontSize: 13, color: "var(--bms-text-2)" }}>
           If you forgot to check-in or check-out, raise a regularization request to your Project Manager.
         </Text>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
@@ -256,7 +256,7 @@ export function RegularizationAdminPanel() {
       render: (r: RegRequest) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{r.employee_name}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{r.employee_code}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{r.employee_code}</div>
         </div>
       ),
     },
@@ -303,8 +303,8 @@ export function RegularizationAdminPanel() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: 100,
-      render: (s: string) => <Tag color={STATUS_COLOR[s]}>{s}</Tag>,
+      width: 110,
+      render: (s: string) => <Tag style={{ whiteSpace: "nowrap" }} color={STATUS_COLOR[s]}>{s}</Tag>,
     },
     {
       title: "Action",
@@ -385,7 +385,7 @@ export function RegularizationAdminPanel() {
         {selected && (
           <>
             <div style={{
-              background: "var(--pmt-surface-2)",
+              background: "var(--bms-surface-2)",
               borderRadius: 8,
               padding: "10px 14px",
               marginBottom: 14,

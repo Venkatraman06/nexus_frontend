@@ -1,10 +1,10 @@
 import { useAuthStore } from "@/store/auth";
-import type { PmtPermission } from "@/constants/permissions";
+import type { BmsPermission } from "@/constants/permissions";
 import { hasAnyPermission, hasPermission } from "@/utils/access";
 
 interface Props {
-  permission?: PmtPermission;
-  anyOf?: PmtPermission[];
+  permission?: BmsPermission;
+  anyOf?: BmsPermission[];
   children: React.ReactNode;
 }
 

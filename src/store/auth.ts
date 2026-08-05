@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         const { refreshToken } = get();
         if (refreshToken) {
-          fetch("/pmt/api/v1/auth/logout/", {
+          fetch("/bms/api/v1/auth/logout/", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -84,7 +84,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "pmt-auth",
+      name: "bms-auth",
       partialize: (state) => ({
         token: state.token,
         refreshToken: state.refreshToken,

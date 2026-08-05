@@ -261,9 +261,9 @@ export default function ProjectOverviewTab({
               <Progress
                 percent={hoursPct}
                 strokeColor={
-                  hoursPct > 100 ? "var(--pmt-danger)"
-                    : hoursPct > 85 ? "var(--pmt-warning)"
-                      : "var(--pmt-success)"
+                  hoursPct > 100 ? "var(--bms-danger)"
+                    : hoursPct > 85 ? "var(--bms-warning)"
+                      : "var(--bms-success)"
                 }
                 showInfo={false}
                 size="small"

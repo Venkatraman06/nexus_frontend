@@ -26,7 +26,7 @@ function processQueue(error: any, token: string | null) {
 
 function clearAuthAndRedirect() {
   useAuthStore.getState().clearAuth();
-  window.location.href = "/pmt/login";
+  window.location.href = "/bms/login";
 }
 
 // ── Request interceptor — attach Bearer token ──────────────────────────────────

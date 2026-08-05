@@ -27,6 +27,7 @@ import {
   markNotificationRead,
   type Notification,
 } from "@/services/notifications";
+import { playNotificationSound } from "@/utils/sound";
 import { PostContent } from "@/components/common/RichTextContent";
 import { socialFeedApi, SOCIAL_POST_WORKFLOW_COLORS, type SocialPostItem } from "@/services/socialFeed";
 
@@ -246,6 +247,9 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
       if (prevIdsRef.current !== null) {
         const currentIds = prevIdsRef.current;
         const newNotifs = list.filter((n) => !currentIds.has(n.id));
+        if (newNotifs.length > 0) {
+          playNotificationSound();
+        }
         newNotifs.forEach((n) => {
           api.open({
             key: n.id,
@@ -255,7 +259,7 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
             duration: 6,
             icon: SEVERITY_ICON[n.severity] || SEVERITY_ICON.info,
             style: { 
-              border: "1px solid var(--pmt-border, #e2e8f0)", 
+              border: "1px solid var(--bms-border, #e2e8f0)", 
               boxShadow: "var(--shadow-md, 0 4px 12px rgba(0,0,0,0.1))",
               cursor: "pointer",
             },
@@ -346,12 +350,10 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
     }
     setOpen(false);
     let targetUrl = notif.action_url;
-    if (notif.event_type.startsWith("todo.") || notif.event_type.startsWith("followup.")) {
-      if (notif.reference_id) {
-        targetUrl = `/workspace/todos?id=${notif.reference_id}`;
-      } else {
-        targetUrl = "/workspace/todos";
-      }
+    if (notif.event_type.startsWith("followup.")) {
+      targetUrl = notif.reference_id ? `/workspace/followups?id=${notif.reference_id}` : "/workspace/followups";
+    } else if (notif.event_type.startsWith("todo.")) {
+      targetUrl = notif.reference_id ? `/workspace/todos?id=${notif.reference_id}` : "/workspace/todos";
     }
     if (targetUrl) navigate(targetUrl);
   };
@@ -371,13 +373,13 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
   };
 
   const content = (
-    <div style={{ width: 340, maxHeight: 440, display: "flex", flexDirection: "column" }}>
+    <div style={{ width: "min(340px, calc(100vw - 32px))", maxHeight: "min(440px, 75vh)", display: "flex", flexDirection: "column" }}>
       <div style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         padding: "2px 2px 10px",
-        borderBottom: "1px solid var(--pmt-border, #e8edf2)",
+        borderBottom: "1px solid var(--bms-border, #e8edf2)",
       }}>
         <Text strong style={{ fontSize: 14 }}>Notifications</Text>
         {items.length > 0 && (
@@ -414,21 +416,21 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
                     justifyContent: "space-between",
                     width: "100%",
                     border: "none",
-                    background: "var(--pmt-surface-2, #f8fafc)",
+                    background: "var(--bms-surface-2, #f8fafc)",
                     borderRadius: 8,
                     padding: "6px 10px",
                     cursor: "pointer",
                     marginBottom: isCollapsed ? 0 : 4,
                   }}
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "var(--pmt-text-2, #64748b)", textTransform: "uppercase", letterSpacing: 0.4 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 600, color: "var(--bms-text-2, #64748b)", textTransform: "uppercase", letterSpacing: 0.4 }}>
                     <span style={{ fontSize: 12, display: "inline-flex" }}>{cat.icon}</span>
                     {cat.label}
                     <span style={{
                       fontSize: 10,
                       fontWeight: 700,
-                      background: "var(--pmt-surface, #fff)",
-                      border: "1px solid var(--pmt-border, #e2e8f0)",
+                      background: "var(--bms-surface, #fff)",
+                      border: "1px solid var(--bms-border, #e2e8f0)",
                       borderRadius: 10,
                       padding: "0 6px",
                       lineHeight: "18px",
@@ -456,7 +458,7 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
                           transition: "background 0.12s",
                         }}
                         onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = "var(--pmt-hover, rgba(22,119,255,0.06))";
+                          (e.currentTarget as HTMLElement).style.background = "var(--bms-hover, rgba(22,119,255,0.06))";
                         }}
                         onMouseLeave={(e) => {
                           (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -477,12 +479,12 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
                             }}>
                               {compactTitle(notif)}
                             </Text>
-                            <Text style={{ fontSize: 10, color: "var(--pmt-text-3, #94a3b8)", flexShrink: 0 }}>
+                            <Text style={{ fontSize: 10, color: "var(--bms-text-3, #94a3b8)", flexShrink: 0 }}>
                               {timeAgo(notif.created_at)}
                             </Text>
                           </div>
                           {subtitle && (
-                            <Text style={{ fontSize: 10, color: "var(--pmt-text-3, #94a3b8)", lineHeight: 1.2 }}>
+                            <Text style={{ fontSize: 10, color: "var(--bms-text-3, #94a3b8)", lineHeight: 1.2 }}>
                               {subtitle}
                             </Text>
                           )}
@@ -556,7 +558,7 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
                 {socialPostData.workflow_state_name || socialPostData.workflow_state_slug}
               </Tag>
             </div>
-            <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>
+            <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>
               By {socialPostData.created_by_name}
             </Text>
           </div>
@@ -564,8 +566,8 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
           {/* Content */}
           {socialPostData.content && (
             <div style={{
-              background: "var(--pmt-surface-2)",
-              border: "1px solid var(--pmt-border)",
+              background: "var(--bms-surface-2)",
+              border: "1px solid var(--bms-border)",
               borderRadius: 8,
               padding: "12px 14px",
               marginBottom: 16,
@@ -588,14 +590,14 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
           )}
 
           {/* Stats */}
-          <div style={{ display: "flex", gap: 12, marginBottom: 16, fontSize: 12, color: "var(--pmt-text-3)" }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 16, fontSize: 12, color: "var(--bms-text-3)" }}>
             <span>❤ {socialPostData.like_count}</span>
             <span>💬 {socialPostData.comment_count}</span>
           </div>
 
           {/* Action buttons */}
           {socialPostData.allowed_destination_slugs && socialPostData.allowed_destination_slugs.length > 0 ? (
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", borderTop: "1px solid var(--pmt-border)", paddingTop: 14 }}>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", borderTop: "1px solid var(--bms-border)", paddingTop: 14 }}>
               {socialPostData.allowed_destination_slugs.includes("approved") && (
                 <Button
                   icon={<CheckOutlined />}
@@ -630,7 +632,7 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
               )}
             </div>
           ) : (
-            <div style={{ textAlign: "center", padding: "10px 0", fontSize: 12, color: "var(--pmt-text-3)" }}>
+            <div style={{ textAlign: "center", padding: "10px 0", fontSize: 12, color: "var(--bms-text-3)" }}>
               No actions available for this post in its current state.
             </div>
           )}
@@ -638,7 +640,7 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
       ) : socialPostNotif ? (
         <div style={{ textAlign: "center", padding: 20 }}>
           <Empty description="Could not load post details" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          <div style={{ marginTop: 8, fontSize: 12, color: "var(--pmt-text-3)" }}>
+          <div style={{ marginTop: 8, fontSize: 12, color: "var(--bms-text-3)" }}>
             <Text>Title: {String(socialPostNotif.metadata?.title ?? "")}</Text>
             <br />
             <Text>From: {String(socialPostNotif.metadata?.created_by_name ?? "")}</Text>
@@ -653,16 +655,17 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
       {contextHolder}
       {socialPostModal}
       <Popover
-      content={content}
-      trigger="click"
-      open={open}
-      onOpenChange={handleOpenChange}
-      placement="bottomRight"
-      overlayInnerStyle={{ padding: 12 }}
-    >
+        content={content}
+        trigger="click"
+        open={open}
+        onOpenChange={handleOpenChange}
+        placement="bottomRight"
+        overlayClassName="pmt-notification-popover"
+        overlayInnerStyle={{ padding: 12, maxWidth: "calc(100vw - 16px)" }}
+      >
       <button
         type="button"
-        className="pmt-header-icon-btn"
+        className="bms-header-icon-btn"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
         style={{ position: "relative" }}
       >

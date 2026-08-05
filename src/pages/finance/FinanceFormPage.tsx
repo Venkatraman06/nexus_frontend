@@ -27,6 +27,7 @@ import AddClientModal, { type CreatedClient } from "@/components/clients/AddClie
 import { usePermission } from "@/hooks/usePermission";
 import { PERMS } from "@/constants/permissions";
 import { apiErrorMsg } from "@/utils/apiError";
+import { renderClientDropdown, renderProjectDropdown } from "@/components/common/DropdownRenderers";
 
 const { Title, Text } = Typography;
 const { Option }      = Select;
@@ -384,19 +385,6 @@ export default function FinanceFormPage() {
               title="Client"
               style={{ borderRadius: 10, marginBottom: 20 }}
               styles={{ header: { borderBottom: "2px solid #1677ff" } }}
-              extra={
-                canCreateClient ? (
-                  <Button
-                    type="link"
-                    size="small"
-                    icon={<PlusOutlined />}
-                    onClick={() => setAddClientOpen(true)}
-                    style={{ padding: 0 }}
-                  >
-                    Add Client
-                  </Button>
-                ) : undefined
-              }
             >
               <Form.Item
                 name="client"
@@ -409,6 +397,7 @@ export default function FinanceFormPage() {
                   optionLabelProp="label"
                   optionFilterProp="label"
                   onChange={handleClientChange}
+                  dropdownRender={renderClientDropdown}
                 >
                   {clients.map(c => (
                     <Option key={c.id} value={c.id} label={c.name}>
@@ -428,13 +417,13 @@ export default function FinanceFormPage() {
               {/* Auto-populated client info */}
               {selectedClient && (selectedClient.contact_email || selectedClient.gst_number) && (
                 <div style={{
-                  background: "var(--pmt-surface-2, #f8fafc)",
-                  border: "1px solid var(--pmt-border, #e8edf3)",
+                  background: "var(--bms-surface-2, #f8fafc)",
+                  border: "1px solid var(--bms-border, #e8edf3)",
                   borderRadius: 8,
                   padding: 12,
                   marginBottom: 12,
                 }}>
-                  <Descriptions size="small" column={1} labelStyle={{ color: "var(--pmt-text-3, #8c9ab0)", fontSize: 11 }}>
+                  <Descriptions size="small" column={1} labelStyle={{ color: "var(--bms-text-3, #8c9ab0)", fontSize: 11 }}>
                     {selectedClient.contact_email && (
                       <Descriptions.Item label="Email">
                         {selectedClient.contact_email}
@@ -459,7 +448,7 @@ export default function FinanceFormPage() {
 
             {/* Document number (edit mode) */}
             {isEdit && document && (
-              <Card style={{ borderRadius: 10, marginBottom: 20, background: "color-mix(in srgb, var(--pmt-primary) 15%, var(--pmt-surface))" }}>
+              <Card style={{ borderRadius: 10, marginBottom: 20, background: "color-mix(in srgb, var(--bms-primary) 15%, var(--bms-surface))" }}>
                 <Descriptions size="small" column={1} title="Document Info">
                   <Descriptions.Item label="Number">
                     <Text strong style={{ color: "#1677ff", fontFamily: "monospace" }}>

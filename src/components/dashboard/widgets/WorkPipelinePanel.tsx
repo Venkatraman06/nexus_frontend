@@ -48,10 +48,10 @@ interface WorkPipelinePanelProps {
 
 export default function WorkPipelinePanel({ items, onOverdueClick }: WorkPipelinePanelProps) {
   const rows = [
-    { label: "Open", value: items.open, color: "var(--pmt-text-3)", delay: 0 },
-    { label: "In progress", value: items.in_progress, color: "var(--pmt-primary)", delay: 80 },
-    { label: "Done", value: items.done, color: "var(--pmt-success)", delay: 160 },
-    { label: "Overdue", value: items.overdue, color: "var(--pmt-danger)", delay: 240 },
+    { label: "Open", value: items.open, color: "var(--bms-text-3)", delay: 0 },
+    { label: "In progress", value: items.in_progress, color: "var(--bms-primary)", delay: 80 },
+    { label: "Done", value: items.done, color: "var(--bms-success)", delay: 160 },
+    { label: "Overdue", value: items.overdue, color: "var(--bms-danger)", delay: 240 },
   ];
 
   return (

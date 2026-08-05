@@ -51,7 +51,7 @@ export default function PasswordStrengthInput({
       {value.length > 0 && (
         <div style={{ marginTop: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>Password strength</Text>
+            <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>Password strength</Text>
             <Text style={{ fontSize: 12, color: LEVEL_COLOR[strength.level], fontWeight: 600, textTransform: "capitalize" }}>
               {strength.level}
             </Text>
@@ -71,7 +71,7 @@ export default function PasswordStrengthInput({
               key={key}
               style={{
                 fontSize: 12,
-                color: strength.rules[key] ? "#52c41a" : "var(--pmt-text-3)",
+                color: strength.rules[key] ? "#52c41a" : "var(--bms-text-3)",
                 marginBottom: 3,
                 display: "flex",
                 alignItems: "center",

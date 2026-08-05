@@ -63,9 +63,9 @@ function KpiCard({
       size="small"
       style={{
         borderRadius: 12,
-        border: "1px solid var(--pmt-border)",
+        border: "1px solid var(--bms-border)",
         height: "100%",
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
       }}
       styles={{ body: { padding: "16px 18px" } }}
     >
@@ -79,9 +79,9 @@ function KpiCard({
           {icon}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginBottom: 2 }}>{label}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-3)", marginBottom: 2 }}>{label}</div>
           <div style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1.1 }}>{value}</div>
-          {sub && <div style={{ fontSize: 11, color: "var(--pmt-text-2)", marginTop: 2 }}>{sub}</div>}
+          {sub && <div style={{ fontSize: 11, color: "var(--bms-text-2)", marginTop: 2 }}>{sub}</div>}
           {progress !== undefined && (
             <Progress
               percent={progress}
@@ -109,8 +109,8 @@ function Section({
   children: React.ReactNode;
 }) {
   const isDark = useThemeStore((s) => s.isDark);
-  const headerBg     = isDark ? (darkBg     ?? "var(--pmt-surface-2)") : (lightBg     ?? "#f8fafc");
-  const borderColor  = isDark ? (darkBorder ?? "var(--pmt-border)")    : (lightBorder ?? "#e2e8f0");
+  const headerBg     = isDark ? (darkBg     ?? "var(--bms-surface-2)") : (lightBg     ?? "#f8fafc");
+  const borderColor  = isDark ? (darkBorder ?? "var(--bms-border)")    : (lightBorder ?? "#e2e8f0");
 
   return (
     <Card
@@ -118,13 +118,13 @@ function Section({
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ color: iconColor }}>{icon}</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)" }}>{title}</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: "var(--bms-text)" }}>{title}</span>
         </div>
       }
       styles={{
         body: {
           padding: "14px 16px",
-          background: "var(--pmt-surface)",
+          background: "var(--bms-surface)",
           borderRadius: "0 0 12px 12px",
         },
         header: {
@@ -136,7 +136,7 @@ function Section({
         borderRadius: 12,
         border: `1px solid ${borderColor}`,
         height: "100%",
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
       }}
     >
       {children}
@@ -161,7 +161,7 @@ function AttendanceSummary({ att }: { att: HRMSData["attendance_today"] }) {
 
   const pieData = items
     .filter((i) => (i.value as number) > 0)
-    .map((i) => ({ type: i.label, value: i.value as number, color: i.color }));
+    .map((i) => ({ status: i.label, value: i.value as number, color: i.color }));
 
   return (
     <Row gutter={16}>
@@ -177,17 +177,25 @@ function AttendanceSummary({ att }: { att: HRMSData["attendance_today"] }) {
             data={pieData}
             theme={isDark ? "dark" : "light"}
             angleField="value"
-            colorField="type"
-            color={({ type }: any) => pieData.find((d) => d.type === type)?.color ?? "#ccc"}
-            radius={0.85}
-            innerRadius={0.6}
-            label={{ text: "value", style: { fontSize: 12, fill: isDark ? "#e8eaed" : "#202124" } }}
-            legend={{
-              position: "bottom",
-              layout: "horizontal",
-              itemName: { style: { fill: isDark ? "#e8eaed" : "#202124" } },
+            colorField="status"
+            color={({ status }: any) => pieData.find((d) => d.status === status)?.color ?? "#ccc"}
+            scale={{
+              color: {
+                range: pieData.map((d) => d.color),
+              },
             }}
+            style={{
+              fill: (d: any) => d?.color || pieData.find((item) => item.status === d?.status)?.color || "#ccc",
+            }}
+            radius={0.85}
+            innerRadius={0.55}
+            label={{ text: (d: any) => d.value, style: { fontSize: 12, fill: isDark ? "#e8eaed" : "#202124" } }}
+            legend={false}
             height={220}
+            tooltip={{
+              title: (d: any) => d.status,
+              items: [{ field: "value", name: "Count" }],
+            }}
             statistic={{
               title: { content: "Rate", style: { color: isDark ? "#9aa0a6" : "#5f6368" } },
               content: { content: `${att.attendance_rate}%`, style: { color: isDark ? "#e8eaed" : "#202124" } },
@@ -209,7 +217,7 @@ function AttendanceSummary({ att }: { att: HRMSData["attendance_today"] }) {
             >
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: color }} />
-                <Text style={{ fontSize: 12, color: "var(--pmt-text)" }}>{label}</Text>
+                <Text style={{ fontSize: 12, color: "var(--bms-text)" }}>{label}</Text>
               </div>
               <Text style={{ fontSize: 14, fontWeight: 700, color }}>{value as number}</Text>
             </div>
@@ -228,7 +236,7 @@ function DeptChart({ data }: { data: DeptDist[] }) {
 
   const total = data.reduce((s, d) => s + d.count, 0);
   const pieData = data.map((d, i) => ({
-    type: d.department,
+    department: d.department,
     value: d.count,
     color: DEPT_COLORS[i % DEPT_COLORS.length],
   }));
@@ -240,13 +248,25 @@ function DeptChart({ data }: { data: DeptDist[] }) {
           data={pieData}
           theme={isDark ? "dark" : "light"}
           angleField="value"
-          colorField="type"
-          color={({ type }: any) => pieData.find((d) => d.type === type)?.color ?? "#ccc"}
+          colorField="department"
+          color={({ department }: any) => pieData.find((d) => d.department === department)?.color ?? "#ccc"}
+          scale={{
+            color: {
+              range: pieData.map((d) => d.color),
+            },
+          }}
+          style={{
+            fill: (d: any) => d?.color || pieData.find((item) => item.department === d?.department)?.color || "#ccc",
+          }}
           radius={0.85}
           innerRadius={0.55}
           label={false}
           legend={false}
-          height={220}
+          height={238}
+          tooltip={{
+            title: (d: any) => d.department,
+            items: [{ field: "value", name: "Count" }],
+          }}
           statistic={{
             title: { content: "Total", style: { color: isDark ? "#9aa0a6" : "#5f6368" } },
             content: { content: String(total), style: { color: isDark ? "#e8eaed" : "#202124" } },
@@ -262,7 +282,7 @@ function DeptChart({ data }: { data: DeptDist[] }) {
                 background: DEPT_COLORS[i % DEPT_COLORS.length],
                 flexShrink: 0,
               }} />
-              <Text style={{ fontSize: 12, flex: 1, color: "var(--pmt-text)" }}>{d.department}</Text>
+              <Text style={{ fontSize: 12, flex: 1, color: "var(--bms-text)" }}>{d.department}</Text>
               <Text style={{ fontSize: 12, fontWeight: 600, color: DEPT_COLORS[i % DEPT_COLORS.length] }}>
                 {d.count}
               </Text>
@@ -297,8 +317,8 @@ function PendingLeaveTable({ rows }: { rows: PendingLeave[] }) {
             {name.trim().split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase()}
           </Avatar>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--pmt-text)" }}>{name}</div>
-            <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>
+            <div style={{ fontSize: 13, fontWeight: 500, color: "var(--bms-text)" }}>{name}</div>
+            <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>
               {r.employee_code}
             </div>
           </div>
@@ -319,8 +339,8 @@ function PendingLeaveTable({ rows }: { rows: PendingLeave[] }) {
       title: "Dates",
       render: (_: any, r: PendingLeave) => (
         <div style={{ fontSize: 12 }}>
-          <div style={{ color: "var(--pmt-text)" }}>{r.start_date} → {r.end_date}</div>
-          <div style={{ color: "var(--pmt-text-3)" }}>{r.days_count}d</div>
+          <div style={{ color: "var(--bms-text)" }}>{r.start_date} → {r.end_date}</div>
+          <div style={{ color: "var(--bms-text-3)" }}>{r.days_count}d</div>
         </div>
       ),
     },
@@ -329,7 +349,7 @@ function PendingLeaveTable({ rows }: { rows: PendingLeave[] }) {
       dataIndex: "reason",
       ellipsis: true,
       render: (v: string) => (
-        <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{v || "—"}</Text>
+        <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{v || "—"}</Text>
       ),
     },
   ];
@@ -372,8 +392,8 @@ function RecentJoiners({ joiners }: { joiners: RecentJoiner[] }) {
           style={{
             flex: "1 1 200px", maxWidth: 260,
             padding: "12px 14px", borderRadius: 10,
-            border: "1px solid var(--pmt-border)",
-            background: "var(--pmt-surface-2)",
+            border: "1px solid var(--bms-border)",
+            background: "var(--bms-surface-2)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -385,17 +405,17 @@ function RecentJoiners({ joiners }: { joiners: RecentJoiner[] }) {
             </Avatar>
             <div style={{ minWidth: 0 }}>
               <div style={{
-                fontSize: 13, fontWeight: 600, color: "var(--pmt-text)",
+                fontSize: 13, fontWeight: 600, color: "var(--bms-text)",
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>
                 {j.full_name}
               </div>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)", fontFamily: "monospace" }}>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)", fontFamily: "monospace" }}>
                 {j.employee_code}
               </div>
             </div>
           </div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-2)", marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: "var(--bms-text-2)", marginBottom: 6 }}>
             {j.designation || "—"}
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -405,7 +425,7 @@ function RecentJoiners({ joiners }: { joiners: RecentJoiner[] }) {
             >
               {j.department || "—"}
             </Tag>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
               {dayjs(j.joining_date).format("DD MMM YYYY")}
             </Text>
           </div>
@@ -426,7 +446,7 @@ function PayrollStatus({ p }: { p: HRMSData["payroll"] }) {
   return (
     <div>
       <div style={{ marginBottom: 10 }}>
-        <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
+        <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>
           {dayjs().format("MMMM YYYY")} — {p.total} payroll record{p.total !== 1 ? "s" : ""} total
         </Text>
       </div>
@@ -443,14 +463,14 @@ function PayrollStatus({ p }: { p: HRMSData["payroll"] }) {
           >
             <div style={{ fontSize: 18, color, marginBottom: 4 }}>{icon}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color }}>{value}</div>
-            <div style={{ fontSize: 11, color: "var(--pmt-text-2)", marginTop: 2 }}>{label}</div>
+            <div style={{ fontSize: 11, color: "var(--bms-text-2)", marginTop: 2 }}>{label}</div>
           </div>
         ))}
       </div>
       {p.total > 0 && (
         <div style={{ marginTop: 14 }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Paid progress</Text>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Paid progress</Text>
             <Text style={{ fontSize: 11, fontWeight: 600, color: "#059669" }}>
               {p.total > 0 ? Math.round((p.paid / p.total) * 100) : 0}%
             </Text>
@@ -489,7 +509,7 @@ function LeaveMonthStats({ stats }: { stats: HRMSData["leave"]["stats_this_month
         >
           <div style={{ fontSize: 16, color, marginBottom: 2 }}>{icon}</div>
           <div style={{ fontSize: 20, fontWeight: 700, color }}>{value}</div>
-          <div style={{ fontSize: 11, color: "var(--pmt-text-2)" }}>{label}</div>
+          <div style={{ fontSize: 11, color: "var(--bms-text-2)" }}>{label}</div>
         </div>
       ))}
     </div>
@@ -526,11 +546,11 @@ export default function HRMSDashboardPage() {
     data.attendance_today.ABSENT;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--pmt-bg)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bms-bg)" }}>
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
-        <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>HRMS Dashboard</Title>
-        <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>
+        <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>HRMS Dashboard</Title>
+        <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>
           People, attendance, leave and payroll overview · {dayjs(data.date).format("DD MMM YYYY")}
         </Text>
       </div>
@@ -584,7 +604,7 @@ export default function HRMSDashboardPage() {
             icon={<CalendarOutlined />}
             iconColor="#059669"
             lightBg="#ecfdf5"   lightBorder="#a7f3d0"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
           >
             <AttendanceSummary att={data.attendance_today} />
           </Section>
@@ -595,7 +615,7 @@ export default function HRMSDashboardPage() {
             icon={<TeamOutlined />}
             iconColor="#1677ff"
             lightBg="#eff6ff"   lightBorder="#bfdbfe"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
           >
             <DeptChart data={data.headcount.dept_distribution} />
           </Section>
@@ -610,7 +630,7 @@ export default function HRMSDashboardPage() {
             icon={<ExclamationCircleOutlined />}
             iconColor="#f59e0b"
             lightBg="#fffbeb"   lightBorder="#fde68a"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
           >
             <PendingLeaveTable rows={data.leave.pending_list} />
           </Section>
@@ -623,7 +643,7 @@ export default function HRMSDashboardPage() {
                 icon={<CalendarOutlined />}
                 iconColor="#7c3aed"
                 lightBg="#faf5ff"   lightBorder="#e9d5ff"
-                darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+                darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
               >
                 <LeaveMonthStats stats={data.leave.stats_this_month} />
               </Section>
@@ -634,7 +654,7 @@ export default function HRMSDashboardPage() {
                 icon={<WalletOutlined />}
                 iconColor="#db2777"
                 lightBg="#fff1f2"   lightBorder="#fecdd3"
-                darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+                darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
               >
                 <PayrollStatus p={data.payroll} />
               </Section>
@@ -651,7 +671,7 @@ export default function HRMSDashboardPage() {
             icon={<UserAddOutlined />}
             iconColor="#059669"
             lightBg="#f0fdf4"   lightBorder="#bbf7d0"
-            darkBg="var(--pmt-surface-2)" darkBorder="var(--pmt-border)"
+            darkBg="var(--bms-surface-2)" darkBorder="var(--bms-border)"
           >
             <RecentJoiners joiners={data.recent_joiners} />
           </Section>

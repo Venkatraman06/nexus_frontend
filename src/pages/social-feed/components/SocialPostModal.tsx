@@ -150,11 +150,11 @@ export default function SocialPostModal({ open, onClose, editPost }: SocialPostM
       destroyOnHidden
       styles={{ body: { padding: 0 } }}
     >
-      <div style={{ padding: "20px 24px 8px", borderBottom: "1px solid var(--pmt-border, #eef2f6)" }}>
+      <div style={{ padding: "20px 24px 8px", borderBottom: "1px solid var(--bms-border, #eef2f6)" }}>
         <Text strong style={{ fontSize: 18 }}>
           {isEdit ? "Edit Post" : "Create New Post"}
         </Text>
-        <div style={{ fontSize: 12, color: "var(--pmt-text-3, #94a3b8)", marginTop: 4 }}>
+        <div style={{ fontSize: 12, color: "var(--bms-text-3, #94a3b8)", marginTop: 4 }}>
           Share updates with bullets, colors, and one photo or file attachment.
         </div>
       </div>
@@ -192,10 +192,10 @@ export default function SocialPostModal({ open, onClose, editPost }: SocialPostM
 
           {(showExisting || showNewImage || showNewFile) ? (
             <div style={{
-              border: "1px solid var(--pmt-border, #e5e7eb)",
+              border: "1px solid var(--bms-border, #e5e7eb)",
               borderRadius: 12,
               overflow: "hidden",
-              background: "var(--pmt-surface-2, #f8fafc)",
+              background: "var(--bms-surface-2, #f8fafc)",
             }}>
               {showExisting?.kind === "image" && (
                 <img
@@ -218,9 +218,9 @@ export default function SocialPostModal({ open, onClose, editPost }: SocialPostM
                 padding: "10px 12px",
               }}>
                 {showExisting?.kind === "file" || showNewFile ? (
-                  <PaperClipOutlined style={{ fontSize: 18, color: "var(--pmt-primary)" }} />
+                  <PaperClipOutlined style={{ fontSize: 18, color: "var(--bms-primary)" }} />
                 ) : (
-                  <PictureOutlined style={{ fontSize: 18, color: "var(--pmt-primary)" }} />
+                  <PictureOutlined style={{ fontSize: 18, color: "var(--bms-primary)" }} />
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <Text strong style={{ fontSize: 13, display: "block" }} ellipsis>
@@ -255,18 +255,18 @@ export default function SocialPostModal({ open, onClose, editPost }: SocialPostM
             style={{
               marginTop: showExisting || media ? 10 : 0,
               borderRadius: 12,
-              background: "var(--pmt-surface, #fff)",
+              background: "var(--bms-surface, #fff)",
             }}
           >
             <div style={{ padding: "8px 0" }}>
               <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 8 }}>
-                <PictureOutlined style={{ fontSize: 22, color: "var(--pmt-primary)" }} />
-                <PaperClipOutlined style={{ fontSize: 22, color: "var(--pmt-text-3)" }} />
+                <PictureOutlined style={{ fontSize: 22, color: "var(--bms-primary)" }} />
+                <PaperClipOutlined style={{ fontSize: 22, color: "var(--bms-text-3)" }} />
               </div>
               <Text style={{ fontSize: 13 }}>
                 Click or drag <strong>one image</strong> or <strong>one file</strong>
               </Text>
-              <div style={{ fontSize: 11, color: "var(--pmt-text-3)", marginTop: 4 }}>
+              <div style={{ fontSize: 11, color: "var(--bms-text-3)", marginTop: 4 }}>
                 JPG, PNG, GIF · PDF, DOC, XLS, PPT, ZIP
               </div>
             </div>
@@ -280,10 +280,10 @@ export default function SocialPostModal({ open, onClose, editPost }: SocialPostM
           justifyContent: "space-between",
           gap: 12,
           paddingTop: 8,
-          borderTop: "1px solid var(--pmt-border, #eef2f6)",
+          borderTop: "1px solid var(--bms-border, #eef2f6)",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <GlobalOutlined style={{ color: "var(--pmt-primary)" }} />
+            <GlobalOutlined style={{ color: "var(--bms-primary)" }} />
             <Text style={{ fontSize: 13 }}>Company wide</Text>
             <Form.Item name="is_company_wide" valuePropName="checked" noStyle>
               <Switch checkedChildren="Yes" unCheckedChildren="No" />

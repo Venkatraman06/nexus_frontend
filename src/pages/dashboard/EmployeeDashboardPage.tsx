@@ -372,7 +372,7 @@ function FollowUpDaySchedule({
             <>
               {sortedMeetings.length > 0 && (
                 <div style={{
-                  fontSize: 10, fontWeight: 700, color: "var(--pmt-text-3)", letterSpacing: "0.05em",
+                  fontSize: 10, fontWeight: 700, color: "var(--bms-text-3)", letterSpacing: "0.05em",
                   textTransform: "uppercase", padding: "6px 2px 2px",
                 }}>
                   Follow-ups ({sortedOthers.length})
@@ -394,8 +394,8 @@ function Widget({ title, icon, children, extra, iconColor = "#1677ff", bgColor, 
   className?: string; fill?: boolean;
 }) {
   const isDark  = useThemeStore((s) => s.isDark);
-  const hBg     = isDark ? "var(--pmt-surface-2)" : (bgColor     ?? "var(--pmt-surface-2)");
-  const hBorder = isDark ? "var(--pmt-border)"    : (borderColor ?? "#eaecf0");
+  const hBg     = isDark ? "var(--bms-surface-2)" : (bgColor     ?? "var(--bms-surface-2)");
+  const hBorder = isDark ? "var(--bms-border)"    : (borderColor ?? "#eaecf0");
   return (
     <Card size="small"
       title={<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -406,7 +406,7 @@ function Widget({ title, icon, children, extra, iconColor = "#1677ff", bgColor, 
       styles={{
         body: {
           padding: "14px 16px",
-          background: "var(--pmt-surface)",
+          background: "var(--bms-surface)",
           borderRadius: "0 0 12px 12px",
           ...(fill ? { flex: 1, display: "flex", flexDirection: "column" } : {}),
         },
@@ -415,7 +415,7 @@ function Widget({ title, icon, children, extra, iconColor = "#1677ff", bgColor, 
       style={{
         borderRadius: 12,
         border: `1px solid ${hBorder}`,
-        background: "var(--pmt-surface)",
+        background: "var(--bms-surface)",
         ...(fill ? { height: "100%", display: "flex", flexDirection: "column" } : {}),
       }}
       className={[className, fill ? "emp-dash-widget" : ""].filter(Boolean).join(" ") || undefined}
@@ -531,7 +531,7 @@ function TicketWorkflowModal({
                 display: "block", width: "100%", textAlign: "left",
                 padding: "12px 14px", borderRadius: 10, cursor: "pointer",
                 border: `1px solid ${hexToRgba(color, 0.2)}`,
-                background: "var(--pmt-surface)",
+                background: "var(--bms-surface)",
                 transition: "background 0.12s, border-color 0.12s",
               }}
               onMouseEnter={(e) => {
@@ -539,7 +539,7 @@ function TicketWorkflowModal({
                 e.currentTarget.style.borderColor = hexToRgba(color, 0.35);
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--pmt-surface)";
+                e.currentTarget.style.background = "var(--bms-surface)";
                 e.currentTarget.style.borderColor = hexToRgba(color, 0.2);
               }}
             >
@@ -549,10 +549,10 @@ function TicketWorkflowModal({
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-                    <code style={{ fontSize: 11, color: "var(--pmt-text-2)", fontFamily: "monospace" }}>{t.ticket_number}</code>
+                    <code style={{ fontSize: 11, color: "var(--bms-text-2)", fontFamily: "monospace" }}>{t.ticket_number}</code>
                     {t.is_overdue && <Tag color="error" style={{ margin: 0, fontSize: 10, borderRadius: 20 }}>Overdue</Tag>}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)", marginBottom: 6 }}>{t.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "var(--bms-text)", marginBottom: 6 }}>{t.title}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     {(t.project_code || t.project_name) && (
                       <Text type="secondary" style={{ fontSize: 12 }}>
@@ -561,7 +561,7 @@ function TicketWorkflowModal({
                     )}
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                       <PriorityIcon priority={t.priority as TicketPriority} />
-                      <Text style={{ fontSize: 11, color: PRIORITY_COLOR[t.priority] ?? "var(--pmt-text-2)" }}>{t.priority}</Text>
+                      <Text style={{ fontSize: 11, color: PRIORITY_COLOR[t.priority] ?? "var(--bms-text-2)" }}>{t.priority}</Text>
                     </span>
                     <Text type="secondary" style={{ fontSize: 11 }}>
                       Due: {t.due_date ? dayjs(t.due_date).format("DD MMM YYYY") : "—"}
@@ -694,18 +694,18 @@ function ActiveProjectsWidget({
               <div key={p.id} className="emp-project-card" onClick={onOpenProject} role="button" tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && onOpenProject()}>
                 <div className="emp-project-card__head">
-                  <Text strong style={{ fontSize: 13, lineHeight: 1.3, color: "var(--pmt-text)" }}>{p.name}</Text>
+                  <Text strong style={{ fontSize: 13, lineHeight: 1.3, color: "var(--bms-text)" }}>{p.name}</Text>
                   <Tag color={PROJECT_STATUS_COLOR[p.status] ?? "#6b7280"} style={{ fontSize: 10, borderRadius: 20, padding: "0 7px", marginLeft: 6, flexShrink: 0 }}>{p.status}</Tag>
                 </div>
-                {p.client && <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{p.client}</Text>}
+                {p.client && <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>{p.client}</Text>}
                 <div className="emp-project-card__alloc">
-                  <Text style={{ fontSize: 11, color: "var(--pmt-text-2)" }}>Allocation</Text>
+                  <Text style={{ fontSize: 11, color: "var(--bms-text-2)" }}>Allocation</Text>
                   <PercentChip value={p.allocation_percentage} mode="allocation" />
                 </div>
                 {p.end_date && (
                   <div className="emp-project-card__date">
-                    <CalendarOutlined style={{ fontSize: 11, color: "var(--pmt-text-3)" }} />
-                    <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>Until {p.end_date}</Text>
+                    <CalendarOutlined style={{ fontSize: 11, color: "var(--bms-text-3)" }} />
+                    <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>Until {p.end_date}</Text>
                   </div>
                 )}
               </div>
@@ -745,7 +745,7 @@ function WorkHoursStats({ stats, fill = true }: { stats: WorkStats; fill?: boole
               </Text>
             </div>
             <Progress percent={workPct} strokeColor={workPct >= 90 ? "#059669" : workPct >= 70 ? "#1677ff" : "#d97706"} showInfo={false} size="small" />
-            <div style={{ fontSize: 10, color: "var(--pmt-text-3)", marginTop: 2 }}>
+            <div style={{ fontSize: 10, color: "var(--bms-text-3)", marginTop: 2 }}>
               Total: {stats.total_working_hours.toFixed(1)}h across {totalDays} day{totalDays > 1 ? "s" : ""}
             </div>
           </div>
@@ -760,13 +760,13 @@ function WorkHoursStats({ stats, fill = true }: { stats: WorkStats; fill?: boole
               </Text>
             </div>
             <Progress percent={breakPct} strokeColor={breakPct > 90 ? "#dc2626" : "#f59e0b"} showInfo={false} size="small" />
-            <div style={{ fontSize: 10, color: "var(--pmt-text-3)", marginTop: 2 }}>
+            <div style={{ fontSize: 10, color: "var(--bms-text-3)", marginTop: 2 }}>
               Allowed: Lunch 45m · Tea 20m × 2 · Other 5m = {allowedBreakMins}m total
             </div>
           </div>
           {(stats.on_time + stats.late + stats.early) > 0 && (
             <div>
-              <Text style={{ fontSize: 11, color: "var(--pmt-text-2)", display: "block", marginBottom: 6 }}>Punctuality</Text>
+              <Text style={{ fontSize: 11, color: "var(--bms-text-2)", display: "block", marginBottom: 6 }}>Punctuality</Text>
               <div style={{ display: "flex", gap: 8 }}>
                 {[
                   { label: "On Time", value: stats.on_time, color: "#059669" },
@@ -775,7 +775,7 @@ function WorkHoursStats({ stats, fill = true }: { stats: WorkStats; fill?: boole
                 ].map(({ label, value, color }) => (
                   <div key={label} style={{ flex: 1, textAlign: "center", padding: "6px 4px", background: color + "0d", borderRadius: 8, border: `1px solid ${color}22` }}>
                     <div style={{ fontSize: 18, fontWeight: 700, color }}>{value}</div>
-                    <div style={{ fontSize: 10, color: "var(--pmt-text-2)" }}>{label}</div>
+                    <div style={{ fontSize: 10, color: "var(--bms-text-2)" }}>{label}</div>
                   </div>
                 ))}
               </div>
@@ -797,7 +797,7 @@ function WFHRequestModal({ open, onClose, onSuccess }: { open: boolean; onClose:
         date:           values.date.format("YYYY-MM-DD"),
         reason:         values.reason,
       }),
-    onSuccess: () => { message.success("WFH request submitted — HR will review it"); form.resetFields(); onSuccess(); },
+    onSuccess: () => { message.success("WFH request submitted — your Reporting Manager will review it"); form.resetFields(); onSuccess(); },
     onError: (e: any) => {
       const detail = e?.response?.data?.detail
         || Object.entries(e?.response?.data ?? {}).map(([k, v]) => `${k}: ${Array.isArray(v) ? v[0] : v}`).join(", ")
@@ -839,7 +839,7 @@ function ShiftChangeModal({ open, onClose, onSuccess, employeeId }: { open: bool
   });
    const mutation = useMutation({
     mutationFn: (payload: any) => post("/attendance/shift-change-requests/", payload),
-    onSuccess: () => { message.success("Shift change request submitted — HR will review it"); form.resetFields(); onSuccess(); },
+    onSuccess: () => { message.success("Shift change request submitted — your Reporting Manager will review it"); form.resetFields(); onSuccess(); },
     onError: (e: any) => {
       const detail = e?.response?.data?.detail
         || Object.entries(e?.response?.data ?? {}).map(([k, v]: any) => `${k}: ${Array.isArray(v) ? v[0] : v}`).join(", ")
@@ -984,7 +984,7 @@ function ApplyLeaveModal({
       is_emergency: false,
     }),
     onSuccess: () => {
-      message.success("Leave request submitted — HR will review it shortly");
+      message.success("Leave request submitted — your Reporting Manager will review it");
       regularForm.resetFields();
       onSuccess();
     },
@@ -1033,7 +1033,7 @@ if (
       });
     },
     onSuccess: () => {
-      message.success("Emergency leave submitted — HR will be notified immediately");
+      message.success("Emergency leave requested — your Reporting Manager will review it");
       emergencyForm.resetFields();
       setFileList([]);
       onSuccess();
@@ -1092,16 +1092,16 @@ const detail =
         {/* ── Mode tabs ── */}
         <div style={{
           display: "flex", gap: 0, marginBottom: 20, marginTop: 4,
-          borderRadius: 10, overflow: "hidden", border: "1px solid var(--pmt-border)",
+          borderRadius: 10, overflow: "hidden", border: "1px solid var(--bms-border)",
         }}>
           <button
             onClick={() => setMode("regular")}
             style={{
               flex: 1, padding: "9px 0", border: "none", cursor: "pointer",
               fontSize: 13, fontWeight: 600, transition: "all 0.15s",
-              background: mode === "regular" ? "#7c3aed" : "var(--pmt-surface-2)",
-              color:      mode === "regular" ? "#fff"    : "var(--pmt-text-2)",
-              borderRight: "1px solid var(--pmt-border)",
+              background: mode === "regular" ? "#7c3aed" : "var(--bms-surface-2)",
+              color:      mode === "regular" ? "#fff"    : "var(--bms-text-2)",
+              borderRight: "1px solid var(--bms-border)",
             }}
           >
             <WalletOutlined style={{ marginRight: 6 }} />
@@ -1112,7 +1112,7 @@ const detail =
             style={{
               flex: 1, padding: "9px 0", border: "none", cursor: "pointer",
               fontSize: 13, fontWeight: 600, transition: "all 0.15s",
-              background: mode === "emergency" ? "#dc2626" : "var(--pmt-surface-2)",
+              background: mode === "emergency" ? "#dc2626" : "var(--bms-surface-2)",
               color:      mode === "emergency" ? "#fff"    : "#dc2626",
             }}
           >
@@ -1174,7 +1174,7 @@ const detail =
                   <Text style={{ fontSize: 12 }}>Balance — {selectedBalance.leave_type_name}</Text>
                 </div>
                 <div style={{ display: "flex", gap: 14 }}>
-                  <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
+                  <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>
                     Used <b>{selectedBalance.used_days}</b> / <b>{selectedBalance.total_days}</b>
                   </Text>
                   <Text style={{ fontSize: 12, fontWeight: 700,
@@ -1214,8 +1214,8 @@ const detail =
             message={<Text style={{ fontSize: 13, fontWeight: 600, color: "#991b1b" }}>Emergency Leave</Text>}
             description={
               <Text style={{ fontSize: 12, color: "#7f1d1d" }}>
-                For unforeseen medical or personal crises. HR will review your request immediately.
-                A medical certificate speeds up approval. Balance deduction is at HR's discretion.
+                For unforeseen medical or personal crises. Your Reporting Manager will review your request immediately.
+                Proof speeds up approval.
               </Text>
             }
           />
@@ -1236,7 +1236,7 @@ const detail =
               name="medical_certificate"
               label={
                 <span>
-                  Medical Certificate
+                  Proof
                   <Text style={{ fontSize: 11, color: "#9ca3af", marginLeft: 6, fontWeight: 400 }}>
                     optional but recommended
                   </Text>
@@ -1265,7 +1265,7 @@ const detail =
               <Button type="primary" htmlType="submit" loading={emergencyMutation.isPending}
                 icon={<MedicineBoxOutlined />}
                 style={{ background: "#dc2626", borderColor: "#dc2626" }}>
-                Submit Emergency Leave
+                Request Emergency Leave
               </Button>
             </div>
           </Form>
@@ -1390,8 +1390,8 @@ function ViewLeavesModal({
   const TAB_STYLE = (active: boolean, color: string) => ({
     flex: 1, padding: "9px 0", border: "none", cursor: "pointer",
     fontSize: 12, fontWeight: 600, transition: "all 0.15s",
-    background: active ? color : "var(--pmt-surface-2)",
-    color: active ? "#fff" : "var(--pmt-text-2)",
+    background: active ? color : "var(--bms-surface-2)",
+    color: active ? "#fff" : "var(--bms-text-2)",
   });
 
   return (
@@ -1406,7 +1406,7 @@ function ViewLeavesModal({
       onCancel={onClose}
       footer={
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
+          <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>
             Balances assigned by HR · history filtered by year
           </Text>
           <Button
@@ -1423,10 +1423,10 @@ function ViewLeavesModal({
     >
       <div style={{
         display: "flex", gap: 0, marginBottom: 16,
-        borderRadius: 10, overflow: "hidden", border: "1px solid var(--pmt-border)",
+        borderRadius: 10, overflow: "hidden", border: "1px solid var(--bms-border)",
       }}>
         <button onClick={() => setActiveTab("policy")}
-          style={{ ...TAB_STYLE(activeTab === "policy", "#7c3aed"), borderRight: "1px solid var(--pmt-border)" }}>
+          style={{ ...TAB_STYLE(activeTab === "policy", "#7c3aed"), borderRight: "1px solid var(--bms-border)" }}>
           <FileProtectOutlined style={{ marginRight: 6 }} />Leave Policy
         </button>
         <button onClick={() => setActiveTab("history")} style={TAB_STYLE(activeTab === "history", "#0891b2")}>
@@ -1466,7 +1466,7 @@ function ViewLeavesModal({
                           <WalletOutlined style={{ color: b.leave_type_color, fontSize: 16 }} />
                         </div>
                         <div>
-                          <Text style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)", display: "block" }}>
+                          <Text style={{ fontSize: 14, fontWeight: 600, color: "var(--bms-text)", display: "block" }}>
                             {b.leave_type_name}
                           </Text>
                           <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 2 }}>
@@ -1477,7 +1477,7 @@ function ViewLeavesModal({
                             }}>
                               {b.leave_type_code}
                             </Tag>
-                            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+                            <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
                               {b.is_paid ? "Paid" : "Unpaid"}
                             </Text>
                           </div>
@@ -1485,13 +1485,13 @@ function ViewLeavesModal({
                       </div>
                       <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                         {[
-                          { label: "Total",     value: b.total_days,     color: "var(--pmt-text-2)" },
+                          { label: "Total",     value: b.total_days,     color: "var(--bms-text-2)" },
                           { label: "Used",      value: b.used_days,      color: "#f59e0b" },
                           { label: "Remaining", value: b.remaining_days, color: overUsed ? "#ef4444" : "#059669" },
                         ].map(({ label, value, color }) => (
                           <div key={label} style={{ textAlign: "center" }}>
                             <div style={{ fontSize: 16, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
-                            <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{label}</div>
+                            <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>{label}</div>
                           </div>
                         ))}
                       </div>
@@ -1505,7 +1505,7 @@ function ViewLeavesModal({
                         showInfo={false} size="small" style={{ marginBottom: 2 }}
                       />
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <Text style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>
+                        <Text style={{ fontSize: 10, color: "var(--bms-text-3)" }}>
                           {b.used_days} used of {b.total_days} allocated
                         </Text>
                         {overUsed && (
@@ -1532,28 +1532,6 @@ function ViewLeavesModal({
                 );
               })}
 
-              <div style={{
-                padding: "14px 16px", borderRadius: 12,
-                border: "1px dashed #fca5a5", background: "#fef2f2",
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10,
-                    background: "#fca5a5", display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <MedicineBoxOutlined style={{ color: "#dc2626", fontSize: 16 }} />
-                  </div>
-                  <div>
-                    <Text style={{ fontSize: 14, fontWeight: 600, color: "#dc2626", display: "block" }}>Emergency Leave</Text>
-                    <Text style={{ fontSize: 11, color: "#9ca3af" }}>Subject to HR approval · may require medical certificate</Text>
-                  </div>
-                </div>
-                <Button size="small" onClick={() => { onClose(); onApplyLeave("__EMERGENCY__"); }}
-                  style={{ borderRadius: 20, fontSize: 12, color: "#dc2626", borderColor: "#dc2626", background: "transparent" }}>
-                  Apply Emergency
-                </Button>
-              </div>
             </div>
           )}
         </>
@@ -1564,9 +1542,9 @@ function ViewLeavesModal({
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             marginBottom: 14, padding: "10px 14px", borderRadius: 10,
-            background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)",
+            background: "var(--bms-surface-2)", border: "1px solid var(--bms-border)",
           }}>
-            <Text style={{ fontSize: 13, fontWeight: 600, color: "var(--pmt-text)" }}>Leave History</Text>
+            <Text style={{ fontSize: 13, fontWeight: 600, color: "var(--bms-text)" }}>Leave History</Text>
             <Select value={selectedYear} onChange={(v) => setSelectedYear(v)}
               options={yearOptions} size="small" style={{ width: 100 }} />
           </div>
@@ -1593,7 +1571,7 @@ function ViewLeavesModal({
                       borderRadius: 10, background: color + "12", border: `1px solid ${color}30`,
                     }}>
                       <div style={{ fontSize: 20, fontWeight: 700, color }}>{count}</div>
-                      <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{status}</div>
+                      <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>{status}</div>
                     </div>
                   );
                 })}
@@ -1605,7 +1583,7 @@ function ViewLeavesModal({
                   return (
                     <div key={r.id} style={{
                       padding: "12px 14px", borderRadius: 10,
-                      border: "1px solid var(--pmt-border)", background: "var(--pmt-surface-2)",
+                      border: "1px solid var(--bms-border)", background: "var(--bms-surface-2)",
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1613,7 +1591,7 @@ function ViewLeavesModal({
                             width: 8, height: 8, borderRadius: "50%",
                             background: r.leave_type_color ?? "#1677ff", flexShrink: 0, marginTop: 2,
                           }} />
-                          <Text style={{ fontSize: 13, fontWeight: 600, color: "var(--pmt-text)" }}>
+                          <Text style={{ fontSize: 13, fontWeight: 600, color: "var(--bms-text)" }}>
                             {r.leave_type_name ?? r.leave_type}
                           </Text>
                         </div>
@@ -1628,15 +1606,15 @@ function ViewLeavesModal({
 
                       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                         <div>
-                          <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>From</div>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--pmt-text)" }}>{r.start_date}</div>
+                          <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>From</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--bms-text)" }}>{r.start_date}</div>
                         </div>
                         <div>
-                          <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>To</div>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--pmt-text)" }}>{r.end_date}</div>
+                          <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>To</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--bms-text)" }}>{r.end_date}</div>
                         </div>
                         <div>
-                          <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>Days</div>
+                          <div style={{ fontSize: 10, color: "var(--bms-text-3)" }}>Days</div>
                           <div style={{ fontSize: 12, fontWeight: 700, color: "#1677ff" }}>{r.days_count}d</div>
                         </div>
                       </div>
@@ -1644,8 +1622,8 @@ function ViewLeavesModal({
                       {r.reason && (
                         <div style={{
                           marginTop: 8, padding: "6px 10px", borderRadius: 6,
-                          background: "var(--pmt-surface)", border: "1px solid var(--pmt-border)",
-                          fontSize: 11, color: "var(--pmt-text-2)",
+                          background: "var(--bms-surface)", border: "1px solid var(--bms-border)",
+                          fontSize: 11, color: "var(--bms-text-2)",
                         }}>
                           {r.reason}
                         </div>
@@ -1729,7 +1707,7 @@ function AttendanceWidget({
 
   return (
     <Widget title="Attendance" icon={<CalendarOutlined />} iconColor="#059669"
-      bgColor="var(--pmt-surface-2)" borderColor="var(--pmt-border)" fill className="emp-att-widget-card">
+      bgColor="var(--bms-surface-2)" borderColor="var(--bms-border)" fill className="emp-att-widget-card">
 
       <div className="emp-att-widget">
         {/* Today */}
@@ -1896,7 +1874,7 @@ function AttendanceWidget({
         {breaks.length > 0 && (
           <>
             <Divider style={{ margin: "10px 0" }} />
-            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 6 }}>Today&apos;s breaks</Text>
+            <Text style={{ fontSize: 11, color: "var(--bms-text-3)", display: "block", marginBottom: 6 }}>Today&apos;s breaks</Text>
             <div className="emp-att-widget__breaks">
               {breaks.map((b) => (
                 <div key={b.id} className="emp-att-widget__break-row" style={{ borderColor: `${BREAK_COLORS[b.break_type] ?? "#6b7280"}33`, background: `${BREAK_COLORS[b.break_type] ?? "#6b7280"}12` }}>
@@ -1913,7 +1891,7 @@ function AttendanceWidget({
         <div className="emp-att-widget__month-block">
         <Divider style={{ margin: "12px 0 10px" }} />
         <div className="emp-att-widget__month-head">
-          <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>This month</Text>
+          <Text style={{ fontSize: 11, color: "var(--bms-text-3)" }}>This month</Text>
           <button type="button" className="emp-att-widget__month-link" onClick={onViewCalendar}>
             Full calendar <RightOutlined />
           </button>
@@ -1926,7 +1904,7 @@ function AttendanceWidget({
           ].map(({ label, value, color }) => (
             <div key={label} className="emp-att-widget__month-stat" style={{ borderColor: `${color}33`, background: `${color}10` }}>
               <div style={{ fontSize: 20, fontWeight: 700, color }}>{value}</div>
-              <div style={{ fontSize: 10, color: "var(--pmt-text-3)", fontWeight: 500 }}>{label}</div>
+              <div style={{ fontSize: 10, color: "var(--bms-text-3)", fontWeight: 500 }}>{label}</div>
             </div>
           ))}
         </div>
@@ -1956,7 +1934,7 @@ function LeaveWidget({
         <div style={{ display: "flex", gap: 8 }}>
           <Button
             size="small" icon={<InfoCircleOutlined />} onClick={onViewLeaves}
-            style={{ borderRadius: 20, fontSize: 12, color: "#7c3aed", borderColor: "#ddd6fe", background: "var(--pmt-surface-2)" }}
+            style={{ borderRadius: 20, fontSize: 12, color: "#7c3aed", borderColor: "#ddd6fe", background: "var(--bms-surface-2)" }}
           >
             View Leaves
           </Button>
@@ -1971,7 +1949,7 @@ function LeaveWidget({
     >
       {balances.length > 0 ? (
         <div style={{ marginBottom: 14 }}>
-          <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 8 }}>
+          <Text style={{ fontSize: 11, color: "var(--bms-text-3)", display: "block", marginBottom: 8 }}>
             Leave Balance — {new Date().getFullYear()}
           </Text>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1979,7 +1957,7 @@ function LeaveWidget({
               <div key={b.leave_type_code} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: b.leave_type_color, flexShrink: 0 }} />
                 <Text style={{ fontSize: 12, flex: 1 }}>{b.leave_type_name}</Text>
-                <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>{b.used_days}/{b.total_days} used</Text>
+                <Text style={{ fontSize: 12, color: "var(--bms-text-3)" }}>{b.used_days}/{b.total_days} used</Text>
                 <div style={{ width: 60 }}>
                   <Progress
                     percent={b.total_days > 0 ? Math.round((b.used_days / b.total_days) * 100) : 0}
@@ -1996,13 +1974,13 @@ function LeaveWidget({
           </div>
         </div>
       ) : (
-        <Text style={{ fontSize: 12, color: "var(--pmt-text-3)", display: "block", marginBottom: 14 }}>
+        <Text style={{ fontSize: 12, color: "var(--bms-text-3)", display: "block", marginBottom: 14 }}>
           No leave balance configured. Contact HR.
         </Text>
       )}
 
       <Divider style={{ margin: "10px 0" }} />
-      <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 8 }}>Recent Requests</Text>
+      <Text style={{ fontSize: 11, color: "var(--bms-text-3)", display: "block", marginBottom: 8 }}>Recent Requests</Text>
       {requests.length === 0 ? (
         <div style={{ textAlign: "center", padding: "12px 0" }}>
           <Text style={{ color: "#9ca3af", fontSize: 12 }}>No leave requests</Text>
@@ -2013,13 +1991,13 @@ function LeaveWidget({
             <div key={r.id} style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               padding: "8px 10px", borderRadius: 8,
-              background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)",
+              background: "var(--bms-surface-2)", border: "1px solid var(--bms-border)",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: r.leave_type_color ?? "#1677ff", flexShrink: 0 }} />
                 <div>
                   <Text style={{ fontSize: 12, fontWeight: 500 }}>{r.leave_type_name ?? r.leave_type}</Text>
-                  <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
+                  <div style={{ fontSize: 11, color: "var(--bms-text-3)" }}>
                     {r.start_date} → {r.end_date}
                     <span style={{ marginLeft: 6 }}>({r.days_count}d)</span>
                   </div>
@@ -2047,7 +2025,7 @@ function PayslipWidget({ records, fy }: { records: EmpDashboard["payslips"]; fy:
   const downloadPayslip = async (id: string, monthName: string, year: number) => {
     setDownloading(id);
     try {
-      const res = await fetch(`/pmt/api/v1/payroll/my/${id}/payslip-pdf/`, { headers: { Authorization: `Bearer ${localStorage.getItem("kc_access_token") ?? ""}` } });
+      const res = await fetch(`/bms/api/v1/payroll/my/${id}/payslip-pdf/`, { headers: { Authorization: `Bearer ${localStorage.getItem("kc_access_token") ?? ""}` } });
       if (!res.ok) { message.error("Failed to generate payslip"); return; }
       const blob = await res.blob();
       const url  = URL.createObjectURL(blob);
@@ -2060,7 +2038,7 @@ function PayslipWidget({ records, fy }: { records: EmpDashboard["payslips"]; fy:
   return (
     <Widget title="My Payslips" icon={<WalletOutlined />} iconColor="#db2777"
       extra={<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <Text style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>{fy}</Text>
+        <Text style={{ fontSize: 12, color: "var(--bms-text-2)" }}>{fy}</Text>
         <Tooltip title={amountVisible ? "Hide amounts" : "Show amounts"}>
           <Button type="text" size="small" icon={amountVisible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
             onClick={() => setAmountVisible((v) => !v)} style={{ color: "#9ca3af", padding: "0 4px" }} />
@@ -2071,17 +2049,17 @@ function PayslipWidget({ records, fy }: { records: EmpDashboard["payslips"]; fy:
           {records.map((r) => {
             const ss = PAYSLIP_STYLE[r.status] ?? PAYSLIP_STYLE.DRAFT;
             return (
-              <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 10, border: "1px solid var(--pmt-border)", background: "var(--pmt-surface-2)" }}>
+              <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 10, border: "1px solid var(--bms-border)", background: "var(--bms-surface-2)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 38, height: 38, borderRadius: 8, background: ss.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <FilePdfOutlined style={{ fontSize: 18, color: ss.color }} />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "var(--pmt-text)" }}>{r.month_name} {r.year}</div>
-                    <div style={{ fontSize: 12, color: "var(--pmt-text-2)" }}>Net:{" "}
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "var(--bms-text)" }}>{r.month_name} {r.year}</div>
+                    <div style={{ fontSize: 12, color: "var(--bms-text-2)" }}>Net:{" "}
                       {amountVisible
                         ? <span style={{ fontWeight: 700, color: "#1677ff" }}>₹{r.net_salary.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
-                        : <span style={{ fontWeight: 700, color: "var(--pmt-text-3)", letterSpacing: 2 }}>••••••</span>}
+                        : <span style={{ fontWeight: 700, color: "var(--bms-text-3)", letterSpacing: 2 }}>••••••</span>}
                     </div>
                   </div>
                 </div>
@@ -2115,9 +2093,9 @@ function ReportingChain({ managerName, managerCode, managerDesig, managerAvatar,
       <div style={{ display: "flex", gap: 0 }}>
         <div style={{ width: 36, display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
           <div style={{ width: 10, height: 10, borderRadius: "50%", background: accent, border: "2px solid #fff", boxShadow: `0 0 0 2px ${accent}40`, marginTop: 18, flexShrink: 0, zIndex: 1 }} />
-          {!isLast && <div style={{ flex: 1, width: 2, background: `linear-gradient(to bottom, ${accent}60, var(--pmt-border))`, minHeight: 24 }} />}
+          {!isLast && <div style={{ flex: 1, width: 2, background: `linear-gradient(to bottom, ${accent}60, var(--bms-border))`, minHeight: 24 }} />}
         </div>
-        <div onClick={() => onNavigate(id)} style={{ flex: 1, marginLeft: 8, marginBottom: isLast ? 0 : 8, borderRadius: 10, overflow: "hidden", border: "1px solid var(--pmt-border)", background: "var(--pmt-surface)", cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", transition: "box-shadow 0.15s, transform 0.15s" }}
+        <div onClick={() => onNavigate(id)} style={{ flex: 1, marginLeft: 8, marginBottom: isLast ? 0 : 8, borderRadius: 10, overflow: "hidden", border: "1px solid var(--bms-border)", background: "var(--bms-surface)", cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", transition: "box-shadow 0.15s, transform 0.15s" }}
           onMouseEnter={(e) => { const el = e.currentTarget as HTMLElement; el.style.boxShadow = "0 4px 14px rgba(0,0,0,0.12)"; el.style.transform = "translateX(2px)"; }}
           onMouseLeave={(e)  => { const el = e.currentTarget as HTMLElement; el.style.boxShadow = "0 1px 4px rgba(0,0,0,0.06)"; el.style.transform = ""; }}>
           <div style={{ height: 3, background: `linear-gradient(90deg, ${accent}, ${accent}44)` }} />
@@ -2126,17 +2104,17 @@ function ReportingChain({ managerName, managerCode, managerDesig, managerAvatar,
               : <div style={{ width: 34, height: 34, borderRadius: "50%", background: col, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 12, boxShadow: `0 2px 6px ${col}55` }}>{rpInit(name)}</div>}
             <div style={{ flex: 1, minWidth: 0 }}>
               <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5, color: accent, textTransform: "uppercase" }}>{label}</span>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--pmt-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
-              {desig && <div style={{ fontSize: 10, color: "var(--pmt-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{desig}</div>}
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--bms-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
+              {desig && <div style={{ fontSize: 10, color: "var(--bms-text-2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{desig}</div>}
             </div>
-            {code && <div style={{ fontSize: 9, color: "var(--pmt-text-3)", fontFamily: "monospace", background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)", borderRadius: 5, padding: "2px 6px", flexShrink: 0 }}>{code}</div>}
+            {code && <div style={{ fontSize: 9, color: "var(--bms-text-3)", fontFamily: "monospace", background: "var(--bms-surface-2)", border: "1px solid var(--bms-border)", borderRadius: 5, padding: "2px 6px", flexShrink: 0 }}>{code}</div>}
           </div>
         </div>
       </div>
     );
   }
   return (
-    <div style={{ background: "var(--pmt-surface)", backgroundImage: "radial-gradient(circle, var(--pmt-border) 1px, transparent 1px)", backgroundSize: "18px 18px", borderRadius: 10, border: "1px solid var(--pmt-border)", padding: "12px 12px 12px 6px" }}>
+    <div style={{ background: "var(--bms-surface)", backgroundImage: "radial-gradient(circle, var(--bms-border) 1px, transparent 1px)", backgroundSize: "18px 18px", borderRadius: 10, border: "1px solid var(--bms-border)", padding: "12px 12px 12px 6px" }}>
       <ChainRow name={managerName} code={managerCode} desig={managerDesig} avatar={managerAvatar} id={managerId} accent="#7c3aed" label="Reports To" />
       <ChainRow name={selfName}    code={selfCode}    desig={selfDesig}    avatar={selfAvatar}    id={selfId}    accent="#2563eb" label="You" isLast />
     </div>
@@ -2269,10 +2247,10 @@ export default function EmployeeDashboardPage() {
       </Modal>
 
       <div className="emp-dashboard__greeting">
-        <Title level={4} style={{ margin: 0, color: "var(--pmt-text)", fontWeight: 700 }}>
+        <Title level={4} style={{ margin: 0, color: "var(--bms-text)", fontWeight: 700 }}>
           {getGreeting(now.getHours())} <span style={{ color: "#f97316" }}>{profile.full_name.trim().split(/\s+/)[0]},</span>
         </Title>
-        <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>{dayjs(now).format("ddd DD MMM, hh:mm A")}</Text>
+        <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>{dayjs(now).format("ddd DD MMM, hh:mm A")}</Text>
       </div>
 
       <Row gutter={[16, 16]} align="top" className="emp-dashboard__layout">
@@ -2282,7 +2260,7 @@ export default function EmployeeDashboardPage() {
               {profile.profile_picture_url
                 ? <Avatar size={72} src={profile.profile_picture_url} />
                 : <Avatar size={72} style={{ background: "#1677ff", fontSize: 24, fontWeight: 700 }}>{avatarInitials(profile.full_name)}</Avatar>}
-              <Title level={5} style={{ margin: "4px 0 0", textAlign: "center", color: "var(--pmt-text)" }}>{profile.full_name}</Title>
+              <Title level={5} style={{ margin: "4px 0 0", textAlign: "center", color: "var(--bms-text)" }}>{profile.full_name}</Title>
               <Text className="emp-profile__code">{profile.employee_code}</Text>
               {profile.keycloak_group && <Tag color="geekblue" style={{ marginTop: 4, borderRadius: 20, fontSize: 11 }}>{profile.keycloak_group}</Tag>}
             </div>

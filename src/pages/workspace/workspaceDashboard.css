@@ -1,17 +1,17 @@
 /* Workspace Dashboard - Modern Polished UI */
 
 :root {
-  --dashboard-primary: var(--pmt-primary);
-  --dashboard-primary-dark: var(--pmt-primary-hover);
+  --dashboard-primary: var(--bms-primary);
+  --dashboard-primary-dark: var(--bms-primary-hover);
   --dashboard-purple: #8B5CF6;
-  --dashboard-amber: var(--pmt-warning);
-  --dashboard-red: var(--pmt-danger);
-  --dashboard-green: var(--pmt-success);
-  --dashboard-bg: var(--pmt-bg);
-  --dashboard-card: var(--pmt-surface);
-  --dashboard-text: var(--pmt-text);
-  --dashboard-text-light: var(--pmt-text-2);
-  --dashboard-border: var(--pmt-border);
+  --dashboard-amber: var(--bms-warning);
+  --dashboard-red: var(--bms-danger);
+  --dashboard-green: var(--bms-success);
+  --dashboard-bg: var(--bms-bg);
+  --dashboard-card: var(--bms-surface);
+  --dashboard-text: var(--bms-text);
+  --dashboard-text-light: var(--bms-text-2);
+  --dashboard-border: var(--bms-border);
   --dashboard-shadow: var(--shadow-sm);
   --dashboard-shadow-lg: var(--shadow-md);
 }
@@ -91,7 +91,7 @@
 }
 
 .dashboard-kpi-value {
-  font-family: var(--pmt-font), -apple-system, sans-serif;
+  font-family: var(--bms-font), -apple-system, sans-serif;
   font-weight: 800;
   font-size: 36px;
   letter-spacing: -1.5px;
@@ -136,7 +136,7 @@
 .dashboard-card .ant-card-head {
   border-bottom: 1px solid var(--dashboard-border);
   padding: 16px 24px;
-  background: var(--pmt-surface-2);
+  background: var(--bms-surface-2);
 }
 
 .dashboard-card .ant-card-head-title {
@@ -200,7 +200,7 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--pmt-surface-2);
+  background: var(--bms-surface-2);
   border-radius: 12px;
   border: 1px solid var(--dashboard-border);
   transition: all 0.3s ease;
@@ -210,19 +210,19 @@
 .dashboard-schedule-item:hover {
   transform: translateX(4px);
   box-shadow: var(--dashboard-shadow);
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   border-color: var(--dashboard-primary);
 }
 
 .dashboard-schedule-time {
-  font-family: var(--pmt-font), monospace;
+  font-family: var(--bms-font), monospace;
   font-size: 13px;
   color: var(--dashboard-text);
   font-weight: 700;
   width: 70px;
   flex-shrink: 0;
   padding: 8px 12px;
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   border-radius: 8px;
   text-align: center;
   border: 1px solid var(--dashboard-border);
@@ -282,7 +282,7 @@
 }
 
 .dashboard-deadline-item:hover {
-  background: var(--pmt-surface-2);
+  background: var(--bms-surface-2);
   border-bottom-color: transparent;
 }
 

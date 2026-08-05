@@ -59,7 +59,7 @@ export default function DocumentStatusSelect({
       className="fin-status-select"
       popupClassName="fin-status-select-dropdown"
       popupMatchSelectWidth={false}
-      suffixIcon={<DownOutlined style={{ fontSize: 10, color: "var(--pmt-text-3)" }} />}
+      suffixIcon={<DownOutlined style={{ fontSize: 10, color: "var(--bms-text-3)" }} />}
       options={options.map((s) => ({
         value: s,
         label: formatDocumentStatusLabel(s),

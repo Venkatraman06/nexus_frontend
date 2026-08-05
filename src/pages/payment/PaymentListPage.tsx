@@ -13,7 +13,8 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import { paymentsApi, invoicesApi, Payment, PaymentMode } from "@/services/payment";
 import { get } from "@/services/api";
-import AddClientModal from "@/components/clients/AddClientModal";
+import RecordPaymentModal from "@/components/payment/RecordPaymentModal";
+import { renderClientDropdown, renderProjectDropdown } from "@/components/common/DropdownRenderers";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -36,7 +37,8 @@ export default function PaymentListPage() {
   const qc = useQueryClient();
   const [form] = Form.useForm();
   const [allocForm] = Form.useForm();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [recordModalOpen, setRecordModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [allocOpen, setAllocOpen] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [editing, setEditing] = useState<Payment | null>(null);
@@ -44,7 +46,6 @@ export default function PaymentListPage() {
   const [modeFilter, setModeFilter] = useState<string | undefined>();
   const [dateFrom, setDateFrom] = useState<string | undefined>();
   const [dateTo, setDateTo] = useState<string | undefined>();
-  const [addClientOpen, setAddClientOpen] = useState(false);
 
   const params: Record<string, unknown> = {};
   if (search) params.search = search;
@@ -57,44 +58,53 @@ export default function PaymentListPage() {
     queryFn: () => paymentsApi.list(params),
   });
 
-  const { data: clientsData } = useQuery({
+  const { data: clientsData = [] } = useQuery({
     queryKey: ["clients-dropdown"],
     queryFn: () => get<{ id: string; name: string }[]>("/clients/dropdown/"),
   });
 
-  const { data: projectsData } = useQuery({
+  const { data: projectsData = [] } = useQuery({
     queryKey: ["projects-dropdown"],
     queryFn: () => get<{ id: string; name: string; code: string }[]>("/projects/dropdown/"),
   });
 
-  // Invoices for allocation modal (filtered by client)
+  // Invoices for standalone allocation modal (filtered by client)
   const { data: invoicesData } = useQuery({
     queryKey: ["payment-invoices-for-alloc", selectedPayment?.client],
     queryFn: () => invoicesApi.list({ client: selectedPayment?.client }),
     enabled: !!selectedPayment?.client,
   });
 
-  const createMut = useMutation({
-    mutationFn: paymentsApi.create,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["payment-payments"] }); message.success("Payment recorded"); setModalOpen(false); form.resetFields(); },
-    onError: (err: any) => message.error(err?.response?.data?.detail || "Failed to record payment"),
-  });
-
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Payment> }) => paymentsApi.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["payment-payments"] }); message.success("Payment updated"); setModalOpen(false); form.resetFields(); setEditing(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["payment-payments"] });
+      message.success("Payment updated");
+      setEditModalOpen(false);
+      form.resetFields();
+      setEditing(null);
+    },
     onError: () => message.error("Failed to update payment"),
   });
 
   const deleteMut = useMutation({
     mutationFn: paymentsApi.delete,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["payment-payments"] }); message.success("Payment deleted"); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["payment-payments"] });
+      message.success("Payment deleted");
+    },
     onError: () => message.error("Failed to delete payment"),
   });
 
   const allocateMut = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) => paymentsApi.allocate(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["payment-payments"] }); message.success("Allocated successfully"); setAllocOpen(false); allocForm.resetFields(); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["payment-payments"] });
+      qc.invalidateQueries({ queryKey: ["payment-invoices"] });
+      message.success("Allocated successfully");
+      setAllocOpen(false);
+      allocForm.resetFields();
+    },
     onError: (err: any) => message.error(err?.response?.data?.detail || "Allocation failed"),
   });
 
@@ -102,22 +112,34 @@ export default function PaymentListPage() {
   const totalReceived = rows.reduce((sum, r) => sum + Number(r.payment_amount), 0);
   const totalUnallocated = rows.reduce((sum, r) => sum + Number(r.unallocated_amount), 0);
 
-  const openCreate = () => { setEditing(null); form.resetFields(); setModalOpen(true); };
+  const openCreate = () => {
+    setRecordModalOpen(true);
+  };
+
   const openEdit = (r: Payment) => {
     setEditing(r);
     form.setFieldsValue({
-      client: r.client, project: r.project, payment_mode: r.payment_mode,
-      payment_amount: r.payment_amount, bank_reference: r.bank_reference, remarks: r.remarks,
+      client: r.client,
+      project: r.project,
+      payment_mode: r.payment_mode,
+      payment_amount: r.payment_amount,
+      bank_reference: r.bank_reference,
+      remarks: r.remarks,
       payment_date: r.payment_date ? dayjs(r.payment_date) : null,
     });
-    setModalOpen(true);
+    setEditModalOpen(true);
   };
-  const openAllocate = (p: Payment) => { setSelectedPayment(p); allocForm.resetFields(); setAllocOpen(true); };
 
-  const handleSubmit = (vals: any) => {
+  const openAllocate = (p: Payment) => {
+    setSelectedPayment(p);
+    allocForm.resetFields();
+    setAllocOpen(true);
+  };
+
+  const handleEditSubmit = (vals: any) => {
+    if (!editing) return;
     const payload = { ...vals, payment_date: vals.payment_date?.format("YYYY-MM-DD") };
-    if (editing) updateMut.mutate({ id: editing.id, data: payload });
-    else         createMut.mutate(payload);
+    updateMut.mutate({ id: editing.id, data: payload });
   };
 
   const handleAllocate = (vals: any) => {
@@ -140,7 +162,7 @@ export default function PaymentListPage() {
     { title: "Client",  dataIndex: "client_name",  ellipsis: true },
     { title: "Project", dataIndex: "project_name", ellipsis: true, render: (v) => v ?? "—" },
     {
-      title: "Amount",
+      title: "Amount Received",
       dataIndex: "payment_amount",
       align: "right",
       render: (v) => <strong style={{ color: "#52c41a" }}>{fmtCurrency(Number(v))}</strong>,
@@ -163,11 +185,11 @@ export default function PaymentListPage() {
       render: (v) => fmtCurrency(Number(v)),
     },
     {
-      title: "Unallocated",
+      title: "Unallocated Credit",
       dataIndex: "unallocated_amount",
       align: "right",
       render: (v) => (
-        <Text style={{ color: Number(v) > 0 ? "#faad14" : "#52c41a" }}>
+        <Text style={{ color: Number(v) > 0 ? "#faad14" : "#52c41a", fontWeight: Number(v) > 0 ? 600 : 400 }}>
           {fmtCurrency(Number(v))}
         </Text>
       ),
@@ -178,7 +200,7 @@ export default function PaymentListPage() {
       render: (_, r) => (
         <Space>
           {r.unallocated_amount > 0 && (
-            <Tooltip title="Allocate to Invoice">
+            <Tooltip title="Allocate Remaining Credit to Invoice">
               <Button size="small" icon={<LinkOutlined />} onClick={() => openAllocate(r)} type="dashed" />
             </Tooltip>
           )}
@@ -203,7 +225,9 @@ export default function PaymentListPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <Title level={3} style={{ margin: 0 }}>Payment Collections</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Record Payment</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+          Record Payment & Map Invoices
+        </Button>
       </div>
 
       {/* Summary Strip */}
@@ -216,13 +240,13 @@ export default function PaymentListPage() {
         </Col>
         <Col xs={12} sm={8}>
           <Card size="small">
-            <div style={{ fontSize: 11, color: "#999" }}>Unallocated</div>
+            <div style={{ fontSize: 11, color: "#999" }}>Total Unallocated Credit</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: "#faad14" }}>{fmtCurrency(totalUnallocated)}</div>
           </Card>
         </Col>
         <Col xs={12} sm={8}>
           <Card size="small">
-            <div style={{ fontSize: 11, color: "#999" }}>Total Payments</div>
+            <div style={{ fontSize: 11, color: "#999" }}>Total Payment Collections</div>
             <div style={{ fontSize: 18, fontWeight: 700 }}>{rows.length}</div>
           </Card>
         </Col>
@@ -241,7 +265,7 @@ export default function PaymentListPage() {
           />
           <Select placeholder="Payment mode" value={modeFilter} onChange={setModeFilter} style={{ width: 160 }} allowClear>
             {["BANK_TRANSFER", "UPI", "CHEQUE", "CASH", "ONLINE_GATEWAY", "NEFT", "RTGS"].map((m) => (
-              <Option key={m} value={m}>{m.replace("_", " ")}</Option>
+              <Option key={m} value={m}>{m.replace(/_/g, " ")}</Option>
             ))}
           </Select>
           <DatePicker placeholder="From date" onChange={(d) => setDateFrom(d?.format("YYYY-MM-DD"))} />
@@ -258,47 +282,44 @@ export default function PaymentListPage() {
         pagination={{ pageSize: 20, showSizeChanger: true }}
       />
 
-      {/* Record Payment Modal */}
+      {/* Enhanced Record Payment & Invoice Mapping Modal */}
+      <RecordPaymentModal
+        open={recordModalOpen}
+        onClose={() => setRecordModalOpen(false)}
+        onSuccess={() => {
+          qc.invalidateQueries({ queryKey: ["payment-payments"] });
+        }}
+        clientsData={clientsData}
+        projectsData={projectsData}
+      />
+
+      {/* Edit Payment Modal */}
       <Modal
-        open={modalOpen}
-        title={editing ? "Edit Payment" : "Record Payment Collection"}
-        onCancel={() => { setModalOpen(false); form.resetFields(); setEditing(null); }}
+        open={editModalOpen}
+        title="Edit Payment Collection"
+        onCancel={() => { setEditModalOpen(false); form.resetFields(); setEditing(null); }}
         onOk={() => form.submit()}
-        confirmLoading={createMut.isPending || updateMut.isPending}
+        confirmLoading={updateMut.isPending}
         width={640}
         destroyOnClose
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form form={form} layout="vertical" onFinish={handleEditSubmit}>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="client" label="Client" rules={[{ required: true }]}>
-                <Select
-                  placeholder="Select client"
-                  showSearch
-                  filterOption={(i, o) => String(o?.children ?? "").toLowerCase().includes(i.toLowerCase())}
-                  dropdownRender={(menu) => (
-                    <>
-                      {menu}
-                      <Divider style={{ margin: "4px 0" }} />
-                      <Button
-                        type="text"
-                        icon={<PlusOutlined />}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setAddClientOpen(true); }}
-                        style={{ width: "100%", textAlign: "left", paddingLeft: 12, height: 32 }}
-                      >
-                        + Add New Client
-                      </Button>
-                    </>
-                  )}
-                >
-                  {(clientsData as any[])?.map((c: any) => <Option key={c.id} value={c.id}>{c.name}</Option>)}
+                <Select placeholder="Select client" disabled>
+                  {clientsData.map((c) => (
+                    <Option key={c.id} value={c.id}>{c.name}</Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="project" label="Project">
-                <Select placeholder="Project (optional)" showSearch allowClear filterOption={(i, o) => String(o?.children ?? "").toLowerCase().includes(i.toLowerCase())}>
-                  {(projectsData as any[])?.map((p: any) => <Option key={p.id} value={p.id}>{p.code} — {p.name}</Option>)}
+                <Select placeholder="Project (optional)" showSearch allowClear>
+                  {projectsData.map((p) => (
+                    <Option key={p.id} value={p.id}>{p.code} — {p.name}</Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>
@@ -318,7 +339,7 @@ export default function PaymentListPage() {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="payment_mode" label="Payment Mode" rules={[{ required: true }]}>
-                <Select placeholder="How was it paid?">
+                <Select placeholder="Select mode">
                   {["BANK_TRANSFER", "UPI", "CHEQUE", "CASH", "ONLINE_GATEWAY", "NEFT", "RTGS"].map((m) => (
                     <Option key={m} value={m}>{m.replace(/_/g, " ")}</Option>
                   ))}
@@ -337,21 +358,21 @@ export default function PaymentListPage() {
         </Form>
       </Modal>
 
-      {/* Allocate to Invoice Modal */}
+      {/* Allocate Remaining Credit Modal */}
       <Modal
         open={allocOpen}
-        title={`Allocate Payment ${selectedPayment?.payment_reference}`}
+        title={`Allocate Credit (${selectedPayment?.payment_reference})`}
         onCancel={() => { setAllocOpen(false); allocForm.resetFields(); setSelectedPayment(null); }}
         onOk={() => allocForm.submit()}
         confirmLoading={allocateMut.isPending}
         destroyOnClose
       >
         <Form form={allocForm} layout="vertical" onFinish={handleAllocate}>
-          <Form.Item name="invoice" label="Invoice" rules={[{ required: true }]}>
+          <Form.Item name="invoice" label="Select Invoice" rules={[{ required: true }]}>
             <Select placeholder="Select invoice to allocate against" showSearch>
               {pendingInvoices.map((inv: any) => (
                 <Option key={inv.id} value={inv.id}>
-                  {inv.invoice_number} — {inv.client_name} — Pending: {fmtCurrency(inv.pending_amount)}
+                  {inv.invoice_number} — {inv.client_name} — Outstanding: {fmtCurrency(inv.pending_amount)}
                 </Option>
               ))}
             </Select>
@@ -361,24 +382,14 @@ export default function PaymentListPage() {
               min={0.01}
               max={selectedPayment?.unallocated_amount}
               style={{ width: "100%" }}
-              placeholder={`Available: ${fmtCurrency(selectedPayment?.unallocated_amount ?? 0)}`}
+              placeholder={`Available Unallocated Credit: ${fmtCurrency(selectedPayment?.unallocated_amount ?? 0)}`}
             />
           </Form.Item>
-          <Form.Item name="notes" label="Notes">
+          <Form.Item name="notes" label="Allocation Notes">
             <Input.TextArea rows={2} />
           </Form.Item>
         </Form>
       </Modal>
-
-      <AddClientModal
-        open={addClientOpen}
-        onClose={() => setAddClientOpen(false)}
-        onSuccess={(client) => {
-          qc.invalidateQueries({ queryKey: ["clients-dropdown"] });
-          form.setFieldValue("client", client.id);
-          setAddClientOpen(false);
-        }}
-      />
     </div>
   );
 }

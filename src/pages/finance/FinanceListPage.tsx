@@ -219,37 +219,37 @@ export default function FinanceListPage() {
       {/* ── Summary cards ────────────────────────────────────────────────── */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, var(--pmt-primary) 15%, var(--pmt-surface))", borderRadius: 10 }}>
+          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, var(--bms-primary) 15%, var(--bms-surface))", borderRadius: 10 }}>
             <Statistic
               title="Total Documents"
               value={total}
               prefix={<FileTextOutlined />}
-              valueStyle={{ color: "var(--pmt-primary)" }}
+              valueStyle={{ color: "var(--bms-primary)" }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, var(--pmt-warning) 15%, var(--pmt-surface))", borderRadius: 10 }}>
+          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, var(--bms-warning) 15%, var(--bms-surface))", borderRadius: 10 }}>
             <Statistic
               title="Draft"
               value={draftCount}
               prefix={<FileOutlined />}
-              valueStyle={{ color: "var(--pmt-warning)" }}
+              valueStyle={{ color: "var(--bms-warning)" }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, var(--pmt-success) 15%, var(--pmt-surface))", borderRadius: 10 }}>
+          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, var(--bms-success) 15%, var(--bms-surface))", borderRadius: 10 }}>
             <Statistic
               title="Paid"
               value={paidCount}
               prefix={<DollarOutlined />}
-              valueStyle={{ color: "var(--pmt-success)" }}
+              valueStyle={{ color: "var(--bms-success)" }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, #0958d9 15%, var(--pmt-surface))", borderRadius: 10 }}>
+          <Card size="small" bordered={false} style={{ background: "color-mix(in srgb, #0958d9 15%, var(--bms-surface))", borderRadius: 10 }}>
             <Statistic
               title="Total Value (INR)"
               value={totalValue}

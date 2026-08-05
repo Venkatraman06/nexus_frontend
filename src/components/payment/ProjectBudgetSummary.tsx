@@ -47,7 +47,7 @@ export default function ProjectBudgetSummary({
 
   if (compact) {
     return (
-      <div style={{ marginBottom: 12, padding: "10px 12px", background: "var(--pmt-surface-2)", borderRadius: 8, border: "1px solid var(--pmt-border)" }}>
+      <div style={{ marginBottom: 12, padding: "10px 12px", background: "var(--bms-surface-2)", borderRadius: 8, border: "1px solid var(--bms-border)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
           <Text strong style={{ fontSize: 12 }}>Project budget</Text>
           <Text strong>{fmt(budget)}</Text>
@@ -76,7 +76,7 @@ export default function ProjectBudgetSummary({
       <Row gutter={[16, 12]}>
         {rows.map((r) => (
           <Col xs={24} md={8} key={r.label}>
-            <div style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--pmt-border)", background: "var(--pmt-surface-2)" }}>
+            <div style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid var(--bms-border)", background: "var(--bms-surface-2)" }}>
               <Text style={{ fontSize: 12, fontWeight: 600 }}>{r.label}</Text>
               <div style={{ fontSize: 16, fontWeight: 700, color: r.color, margin: "4px 0" }}>{fmt(r.value)}</div>
               <Progress percent={pct(r.value, budget)} strokeColor={r.color} size="small" />

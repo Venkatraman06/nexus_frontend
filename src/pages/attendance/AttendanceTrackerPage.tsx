@@ -69,8 +69,8 @@ export default function AttendanceTrackerPage() {
   return (
     <div>
       <div style={{ marginBottom: 20 }}>
-        <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>Attendance</Title>
-        <Text style={{ color: "var(--pmt-text-2)", fontSize: 13 }}>
+        <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>Attendance</Title>
+        <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>
           View your monthly calendar or review team attendance by reporting line.
         </Text>
       </div>

@@ -41,6 +41,7 @@ import {
   getMaxOriginalEstimate,
   originalEstimateFormRules,
 } from "@/utils/ticketProjectConstraints";
+import { renderProjectDropdown } from "@/components/common/DropdownRenderers";
 
 dayjs.extend(relativeTime);
 const { Title, Text } = Typography;
@@ -128,7 +129,7 @@ function KanbanCard({ ticket, accentColor, onClick, onDragStart, onDragEnd, isDr
         </span>
         <PriorityBadge priority={ticket.priority} />
       </div>
-      <Text style={{ fontSize: 13, fontWeight: 500, display: "block", lineHeight: 1.4, marginBottom: 10, color: "var(--pmt-text, #111827)" }}>
+      <Text style={{ fontSize: 13, fontWeight: 500, display: "block", lineHeight: 1.4, marginBottom: 10, color: "var(--bms-text, #111827)" }}>
         {ticket.title}
       </Text>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6 }}>
@@ -172,7 +173,7 @@ function KanbanColumn({ state, tickets, onCardClick, onCreateHere,
     <div
       className="kanban-column"
       style={{
-        background: isDragOver && canDrop ? `${dotColor}12` : "var(--pmt-board-column, #f4f5f7)",
+        background: isDragOver && canDrop ? `${dotColor}12` : "var(--bms-board-column, #f4f5f7)",
         border: isDragOver && canDrop ? `2px dashed ${dotColor}` : "2px solid transparent",
       }}
       onDragOver={(e) => { if (canDrop) { e.preventDefault(); setIsDragOver(true); } }}
@@ -346,10 +347,17 @@ function CreateTicketModal({ open, onClose, defaultProjectId }: {
             showSearch
             placeholder="Select project"
             onChange={handleProjectChange}
+            dropdownRender={renderProjectDropdown}
             filterOption={(input, opt) =>
               (opt?.searchLabel as string ?? "").toLowerCase().includes(input.toLowerCase())
             }
-            options={projects.map((p) => ({
+            options={projects
+              .filter((p) => {
+                if (p.id === selectedProject) return true;
+                const slug = (p.workflow_state_slug || "").toLowerCase();
+                return !(slug.includes("close") || slug.includes("done") || slug.includes("cancel") || slug.includes("resolve"));
+              })
+              .map((p) => ({
               value: p.id,
               label: (
                 <Space size={6}>
@@ -626,10 +634,10 @@ export default function TicketsPage({ projectId }: { projectId?: string }) {
                     display: "inline-flex", alignItems: "center", gap: 6,
                     padding: "5px 14px", border: "none", cursor: "pointer",
                     fontSize: 13, fontWeight: view === key ? 600 : 400,
-                    background: view === key ? "var(--pmt-primary)" : "var(--pmt-surface)",
-                    color: view === key ? "#fff" : "var(--pmt-text)",
+                    background: view === key ? "var(--bms-primary)" : "var(--bms-surface)",
+                    color: view === key ? "#fff" : "var(--bms-text)",
                     transition: "background 0.15s, color 0.15s",
-                    borderRight: key === "board" ? "1px solid var(--pmt-border)" : "none",
+                    borderRight: key === "board" ? "1px solid var(--bms-border)" : "none",
                   }}
                 >
                   {icon} {label}

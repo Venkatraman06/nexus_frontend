@@ -50,8 +50,8 @@ export default function SocialFeedPage() {
   const [feedPage, setFeedPage] = useState(1);
   const permissions = useAuthStore((s) => s.permissions);
 
-  const hasManage = permissions.includes("pmt.social_feed.manage" as never);
-  const hasCreate = permissions.includes("pmt.social_feed.create" as never);
+  const hasManage = permissions.includes("bms.social_feed.manage" as never);
+  const hasCreate = permissions.includes("bms.social_feed.create" as never);
 
   // ── Published feed ─────────────────────────────────────────────────────────
   const { data: feedData, isLoading: feedLoading } = useQuery({
@@ -223,7 +223,7 @@ export default function SocialFeedPage() {
           children: (
             <div>
               {allPosts && allPosts.length > 0 && (
-                <div style={{ marginBottom: 16, padding: "12px 16px", background: "var(--pmt-surface-2)", borderRadius: 8, border: "1px solid var(--pmt-border)" }}>
+                <div style={{ marginBottom: 16, padding: "12px 16px", background: "var(--bms-surface-2)", borderRadius: 8, border: "1px solid var(--bms-border)" }}>
                   <Text type="secondary" style={{ fontSize: 12 }}>
                     {allPosts.filter((p) => p.workflow_state_slug === "pending_approval").length} pending approval ·{" "}
                     {allPosts.filter((p) => p.workflow_state_slug === "draft").length} drafts ·{" "}
@@ -250,7 +250,7 @@ export default function SocialFeedPage() {
         }}
       >
         <div>
-          <Title level={4} style={{ margin: 0, color: "var(--pmt-text)" }}>
+          <Title level={4} style={{ margin: 0, color: "var(--bms-text)" }}>
             Social Feed
           </Title>
           <Text type="secondary" style={{ fontSize: 13 }}>

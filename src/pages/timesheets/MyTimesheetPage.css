@@ -217,9 +217,9 @@
 
 /* ── Dark mode ─────────────────────────────────────────────────────────────── */
 [data-theme="dark"] .ts-day-card {
-  background: var(--pmt-surface-2);
-  border-color: var(--pmt-border);
-  color: var(--pmt-text);
+  background: var(--bms-surface-2);
+  border-color: var(--bms-border);
+  color: var(--bms-text);
 }
 
 [data-theme="dark"] .ts-day-card:hover {
@@ -227,16 +227,16 @@
 }
 
 [data-theme="dark"] .ts-day-card--disabled {
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
   opacity: 0.5;
 }
 
 [data-theme="dark"] .ts-day-card--readonly {
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
 }
 
 [data-theme="dark"] .ts-day-card--weekend {
-  background: var(--pmt-surface);
+  background: var(--bms-surface);
 }
 
 [data-theme="dark"] .ts-day-card--holiday {
@@ -277,40 +277,40 @@
 }
 
 [data-theme="dark"] .ts-week-label {
-  color: var(--pmt-text);
+  color: var(--bms-text);
 }
 
 [data-theme="dark"] .ts-day-name {
-  color: var(--pmt-text-3);
+  color: var(--bms-text-3);
 }
 
 [data-theme="dark"] .ts-day-date {
-  color: var(--pmt-text);
+  color: var(--bms-text);
 }
 
 [data-theme="dark"] .ts-day-hours {
-  color: var(--pmt-text);
+  color: var(--bms-text);
 }
 
 [data-theme="dark"] .ts-status-bar {
-  background: var(--pmt-surface-2);
+  background: var(--bms-surface-2);
 }
 
 [data-theme="dark"] .ts-day-card {
-  background: var(--pmt-surface);
-  border-color: var(--pmt-border);
+  background: var(--bms-surface);
+  border-color: var(--bms-border);
 }
 [data-theme="dark"] .ts-day-card:hover {
-  border-color: var(--pmt-primary);
+  border-color: var(--bms-primary);
 }
 [data-theme="dark"] .ts-day-card--active {
-  background: var(--pmt-surface-2);
-  border-color: var(--pmt-primary);
+  background: var(--bms-surface-2);
+  border-color: var(--bms-primary);
 }
 [data-theme="dark"] .ts-day-card--disabled,
 [data-theme="dark"] .ts-day-card--readonly {
-  background: var(--pmt-bg);
-  border-color: var(--pmt-border);
+  background: var(--bms-bg);
+  border-color: var(--bms-border);
 }
 [data-theme="dark"] .ts-day-card--over {
   background: rgba(255, 139, 0, 0.15);

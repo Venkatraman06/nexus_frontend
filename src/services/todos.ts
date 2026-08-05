@@ -5,6 +5,7 @@ export interface TodoItem {
   title: string;
   description?: string;
   content?: string;
+  comments?: string;
   priority: string;
   priority_label?: string;
   assignee?: string;
@@ -38,6 +39,7 @@ export interface TodoCreate {
   due_date?: string | null;
   start_time?: string | null;
   end_time?: string | null;
+  comments?: string;
 }
 
 import { PRIORITY_TONES } from "@/utils/semanticColors";
@@ -49,10 +51,10 @@ export const TODO_PRIORITIES = [
 ];
 
 export const TODO_BOARD_COLUMNS = [
-  { slug: "open", label: "Open", color: "#6366F1" },
-  { slug: "inprogress", label: "In Progress", color: "#1677ff" },
+  { slug: "open", label: "Open", color: "#8B5CF6" },
+  { slug: "inprogress", label: "In Progress", color: "#3B82F6" },
   { slug: "done", label: "Done", color: "#10B981" },
-  { slug: "cancelled", label: "Cancelled", color: "#94A3B8" },
+  { slug: "cancelled", label: "Cancelled", color: "#EF4444" },
 ];
 
 export interface PaginatedResponse<T> {

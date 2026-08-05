@@ -21,7 +21,7 @@ const { Text, Paragraph, Title } = Typography;
 const { TextArea } = Input;
 
 // ─── Permission helpers ──────────────────────────────────────────────────────
-function useCanComment() {
+function useCanManageComments() {
   const user = useAuthStore((s) => s.user);
   
   const isCeo = !!(
@@ -89,8 +89,8 @@ function CommentCard({
   return (
     <div
       style={{
-        background: comment.is_pinned ? "var(--pmt-primary-light)" : "var(--pmt-surface)",
-        border: `1px solid ${comment.is_pinned ? "var(--pmt-primary)" : "var(--pmt-border)"}`,
+        background: comment.is_pinned ? "var(--bms-primary-light)" : "var(--bms-surface)",
+        border: `1px solid ${comment.is_pinned ? "var(--bms-primary)" : "var(--bms-border)"}`,
         borderRadius: 12,
         padding: "16px",
         marginBottom: 16,
@@ -101,7 +101,7 @@ function CommentCard({
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <Space size={8}>
-          <Avatar size={32} icon={<UserOutlined />} style={{ background: "var(--pmt-primary)" }} />
+          <Avatar size={32} icon={<UserOutlined />} style={{ background: "var(--bms-primary)" }} />
           <div>
             <Text strong style={{ fontSize: 13, display: "block", lineHeight: 1.2 }}>{comment.created_by_name}</Text>
             <Text type="secondary" style={{ fontSize: 11 }}>
@@ -191,7 +191,7 @@ function CommentCard({
           </Space>
         </div>
       ) : (
-        <Paragraph style={{ margin: 0, fontSize: 13.5, whiteSpace: "pre-wrap", color: "var(--pmt-text)", lineHeight: 1.5 }}>
+        <Paragraph style={{ margin: 0, fontSize: 13.5, whiteSpace: "pre-wrap", color: "var(--bms-text)", lineHeight: 1.5 }}>
           {comment.body}
         </Paragraph>
       )}
@@ -246,7 +246,7 @@ export default function ProjectCommentsBlock({
   projectCode,
 }: ProjectCommentsBlockProps) {
   const qc = useQueryClient();
-  const canComment = useCanComment();
+  const canManage = useCanManageComments();
   const [newBody, setNewBody] = useState("");
   const [pinNew, setPinNew] = useState(false);
 
@@ -275,20 +275,20 @@ export default function ProjectCommentsBlock({
 
   return (
     <Card
-      style={{ borderRadius: 12, border: "1px solid var(--pmt-border)", boxShadow: "var(--shadow-sm)" }}
+      style={{ borderRadius: 12, border: "1px solid var(--bms-border)", boxShadow: "var(--shadow-sm)" }}
       styles={{
-        header: { borderBottom: "1px solid var(--pmt-border)", padding: "16px 20px" },
+        header: { borderBottom: "1px solid var(--bms-border)", padding: "16px 20px" },
         body: { padding: "20px" }
       }}
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <CommentOutlined style={{ color: "var(--pmt-primary)", fontSize: 18 }} />
+          <CommentOutlined style={{ color: "var(--bms-primary)", fontSize: 18 }} />
           <span style={{ fontSize: 16, fontWeight: 600 }}>Project Notices & Comments</span>
           <span style={{
             fontSize: 11,
-            color: "var(--pmt-text-3)",
+            color: "var(--bms-text-3)",
             fontWeight: 400,
-            background: "var(--pmt-surface-2)",
+            background: "var(--bms-surface-2)",
             padding: "2px 8px",
             borderRadius: 12,
             marginLeft: 8,
@@ -300,25 +300,25 @@ export default function ProjectCommentsBlock({
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         
-        {/* Comment Entry Form (for CEO, Admin, PM) */}
-        {canComment && (
-          <div style={{
-            background: "var(--pmt-surface-2)",
-            borderRadius: 12,
-            padding: "16px",
-            border: "1px dashed var(--pmt-border)",
-          }}>
-            <Text strong style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
-              Post a new project announcement / comment:
-            </Text>
-            <TextArea
-              value={newBody}
-              onChange={(e) => setNewBody(e.target.value)}
-              placeholder="Post updates, announcements or requests for this project..."
-              autoSize={{ minRows: 3, maxRows: 6 }}
-              style={{ marginBottom: 12, borderRadius: 8 }}
-            />
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+        {/* Comment Entry Form (for everyone) */}
+        <div style={{
+          background: "var(--bms-surface-2)",
+          borderRadius: 12,
+          padding: "16px",
+          border: "1px dashed var(--bms-border)",
+        }}>
+          <Text strong style={{ display: "block", marginBottom: 8, fontSize: 13 }}>
+            Post a new project announcement / comment:
+          </Text>
+          <TextArea
+            value={newBody}
+            onChange={(e) => setNewBody(e.target.value)}
+            placeholder="Post updates, announcements or requests for this project..."
+            autoSize={{ minRows: 3, maxRows: 6 }}
+            style={{ marginBottom: 12, borderRadius: 8 }}
+          />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+            {canManage ? (
               <Checkbox
                 checked={pinNew}
                 onChange={(e) => setPinNew(e.target.checked)}
@@ -326,19 +326,21 @@ export default function ProjectCommentsBlock({
               >
                 <PushpinOutlined style={{ marginRight: 4 }} /> Pin announcement to top
               </Checkbox>
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                loading={createMut.isPending}
-                disabled={!newBody.trim()}
-                onClick={handleSubmit}
-                style={{ borderRadius: 8 }}
-              >
-                Post Comment
-              </Button>
-            </div>
+            ) : (
+              <div />
+            )}
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              loading={createMut.isPending}
+              disabled={!newBody.trim()}
+              onClick={handleSubmit}
+              style={{ borderRadius: 8 }}
+            >
+              Post Comment
+            </Button>
           </div>
-        )}
+        </div>
 
         {/* Comment Thread List */}
         {isLoading ? (
@@ -349,7 +351,7 @@ export default function ProjectCommentsBlock({
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
-              <span style={{ color: "var(--pmt-text-3)", fontSize: 13 }}>
+              <span style={{ color: "var(--bms-text-3)", fontSize: 13 }}>
                 No comments or notices have been posted on this project yet.
               </span>
             }
@@ -362,7 +364,7 @@ export default function ProjectCommentsBlock({
                 key={c.id}
                 comment={c}
                 projectId={projectId}
-                canManage={canComment}
+                canManage={canManage}
               />
             ))}
           </div>
