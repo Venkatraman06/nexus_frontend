@@ -18,6 +18,7 @@ import {
   FileTextOutlined,
   DollarOutlined, FileSearchOutlined, FundOutlined,
   ShopOutlined, CreditCardOutlined, PhoneOutlined, MessageOutlined,
+  ContactsOutlined, RiseOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet, useSearchParams } from "react-router-dom";
 import ClientFormPage from "@/pages/clients/ClientFormPage";
@@ -123,6 +124,8 @@ const NAV_ITEMS_WITHOUT_DASHBOARD: NavItem[] = [
     label: "CRM",
     anyOf: ANY_CRM_VIEW,
     children: [
+      { key: "/crm",                 icon: <ContactsOutlined />,   label: "Lead Management" },
+      { key: "/sales",               icon: <RiseOutlined />,       label: "Sales" },
       { key: "/clients",             icon: <BankOutlined />,       label: "Client",     permission: PERMS.PROJECT_CLIENT_VIEW },
       { key: "/finance/documents",   icon: <FileTextOutlined />,   label: "Quotation",  permission: PERMS.FINANCE_DOCUMENT_VIEW },
     ],

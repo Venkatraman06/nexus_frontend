@@ -1219,7 +1219,7 @@ function ReimbursementConfigTable() {
         <Text strong style={{ fontSize: 13, color: "#555", display: "block", marginBottom: 14, letterSpacing: 0.5, textTransform: "uppercase" }}>
           Workflow Pipeline
         </Text>
-        <div style={{ display: "flex", alignItems: "center", gap: 0, flexWrap: "wrap", gap: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 0, flexWrap: "wrap" }}>
           {WORKFLOW_STEPS.map((step, i) => (
             <>
               <div
