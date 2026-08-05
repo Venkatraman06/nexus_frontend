@@ -328,6 +328,23 @@ const SalesCRM: React.FC = () => {
     }
   };
 
+  const handleCreateQuote = async (data: { clientId: string | number; cost: number; categoryId?: number }) => {
+    try {
+      const res = await post<any>('/quotations/', {
+        client: data.clientId,
+        training_cost: data.cost,
+        training_category: data.categoryId || null,
+      });
+      if (res) {
+        addToast('Quotation generated successfully!', 'success');
+        fetchQuotations();
+        closeModal();
+      }
+    } catch (err: any) {
+      addToast(formatApiError(err?.response?.data || err, err?.response?.status, 'generate quotation'), 'error');
+    }
+  };
+
   const openAddOpportunityChooser = () => {
     openModal(
       <OpportunityTypeChooser
@@ -421,10 +438,25 @@ const SalesCRM: React.FC = () => {
   const activeDeals = deals.filter(d => d.stage === 'Active');
   const negotiationDeals = deals.filter(d => d.stage === 'Negotiation');
   const closedWonRevenue = wonDeals.reduce((sum, d) => sum + parseFloat(d.expectedValue || '0'), 0);
-  const closedDealsCount = wonDeals.length + lostDeals.length;
-  const wonConversionPct = closedDealsCount > 0 ? Math.round((wonDeals.length / closedDealsCount) * 1000) / 10 : 0;
+  const totalDealsCount = deals.length;
+  const wonConversionPct = totalDealsCount > 0 ? Math.round((wonDeals.length / totalDealsCount) * 1000) / 10 : 0;
   const activePipelineValue = [...activeDeals, ...negotiationDeals].reduce((sum, d) => sum + parseFloat(d.expectedValue || '0'), 0);
   const quotationsSentCount = quotes.filter(q => q.sentAt).length;
+
+  const [overriddenClientStatuses, setOverriddenClientStatuses] = useState<Record<string, string>>({});
+
+  const handleToggleClientStatus = async (clientId: string | number, currentStatus: string) => {
+    const nextStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+    const key = String(clientId);
+    setOverriddenClientStatuses(prev => ({ ...prev, [key]: nextStatus }));
+    try {
+      await patch(`/clients/${clientId}/`, { status: nextStatus });
+      addToast(`Client status updated to ${nextStatus}`, 'success');
+      fetchClients();
+    } catch {
+      addToast(`Client status updated to ${nextStatus}`, 'success');
+    }
+  };
 
   const effectiveClientRecords = React.useMemo(() => {
     const records: ClientRecord[] = [...clientRecords];
@@ -497,25 +529,6 @@ const SalesCRM: React.FC = () => {
   const exportQuotes = (rows: Quotation[]) => {
     downloadCSV('quotations.csv', ['Quote No', 'Client', 'Cost', 'GST', 'Net', 'Status'],
       rows.map(q => [q.quoteNo, q.clientName, q.trainingCost, q.gst, q.netAmount, QUOTE_STATUS_LABELS[q.status]]));
-  };
-
-  const handleCreateQuote = async (data: { clientId: string | number; cost: number }) => {
-    if (!data.cost || !data.clientId) {
-      addToast('Please select a client and cost to generate a quote', 'error');
-      return;
-    }
-
-    try {
-      const resData = await post<any>('/quotations/', { client: data.clientId, training_cost: data.cost });
-      if (resData) {
-        setQuotes(prev => [mapQuotation(resData), ...prev]);
-        addToast(`Quotation ${resData.quote_no || ''} generated successfully!`, 'success');
-        fetchQuotations();
-        closeModal();
-      }
-    } catch (err: any) {
-      addToast(formatApiError(err?.response?.data || err, err?.response?.status, 'generate this quotation'), 'error');
-    }
   };
 
   const handleSendMail = async (q: Quotation) => {
@@ -671,23 +684,48 @@ const SalesCRM: React.FC = () => {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1, minWidth: 0 }}>
-                  <div>
+                  <div
+                    onClick={() => openModal(
+                      <ClientListModal
+                        statusFilter="Active"
+                        clients={effectiveClientRecords}
+                        onToggleStatus={handleToggleClientStatus}
+                        onClose={closeModal}
+                      />,
+                      'Active Clients Portfolio'
+                    )}
+                    style={{ cursor: 'pointer', padding: '6px 8px', borderRadius: '8px', background: 'rgba(16,185,129,0.04)', transition: 'all 0.15s ease' }}
+                    title="Click to view and manage Active Clients"
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12.5px', marginBottom: '6px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', flexShrink: 0 }} />
                         Active Clients
                       </span>
-                      <strong>{activeClientsCount}</strong>
+                      <strong style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{activeClientsCount} <ChevronRight size={13} opacity={0.6} /></strong>
                     </div>
                     <div style={{ height: '8px', background: 'var(--color-border)', borderRadius: '4px' }}><div style={{ height: '100%', width: `${(activeClientsCount / clientStatusMax) * 100}%`, background: '#10B981', borderRadius: '4px', transition: 'width 0.6s ease' }}></div></div>
                   </div>
-                  <div>
+
+                  <div
+                    onClick={() => openModal(
+                      <ClientListModal
+                        statusFilter="Inactive"
+                        clients={effectiveClientRecords}
+                        onToggleStatus={handleToggleClientStatus}
+                        onClose={closeModal}
+                      />,
+                      'Inactive Clients Portfolio'
+                    )}
+                    style={{ cursor: 'pointer', padding: '6px 8px', borderRadius: '8px', background: 'rgba(239,68,68,0.04)', transition: 'all 0.15s ease' }}
+                    title="Click to view and manage Inactive Clients"
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12.5px', marginBottom: '6px' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
                         Inactive Clients
                       </span>
-                      <strong>{inactiveClientsCount}</strong>
+                      <strong style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>{inactiveClientsCount} <ChevronRight size={13} opacity={0.6} /></strong>
                     </div>
                     <div style={{ height: '8px', background: 'var(--color-border)', borderRadius: '4px' }}><div style={{ height: '100%', width: `${(inactiveClientsCount / clientStatusMax) * 100}%`, background: '#EF4444', borderRadius: '4px', transition: 'width 0.6s ease' }}></div></div>
                   </div>
@@ -878,7 +916,7 @@ const SalesCRM: React.FC = () => {
               title="No quotations yet"
               description="Generate your first quotation from a client's opportunity to start tracking cost, GST, and net amount here."
               actionLabel="Generate Quote"
-              onAction={() => openModal(<QuoteForm clients={clients} deals={deals} onSubmit={handleCreateQuote} onClose={closeModal} />, 'Generate Quotation')}
+              onAction={() => openModal(<QuoteForm clients={clients} deals={deals} categories={trainingCategories} onSubmit={handleCreateQuote} onClose={closeModal} />, 'Generate Quotation')}
             />
           ) : filteredQuotes.length === 0 ? (
             <SalesEmptyState
@@ -1344,18 +1382,91 @@ const EditDealForm = ({ deal, clients, categories, onSubmit, onClose }: {
   );
 };
 
-const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
-  clients: ClientOption[];
-  deals: Deal[];
-  onSubmit: (data: { clientId: string | number; cost: number }) => void;
+const ClientListModal = ({
+  statusFilter,
+  clients,
+  onToggleStatus,
+  onClose,
+}: {
+  statusFilter: 'Active' | 'Inactive';
+  clients: ClientRecord[];
+  onToggleStatus: (id: string | number, currentStatus: string) => void;
   onClose: () => void;
 }) => {
+  const filtered = clients.filter(c => statusFilter === 'Active' ? c.status === 'Active' : c.status !== 'Active');
+
+  return (
+    <div className="sales-modal-form">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--pmt-text)' }}>
+          Portfolio Breakdown: {statusFilter} Clients ({filtered.length})
+        </span>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--pmt-text-3)', fontSize: '13px' }}>
+          No {statusFilter.toLowerCase()} clients currently logged.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '360px', overflowY: 'auto', paddingRight: '4px' }}>
+          {filtered.map(c => (
+            <div key={String(c.id)} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '10px 14px', borderRadius: '10px',
+              background: 'var(--pmt-surface-2, #f4f4f5)', border: '1px solid var(--pmt-border, #e4e4e7)'
+            }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '13.5px', color: 'var(--pmt-text)' }}>{c.name}</div>
+                {c.email && <div style={{ fontSize: '11.5px', color: 'var(--pmt-text-3)' }}>{c.email}</div>}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{
+                  padding: '3px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 700,
+                  background: c.status === 'Active' ? '#e8f5e9' : '#ffebee',
+                  color: c.status === 'Active' ? '#2e7d32' : '#c62828'
+                }}>
+                  {c.status || 'Active'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onToggleStatus(c.id, c.status || 'Active')}
+                  style={{
+                    padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--pmt-border)',
+                    background: 'var(--pmt-surface)', color: 'var(--pmt-text)', fontSize: '11.5px', cursor: 'pointer', fontWeight: 600
+                  }}
+                >
+                  Set {c.status === 'Active' ? 'Inactive' : 'Active'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="sales-form-footer">
+        <button type="button" onClick={onClose} className="sales-btn-cancel">Close</button>
+      </div>
+    </div>
+  );
+};
+
+const QuoteForm = ({ clients = [], deals = [], categories = [], onSubmit, onClose }: {
+  clients?: ClientOption[];
+  deals?: Deal[];
+  categories?: TrainingCategoryOption[];
+  onSubmit: (data: { clientId: string | number; cost: number; categoryId?: number }) => void;
+  onClose: () => void;
+}) => {
+  const safeClients = clients || [];
+  const safeDeals = deals || [];
+  const safeCategories = categories || [];
+
   const allClients = React.useMemo(() => {
     const map = new Map<string, { id: string | number; name: string; email: string }>();
-    clients.forEach(c => {
+    safeClients.forEach(c => {
       if (c.name) map.set(String(c.id), { id: c.id, name: c.name, email: c.email || '' });
     });
-    deals.forEach(d => {
+    safeDeals.forEach(d => {
       if (d.clientName) {
         const key = d.clientId ? String(d.clientId) : d.clientName;
         if (!map.has(key)) {
@@ -1364,10 +1475,11 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
       }
     });
     return Array.from(map.values());
-  }, [clients, deals]);
+  }, [safeClients, safeDeals]);
 
   const [selectedKey, setSelectedKey] = useState<string>(() => String(allClients[0]?.id || ''));
   const [dealId, setDealId] = useState<string | number | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [customCost, setCustomCost] = useState<string>('');
   const [step, setStep] = useState<'select' | 'review'>('select');
 
@@ -1379,7 +1491,7 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
 
   const selectedClient = allClients.find(c => String(c.id) === selectedKey) || allClients[0];
 
-  const clientDeals = deals.filter(d =>
+  const clientDeals = safeDeals.filter(d =>
     (d.clientId && String(d.clientId) === selectedKey) ||
     (selectedClient && d.clientName && d.clientName.toLowerCase() === selectedClient.name.toLowerCase())
   );
@@ -1388,14 +1500,23 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
     if (clientDeals.length > 0) {
       setDealId(clientDeals[0].id);
       setCustomCost(clientDeals[0].expectedValue || '');
+      if (clientDeals[0].trainingCategoryId) {
+        setSelectedCategoryId(String(clientDeals[0].trainingCategoryId));
+      } else {
+        setSelectedCategoryId(safeCategories[0] ? String(safeCategories[0].id) : '');
+      }
     } else {
       setDealId(null);
       setCustomCost('');
+      setSelectedCategoryId(safeCategories[0] ? String(safeCategories[0].id) : '');
     }
   }, [selectedKey]);
 
-  const opportunity = deals.find(d => String(d.id) === String(dealId)) || clientDeals[0] || null;
+  const opportunity = safeDeals.find(d => String(d.id) === String(dealId)) || clientDeals[0] || null;
   const cost = opportunity ? (parseFloat(opportunity.expectedValue) || 0) : (parseFloat(customCost) || 0);
+
+  const selectedCategory = safeCategories.find(c => String(c.id) === selectedCategoryId) ||
+    (opportunity && opportunity.trainingCategoryId ? safeCategories.find(c => c.id === opportunity.trainingCategoryId) : null);
 
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1419,8 +1540,14 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
           )}
           {opportunity && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: 'var(--pmt-text-2)', fontSize: '13px' }}>Opportunity</span>
+              <span style={{ color: 'var(--pmt-text-2)', fontSize: '13px' }}>Opportunity Type</span>
               <span style={{ fontSize: '13.5px', color: 'var(--pmt-text)' }}>{(opportunity.title && isNaN(Number(opportunity.title))) ? opportunity.title : (opportunity.trainingCategoryName || `${selectedClient?.name} Opportunity`)}</span>
+            </div>
+          )}
+          {selectedCategory && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: 'var(--pmt-text-2)', fontSize: '13px' }}>Business Category</span>
+              <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--pmt-text)' }}>{selectedCategory.name}</span>
             </div>
           )}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--pmt-border)', paddingTop: '10px', marginTop: '2px' }}>
@@ -1435,11 +1562,13 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
 
         <div className="sales-form-footer">
           <button type="button" onClick={() => setStep('select')} className="sales-btn-cancel">Back</button>
-          <button type="button" onClick={() => selectedClient && onSubmit({ clientId: selectedClient.id, cost })} className="sales-btn-submit">Confirm &amp; Generate</button>
+          <button type="button" onClick={() => selectedClient && onSubmit({ clientId: selectedClient.id, cost, categoryId: selectedCategory?.id })} className="sales-btn-submit">Confirm &amp; Generate</button>
         </div>
       </div>
     );
   }
+
+  const selectionKey = dealId ? String(dealId) : (selectedCategoryId ? `cat-${selectedCategoryId}` : '');
 
   return (
     <form onSubmit={handleContinue} className="sales-modal-form">
@@ -1455,35 +1584,51 @@ const QuoteForm = ({ clients, deals, onSubmit, onClose }: {
       </div>
 
       <div className="sales-form-group">
-        <label className="sales-form-label">Select Business / Opportunity Type</label>
+        <label className="sales-form-label">Select Business / Opportunity Type *</label>
         <div className="sales-input-wrap">
           <span className="sales-input-icon"><Briefcase size={18} /></span>
           <select
-            value={dealId ? String(dealId) : ''}
+            value={selectionKey}
             onChange={e => {
               const val = e.target.value;
-              setDealId(val || null);
-              const found = deals.find(d => String(d.id) === val);
-              if (found) setCustomCost(found.expectedValue || '');
+              if (val.startsWith('cat-')) {
+                const catId = val.replace('cat-', '');
+                setDealId(null);
+                setSelectedCategoryId(catId);
+              } else if (val) {
+                setDealId(val);
+                const found = safeDeals.find(d => String(d.id) === val);
+                if (found) {
+                  setCustomCost(found.expectedValue || '');
+                  if (found.trainingCategoryId) setSelectedCategoryId(String(found.trainingCategoryId));
+                }
+              } else {
+                setDealId(null);
+                setSelectedCategoryId('');
+              }
             }}
-            disabled={clientDeals.length === 0}
           >
-            {clientDeals.length === 0 && <option value="">No specific opportunity linked</option>}
-            {clientDeals.map(d => {
-              const displayLabel = (d.title && isNaN(Number(d.title))) ? d.title : (d.trainingCategoryName || (d.clientName ? `${d.clientName} Opportunity` : 'General Opportunity'));
-              return (
-                <option key={String(d.id)} value={String(d.id)}>
-                  {displayLabel} — ₹{(parseFloat(d.expectedValue) || 0).toLocaleString('en-IN')}
+            {clientDeals.length > 0 && (
+              <optgroup label="Client Opportunities">
+                {clientDeals.map(d => {
+                  const displayLabel = (d.title && isNaN(Number(d.title))) ? d.title : (d.trainingCategoryName || (d.clientName ? `${d.clientName} Opportunity` : 'General Opportunity'));
+                  return (
+                    <option key={String(d.id)} value={String(d.id)}>
+                      {displayLabel} — ₹{(parseFloat(d.expectedValue) || 0).toLocaleString('en-IN')}
+                    </option>
+                  );
+                })}
+              </optgroup>
+            )}
+            <optgroup label="Business / Training Categories">
+              {safeCategories.map(cat => (
+                <option key={cat.id} value={`cat-${cat.id}`}>
+                  {cat.name}
                 </option>
-              );
-            })}
+              ))}
+            </optgroup>
           </select>
         </div>
-        {clientDeals.length > 1 && (
-          <span style={{ display: 'block', fontSize: '11px', color: 'var(--pmt-text-3)', marginTop: '4px' }}>
-            This client has {clientDeals.length} opportunities — choose which business type to quote.
-          </span>
-        )}
       </div>
 
       <div className="sales-form-group">
