@@ -1,4 +1,4 @@
-# PMT Frontend — Setup Guide
+# BMS Frontend — Setup Guide
 
 ## Tech Stack
 
@@ -41,8 +41,8 @@ Edit `.env` with the appropriate values:
 ```env
 VITE_API_BASE_URL=http://localhost:8000
 VITE_KEYCLOAK_URL=http://localhost:8080
-VITE_KEYCLOAK_REALM=pmt
-VITE_KEYCLOAK_CLIENT_ID=pmt-client
+VITE_KEYCLOAK_REALM=bms
+VITE_KEYCLOAK_CLIENT_ID=bms-client
 ```
 
 ---
