@@ -1,0 +1,1171 @@
+diff --git a/src/pages/dashboard/EmployeeDashboardPage.tsx b/src/pages/dashboard/EmployeeDashboardPage.tsx
+index 0b52453..c0acdd7 100644
+--- a/src/pages/dashboard/EmployeeDashboardPage.tsx
++++ b/src/pages/dashboard/EmployeeDashboardPage.tsx
+@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ import {
+   Row, Col, Card, Tag, Typography, Progress, Table, Empty, Spin,
+   Avatar, Divider, Button, Tooltip, message, Modal, Form, Input,
+-  Select, DatePicker, Badge, Space,
++  Select, DatePicker, Badge, Space, Upload, Alert,
++
+ } from "antd";
+ import {
+   ClockCircleOutlined, CheckCircleOutlined,
+@@ -14,7 +15,9 @@ import {
+   FilePdfOutlined, DownloadOutlined, EyeOutlined, EyeInvisibleOutlined,
+   ScheduleOutlined, SyncOutlined, FolderOpenOutlined, AppstoreOutlined,
+   PhoneOutlined, MailOutlined, WhatsAppOutlined, EnvironmentOutlined,
+-  WarningOutlined, CheckOutlined, HomeOutlined,
++  WarningOutlined, CheckOutlined, HomeOutlined, InfoCircleOutlined, UploadOutlined, MedicineBoxOutlined,
++  FileProtectOutlined,
++
+ } from "@ant-design/icons";
+ import AttendanceCalendar from "@/components/common/AttendanceCalendar";
+ import FollowUpCalendarModal from "@/pages/followups/FollowUpCalendarModal";
+@@ -39,13 +42,33 @@ interface AttendanceToday {
+   clockin_enabled?: boolean;
+ }
+ interface LeaveBalance {
+-  leave_type: string; code: string; color: string;
+-  is_paid: boolean; total: number; used: number; remaining: number;
++  id: string;
++  leave_type_id: string;        // ← was missing, now added via serializer
++  leave_type: string;           // ← this was wrong, backend sends leave_type_name
++  leave_type_name: string;      // ← actual field name
++  code: string;                 // ← wrong, backend sends leave_type_code
++  leave_type_code: string;      // ← actual field name
++  color: string;                // ← wrong, backend sends leave_type_color
++  leave_type_color: string;     // ← actual field name
++  is_paid: boolean;
++  total: number;                // ← wrong, backend sends total_days
++  total_days: number;           // ← actual field name
++  used: number;                 // ← wrong, backend sends used_days
++  used_days: number;            // ← actual field name
++  remaining: number;            // ← wrong, backend sends remaining_days
++  remaining_days: number;       // ← actual field name
+ }
+ interface LeaveRequest {
+-  id: string; leave_type: string; color: string;
+-  start_date: string; end_date: string; days_count: number;
+-  status: string; reason: string;
++  id: string;
++  leave_type_name: string;  // ← renamed from leave_type
++  leave_type: string;       // ← keep for backwards compat, maps to leave_type_name
++  color: string;            // ← maps to leave_type_color
++  leave_type_color: string;
++  start_date: string;
++  end_date: string;
++  days_count: number;
++  status: string;
++  reason: string;
+ }
+ interface WorkStats {
+   avg_working_hours: number; avg_break_minutes: number;
+@@ -53,9 +76,9 @@ interface WorkStats {
+   working_days_count: number; on_time: number; late: number; early: number;
+ }
+ interface WFHStatus {
+-  wfh_enabled: boolean;           // HR toggled WFH allowed for this employee
+-  pending_wfh_request: boolean;   // has a pending WFH request already
+-  approved_wfh_today: boolean;    // WFH approved for today specifically
++  wfh_enabled: boolean;
++  pending_wfh_request: boolean;
++  approved_wfh_today: boolean;
+ }
+ interface EmpDashboard {
+   profile: {
+@@ -426,12 +449,12 @@ function ShiftChangeModal({ open, onClose, onSuccess, employeeId }: { open: bool
+       open={open} onCancel={() => { form.resetFields(); onClose(); }} footer={null} width={460} destroyOnClose>
+       <Form form={form} layout="vertical" style={{ marginTop: 12 }} initialValues={{ request_type: "TEMPORARY" }}
+         onFinish={(v) => mutation.mutate({
+-  employee:        employeeId,
+-  request_type:    v.request_type,
+-  requested_date:  v.request_type === "TEMPORARY" ? v.requested_date?.format("YYYY-MM-DD") : null,
+-  requested_shift: v.requested_shift,
+-  reason:          v.reason || "",
+-})}>
++          employee:        employeeId,
++          request_type:    v.request_type,
++          requested_date:  v.request_type === "TEMPORARY" ? v.requested_date?.format("YYYY-MM-DD") : null,
++          requested_shift: v.requested_shift,
++          reason:          v.reason || "",
++        })}>
+         <Form.Item name="request_type" label="Change Type" rules={[{ required: true }]}>
+           <Select options={[
+             { value: "TEMPORARY", label: "Temporary — one specific date" },
+@@ -465,12 +488,671 @@ function ShiftChangeModal({ open, onClose, onSuccess, employeeId }: { open: bool
+   );
+ }
+ 
++// ── Apply Leave Modal ─────────────────────────────────────────────────────────
++// Regular leave types shown in the dropdown (from master/assigned balances).
++// Emergency Leave is a separate expandable section at the bottom — completely
++// independent form that appears when the employee clicks "Apply Emergency Leave".
++function ApplyLeaveModal({
++  open, onClose, onSuccess, balances, prefillLeaveTypeId,
++}: {
++  open: boolean;
++  onClose: () => void;
++  onSuccess: () => void;
++  balances: LeaveBalance[];
++  prefillLeaveTypeId?: string | null;
++}) {
++  const [regularForm]   = Form.useForm();
++  const [emergencyForm] = Form.useForm();
++  const [fileList,      setFileList]      = useState<any[]>([]);
++  const [mode, setMode] = useState<"regular" | "emergency">("regular");
++
++  const selectedType    = Form.useWatch("leave_type", regularForm);
++  const selectedBalance = balances.find((b) => b.leave_type_id === selectedType);
++
++  // Build options directly from leave_balances — no extra API call needed
++  const typeOptions = balances
++    .filter((b) => b.leave_type_id)
++    .map((b) => ({ value: b.leave_type_id as string, label: b.leave_type }));
++
++  useEffect(() => {
++    if (open) {
++      if (prefillLeaveTypeId === "__EMERGENCY__") {
++        setMode("emergency");
++      } else {
++        setMode("regular");
++        if (prefillLeaveTypeId) {
++          regularForm.setFieldValue("leave_type", prefillLeaveTypeId);
++        }
++      }
++    }
++    if (!open) {
++      regularForm.resetFields();
++      emergencyForm.resetFields();
++      setFileList([]);
++      setMode("regular");
++    }
++  }, [open, prefillLeaveTypeId]);
++
++  const regularMutation = useMutation({
++    mutationFn: (values: any) => post("/leave/requests/", {
++      leave_type: values.leave_type,
++      start_date: values.dates[0].format("YYYY-MM-DD"),
++      end_date:   values.dates[1].format("YYYY-MM-DD"),
++      reason:     values.reason || "",
++      is_emergency: false,
++    }),
++    onSuccess: () => {
++      message.success("Leave request submitted — HR will review it shortly");
++      regularForm.resetFields();
++      onSuccess();
++    },
++    onError: (e: any) => {
++      const detail = e?.response?.data?.detail
++        || Object.entries(e?.response?.data ?? {}).map(([k, v]: any) => `${k}: ${Array.isArray(v) ? v[0] : v}`).join(", ")
++        || "Failed to submit leave request";
++      message.error(detail);
++    },
++  });
++
++  const emergencyMutation = useMutation({
++    mutationFn: async (values: any) => {
++      if (fileList.length > 0 && fileList[0].originFileObj) {
++        const fd = new FormData();
++        fd.append("start_date",          values.dates[0].format("YYYY-MM-DD"));
++        fd.append("end_date",            values.dates[1].format("YYYY-MM-DD"));
++        fd.append("reason",              values.reason || "");
++        fd.append("is_emergency",        "true");
++        fd.append("medical_certificate", fileList[0].originFileObj);
++        return post("/leave/requests/", fd, { headers: { "Content-Type": "multipart/form-data" } });
++      }
++      return post("/leave/requests/", {
++        start_date:   values.dates[0].format("YYYY-MM-DD"),
++        end_date:     values.dates[1].format("YYYY-MM-DD"),
++        reason:       values.reason || "",
++        is_emergency: true,
++      });
++    },
++    onSuccess: () => {
++      message.success("Emergency leave submitted — HR will be notified immediately");
++      emergencyForm.resetFields();
++      setFileList([]);
++      onSuccess();
++    },
++    onError: (e: any) => {
++      const detail = e?.response?.data?.detail
++        || Object.entries(e?.response?.data ?? {}).map(([k, v]: any) => `${k}: ${Array.isArray(v) ? v[0] : v}`).join(", ")
++        || "Failed to submit emergency leave";
++      message.error(detail);
++    },
++  });
++
++  const handleClose = () => {
++    regularForm.resetFields();
++    emergencyForm.resetFields();
++    setFileList([]);
++    setMode("regular");
++    onClose();
++  };
++
++  return (
++    <Modal
++      title={
++        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
++          <WalletOutlined style={{ color: "#7c3aed" }} />
++          <span>Apply for Leave</span>
++        </div>
++      }
++      open={open}
++      onCancel={handleClose}
++      footer={null}
++      width={500}
++      destroyOnClose
++    >
++      {/* ── Mode tabs ── */}
++      <div style={{
++        display: "flex", gap: 0, marginBottom: 20, marginTop: 4,
++        borderRadius: 10, overflow: "hidden", border: "1px solid var(--pmt-border)",
++      }}>
++        <button
++          onClick={() => setMode("regular")}
++          style={{
++            flex: 1, padding: "9px 0", border: "none", cursor: "pointer",
++            fontSize: 13, fontWeight: 600, transition: "all 0.15s",
++            background: mode === "regular" ? "#7c3aed" : "var(--pmt-surface-2)",
++            color:      mode === "regular" ? "#fff"    : "var(--pmt-text-2)",
++            borderRight: "1px solid var(--pmt-border)",
++          }}
++        >
++          <WalletOutlined style={{ marginRight: 6 }} />
++          Regular Leave
++        </button>
++        <button
++          onClick={() => setMode("emergency")}
++          style={{
++            flex: 1, padding: "9px 0", border: "none", cursor: "pointer",
++            fontSize: 13, fontWeight: 600, transition: "all 0.15s",
++            background: mode === "emergency" ? "#dc2626" : "var(--pmt-surface-2)",
++            color:      mode === "emergency" ? "#fff"    : "#dc2626",
++          }}
++        >
++          <MedicineBoxOutlined style={{ marginRight: 6 }} />
++          Emergency Leave
++        </button>
++      </div>
++
++      {/* ── Regular leave form — always mounted, hidden via display when inactive ── */}
++      <div style={{ display: mode === "regular" ? "block" : "none" }}>
++        <Form form={regularForm} layout="vertical" onFinish={(v) => regularMutation.mutate(v)}>
++          <Form.Item name="leave_type" label="Leave Type"
++            rules={[{ required: true, message: "Please select a leave type" }]}>
++            <Select
++              placeholder="Select leave type"
++              options={typeOptions}
++              notFoundContent={
++                <div style={{ padding: "12px 0", textAlign: "center", color: "#9ca3af", fontSize: 12 }}>
++                  No leave types assigned. Contact HR.
++                </div>
++              }
++            />
++          </Form.Item>
++
++          {selectedBalance && (
++            <div style={{
++              marginTop: -8, marginBottom: 14, padding: "8px 12px", borderRadius: 8,
++              background: selectedBalance.color + "0f", border: `1px solid ${selectedBalance.color}30`,
++              display: "flex", alignItems: "center", justifyContent: "space-between",
++            }}>
++              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
++                <div style={{ width: 8, height: 8, borderRadius: "50%", background: selectedBalance.color }} />
++                <Text style={{ fontSize: 12 }}>Balance — {selectedBalance.leave_type}</Text>
++              </div>
++              <div style={{ display: "flex", gap: 14 }}>
++                <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
++                  Used <b>{selectedBalance.used}</b> / <b>{selectedBalance.total}</b>
++                </Text>
++                <Text style={{ fontSize: 12, fontWeight: 700,
++                  color: selectedBalance.remaining > 0 ? "#16a34a" : "#ef4444" }}>
++                  {selectedBalance.remaining}d left
++                </Text>
++              </div>
++            </div>
++          )}
++
++          <Form.Item name="dates" label="Leave Dates"
++            rules={[{ required: true, message: "Please select dates" }]}>
++            <DatePicker.RangePicker style={{ width: "100%" }} format="DD MMM YYYY"
++              disabledDate={(d) => !d || d < dayjs().startOf("day")} />
++          </Form.Item>
++
++          <Form.Item name="reason" label="Reason">
++            <Input.TextArea rows={3} placeholder="Optional — provide a reason for your leave" />
++          </Form.Item>
++
++          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
++            <Button onClick={handleClose}>Cancel</Button>
++            <Button type="primary" htmlType="submit" loading={regularMutation.isPending}
++              icon={<WalletOutlined />}
++              style={{ background: "#7c3aed", borderColor: "#7c3aed" }}>
++              Submit Request
++            </Button>
++          </div>
++        </Form>
++      </div>
++
++      {/* ── Emergency leave form — always mounted, hidden via display when inactive ── */}
++      <div style={{ display: mode === "emergency" ? "block" : "none" }}>
++        <Alert
++          type="error" showIcon icon={<MedicineBoxOutlined />}
++          style={{ marginBottom: 16, borderRadius: 8 }}
++          message={<Text style={{ fontSize: 13, fontWeight: 600, color: "#991b1b" }}>Emergency Leave</Text>}
++          description={
++            <Text style={{ fontSize: 12, color: "#7f1d1d" }}>
++              For unforeseen medical or personal crises. HR will review your request immediately.
++              A medical certificate speeds up approval. Balance deduction is at HR's discretion.
++            </Text>
++          }
++        />
++        <Form form={emergencyForm} layout="vertical" onFinish={(v) => emergencyMutation.mutate(v)}>
++          <Form.Item name="dates" label="Leave Dates"
++            rules={[{ required: true, message: "Please select dates" }]}>
++            <DatePicker.RangePicker style={{ width: "100%" }} format="DD MMM YYYY"
++              disabledDate={(d) => !d || d < dayjs().startOf("day")} />
++          </Form.Item>
++
++          <Form.Item name="reason" label="Reason"
++            rules={[{ required: true, message: "Please describe the emergency" }]}>
++            <Input.TextArea rows={3}
++              placeholder="Describe the emergency — e.g. hospitalisation, accident, family crisis" />
++          </Form.Item>
++
++          <Form.Item
++            name="medical_certificate"
++            label={
++              <span>
++                Medical Certificate
++                <Text style={{ fontSize: 11, color: "#9ca3af", marginLeft: 6, fontWeight: 400 }}>
++                  optional but recommended
++                </Text>
++              </span>
++            }
++          >
++            <Upload
++              fileList={fileList}
++              beforeUpload={() => false}
++              accept=".pdf,.jpg,.jpeg,.png"
++              maxCount={1}
++              onChange={({ fileList: fl }) => setFileList(fl)}
++              onRemove={() => setFileList([])}
++            >
++              <Button icon={<UploadOutlined />} style={{ borderRadius: 8 }}>Upload Certificate</Button>
++            </Upload>
++            {fileList.length === 0 && (
++              <Text style={{ fontSize: 11, color: "#9ca3af", display: "block", marginTop: 4 }}>
++                PDF, JPG, or PNG · max 5 MB
++              </Text>
++            )}
++          </Form.Item>
++
++          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
++            <Button onClick={handleClose}>Cancel</Button>
++            <Button type="primary" htmlType="submit" loading={emergencyMutation.isPending}
++              icon={<MedicineBoxOutlined />}
++              style={{ background: "#dc2626", borderColor: "#dc2626" }}>
++              Submit Emergency Leave
++            </Button>
++          </div>
++        </Form>
++      </div>
++    </Modal>
++  );
++}
++// ── View Leave Balances Modal (shows admin-assigned leaves + Apply button) ────
++// ── View Leave Balances Modal ─────────────────────────────────────────────────
++function ViewLeavesModal({
++  open, onClose, balances, requests, onApplyLeave,
++}: {
++  open: boolean;
++  onClose: () => void;
++  balances: LeaveBalance[];
++  requests: LeaveRequest[];
++  onApplyLeave: (leaveTypeId?: string) => void;
++}) {
++  const currentYear = new Date().getFullYear();
++  const [activeTab, setActiveTab] = useState<"policy" | "history">("policy");
++  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
++
++  // Fetch full leave history for selected year
++  const { data: historyData, isLoading: historyLoading } = useQuery<LeaveRequest[]>({
++    queryKey: ["leave-history", selectedYear],
++    queryFn: () =>
++      get("/leave/requests/", { year: selectedYear, page_size: 100 }).then(
++        (d: any) => d.results ?? d
++      ),
++    enabled: open && activeTab === "history",
++    staleTime: 30_000,
++  });
++
++  // Year options — current year back to 3 years
++  const yearOptions = Array.from({ length: 4 }, (_, i) => currentYear - i).map((y) => ({
++    value: y,
++    label: `${y}`,
++  }));
++
++  // Reset tab when modal closes
++  useEffect(() => {
++    if (!open) {
++      setActiveTab("policy");
++      setSelectedYear(currentYear);
++    }
++  }, [open]);
++
++  const TAB_STYLE = (active: boolean, color: string) => ({
++    flex: 1,
++    padding: "9px 0",
++    border: "none",
++    cursor: "pointer",
++    fontSize: 12,
++    fontWeight: 600,
++    transition: "all 0.15s",
++    background: active ? color : "var(--pmt-surface-2)",
++    color: active ? "#fff" : "var(--pmt-text-2)",
++  });
++
++  return (
++    <Modal
++      title={
++        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
++          <FileProtectOutlined style={{ color: "#7c3aed" }} />
++          <span>My Leave — {currentYear}</span>
++        </div>
++      }
++      open={open}
++      onCancel={onClose}
++      footer={
++        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
++          <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>
++            Balances assigned by HR · history filtered by year
++          </Text>
++          <Button
++            type="primary"
++            icon={<PlusOutlined />}
++            onClick={() => { onClose(); onApplyLeave(); }}
++            style={{ background: "#7c3aed", borderColor: "#7c3aed", borderRadius: 8 }}
++          >
++            Apply Leave
++          </Button>
++        </div>
++      }
++      width={620}
++      destroyOnClose
++    >
++      {/* ── Tabs ── */}
++      <div style={{
++        display: "flex", gap: 0, marginBottom: 16,
++        borderRadius: 10, overflow: "hidden",
++        border: "1px solid var(--pmt-border)",
++      }}>
++        <button
++          onClick={() => setActiveTab("policy")}
++          style={{
++            ...TAB_STYLE(activeTab === "policy", "#7c3aed"),
++            borderRight: "1px solid var(--pmt-border)",
++          }}
++        >
++          <FileProtectOutlined style={{ marginRight: 6 }} />
++          Leave Policy
++        </button>
++        <button
++          onClick={() => setActiveTab("history")}
++          style={TAB_STYLE(activeTab === "history", "#0891b2")}
++        >
++          <ClockCircleOutlined style={{ marginRight: 6 }} />
++          Leave History
++        </button>
++      </div>
++
++      {/* ══════════════════════════════════════════════════════════════
++          TAB 1 — Leave Policy (assigned balances)
++      ══════════════════════════════════════════════════════════════ */}
++      {activeTab === "policy" && (
++        <>
++          {balances.length === 0 ? (
++            <Empty
++              description={
++                <span>
++                  No leave balances assigned yet.{" "}
++                  <Text style={{ color: "#9ca3af" }}>Contact HR.</Text>
++                </span>
++              }
++              image={Empty.PRESENTED_IMAGE_SIMPLE}
++              style={{ padding: "24px 0" }}
++            />
++          ) : (
++            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
++              {balances.map((b) => {
++                const usedPct = b.total > 0 ? Math.round((b.used / b.total) * 100) : 0;
++                const overUsed = b.used > b.total;
++                return (
++                  <div
++                    key={b.code}
++                    style={{
++                      padding: "14px 16px", borderRadius: 12,
++                      border: `1px solid ${b.color}30`,
++                      background: b.color + "08",
++                      display: "flex", flexDirection: "column", gap: 10,
++                    }}
++                  >
++                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
++                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
++                        <div style={{
++                          width: 36, height: 36, borderRadius: 10,
++                          background: b.color + "18", border: `1px solid ${b.color}30`,
++                          display: "flex", alignItems: "center", justifyContent: "center",
++                        }}>
++                          <WalletOutlined style={{ color: b.color, fontSize: 16 }} />
++                        </div>
++                        <div>
++                          <Text style={{ fontSize: 14, fontWeight: 600, color: "var(--pmt-text)", display: "block" }}>
++                            {b.leave_type}
++                          </Text>
++                          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 2 }}>
++                            <Tag style={{
++                              fontSize: 10, borderRadius: 20, padding: "0 7px", margin: 0,
++                              background: b.color + "18", color: b.color, borderColor: b.color + "40",
++                            }}>
++                              {b.code}
++                            </Tag>
++                            <Text style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
++                              {b.is_paid ? "Paid" : "Unpaid"}
++                            </Text>
++                          </div>
++                        </div>
++                      </div>
++                      {/* Stats row */}
++                      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
++                        {[
++                          { label: "Total",     value: b.total,     color: "var(--pmt-text-2)" },
++                          { label: "Used",      value: b.used,      color: "#f59e0b" },
++                          { label: "Remaining", value: b.remaining, color: overUsed ? "#ef4444" : "#16a34a" },
++                        ].map(({ label, value, color }) => (
++                          <div key={label} style={{ textAlign: "center" }}>
++                            <div style={{ fontSize: 16, fontWeight: 700, color, lineHeight: 1 }}>{value}</div>
++                            <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{label}</div>
++                          </div>
++                        ))}
++                      </div>
++                    </div>
++
++                    <div>
++                      <Progress
++                        percent={usedPct}
++                        strokeColor={overUsed ? "#ef4444" : b.color}
++                        trailColor={b.color + "18"}
++                        showInfo={false}
++                        size="small"
++                        style={{ marginBottom: 2 }}
++                      />
++                      <div style={{ display: "flex", justifyContent: "space-between" }}>
++                        <Text style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>
++                          {b.used} used of {b.total} allocated
++                        </Text>
++                        {overUsed && (
++                          <Text style={{ fontSize: 10, color: "#ef4444", fontWeight: 600 }}>
++                            Over by {b.used - b.total}d
++                          </Text>
++                        )}
++                      </div>
++                    </div>
++
++                    {b.remaining > 0 && (
++                      <Button
++                        size="small"
++                        onClick={() => { onClose(); onApplyLeave(b.leave_type_id); }}
++                        style={{
++                          alignSelf: "flex-end", borderRadius: 20, fontSize: 12,
++                          color: b.color, borderColor: b.color, background: "transparent",
++                        }}
++                      >
++                        Apply {b.leave_type}
++                      </Button>
++                    )}
++                  </div>
++                );
++              })}
++
++              {/* Emergency leave card */}
++              <div style={{
++                padding: "14px 16px", borderRadius: 12,
++                border: "1px dashed #fca5a5", background: "#fef2f2",
++                display: "flex", justifyContent: "space-between", alignItems: "center",
++              }}>
++                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
++                  <div style={{
++                    width: 36, height: 36, borderRadius: 10,
++                    background: "#fca5a5", display: "flex", alignItems: "center", justifyContent: "center",
++                  }}>
++                    <MedicineBoxOutlined style={{ color: "#dc2626", fontSize: 16 }} />
++                  </div>
++                  <div>
++                    <Text style={{ fontSize: 14, fontWeight: 600, color: "#dc2626", display: "block" }}>
++                      Emergency Leave
++                    </Text>
++                    <Text style={{ fontSize: 11, color: "#9ca3af" }}>
++                      Subject to HR approval · may require medical certificate
++                    </Text>
++                  </div>
++                </div>
++                <Button
++                  size="small"
++                  onClick={() => { onClose(); onApplyLeave("__EMERGENCY__"); }}
++                  style={{
++                    borderRadius: 20, fontSize: 12,
++                    color: "#dc2626", borderColor: "#dc2626", background: "transparent",
++                  }}
++                >
++                  Apply Emergency
++                </Button>
++              </div>
++            </div>
++          )}
++        </>
++      )}
++
++      {/* ══════════════════════════════════════════════════════════════
++          TAB 2 — Leave History
++      ══════════════════════════════════════════════════════════════ */}
++      {activeTab === "history" && (
++        <>
++          {/* Year selector */}
++          <div style={{
++            display: "flex", alignItems: "center", justifyContent: "space-between",
++            marginBottom: 14, padding: "10px 14px", borderRadius: 10,
++            background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)",
++          }}>
++            <Text style={{ fontSize: 13, fontWeight: 600, color: "var(--pmt-text)" }}>
++              Leave History
++            </Text>
++            <Select
++              value={selectedYear}
++              onChange={(v) => setSelectedYear(v)}
++              options={yearOptions}
++              size="small"
++              style={{ width: 100 }}
++            />
++          </div>
++
++          {historyLoading ? (
++            <div style={{ display: "flex", justifyContent: "center", padding: "32px 0" }}>
++              <Spin />
++            </div>
++          ) : !historyData || historyData.length === 0 ? (
++            <Empty
++              description={`No leave requests found for ${selectedYear}`}
++              image={Empty.PRESENTED_IMAGE_SIMPLE}
++              style={{ padding: "24px 0" }}
++            />
++          ) : (
++            <>
++              {/* Summary pills */}
++              <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
++                {(
++                  [
++                    { status: "PENDING",  color: "#f59e0b" },
++                    { status: "APPROVED", color: "#22c55e" },
++                    { status: "REJECTED", color: "#ef4444" },
++                    { status: "CANCELLED", color: "#6b7280" },
++                  ] as const
++                ).map(({ status, color }) => {
++                  const count = historyData.filter((r) => r.status === status).length;
++                  if (!count) return null;
++                  return (
++                    <div key={status} style={{
++                      flex: 1, textAlign: "center", padding: "8px 6px",
++                      borderRadius: 10, background: color + "12",
++                      border: `1px solid ${color}30`,
++                    }}>
++                      <div style={{ fontSize: 20, fontWeight: 700, color }}>{count}</div>
++                      <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{status}</div>
++                    </div>
++                  );
++                })}
++              </div>
++
++              {/* Request list */}
++              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 380, overflowY: "auto", paddingRight: 2 }}>
++                {historyData.map((r) => {
++                  const statusColor = LEAVE_STATUS_COLOR[r.status] ?? "#6b7280";
++                  return (
++                    <div
++                      key={r.id}
++                      style={{
++                        padding: "12px 14px", borderRadius: 10,
++                        border: `1px solid var(--pmt-border)`,
++                        background: "var(--pmt-surface-2)",
++                      }}
++                    >
++                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
++                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
++                          <div style={{
++                            width: 8, height: 8, borderRadius: "50%",
++                            background: r.color, flexShrink: 0, marginTop: 2,
++                          }} />
++                        <Text style={{ fontSize: 13, fontWeight: 600, color: "var(--pmt-text)" }}>
++  {r.leave_type_name ?? r.leave_type}
++</Text>
++                        </div>
++                        <span style={{
++                          fontSize: 10, fontWeight: 600, borderRadius: 20,
++                          padding: "2px 10px",
++                          background: r.leave_type_color ?? r.color,
++                          color: statusColor,
++                          border: `1px solid ${statusColor}33`,
++                        }}>
++                          {r.status}
++                        </span>
++                      </div>
++
++                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
++                        <div>
++                          <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>From</div>
++                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--pmt-text)" }}>{r.start_date}</div>
++                        </div>
++                        <div>
++                          <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>To</div>
++                          <div style={{ fontSize: 12, fontWeight: 600, color: "var(--pmt-text)" }}>{r.end_date}</div>
++                        </div>
++                        <div>
++                          <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>Days</div>
++                          <div style={{ fontSize: 12, fontWeight: 700, color: "#1677ff" }}>{r.days_count}d</div>
++                        </div>
++                      </div>
++
++                      {r.reason && (
++                        <div style={{
++                          marginTop: 8, padding: "6px 10px", borderRadius: 6,
++                          background: "var(--pmt-surface)", border: "1px solid var(--pmt-border)",
++                          fontSize: 11, color: "var(--pmt-text-2)",
++                        }}>
++                          {r.reason}
++                        </div>
++                      )}
++                    </div>
++                  );
++                })}
++              </div>
++            </>
++          )}
++        </>
++      )}
++    </Modal>
++  );
++}
+ // ── Attendance widget ─────────────────────────────────────────────────────────
+ function AttendanceWidget({
+   today, month, shiftApplicable, wfhStatus,
+   onCheckIn, onCheckOut, onBreakStart, onBreakEnd,
+   checkingIn, checkingOut, breakStarting, breakEnding,
+-  onViewCalendar, onRequestWFH, onRequestShiftChange,
++  onViewCalendar, onRequestWFH, onRequestShiftChange,onApplyLeave,
+ }: {
+   today: AttendanceToday; month: EmpDashboard["attendance_month"];
+   shiftApplicable: boolean; wfhStatus: WFHStatus;
+@@ -478,6 +1160,7 @@ function AttendanceWidget({
+   onBreakStart: (bt: string) => void; onBreakEnd: () => void;
+   checkingIn: boolean; checkingOut: boolean; breakStarting: boolean; breakEnding: boolean;
+   onViewCalendar: () => void; onRequestWFH: () => void; onRequestShiftChange: () => void;
++  onApplyLeave: () => void;
+ }) {
+   const breaks      = today.breaks ?? [];
+   const activeBreak = breaks.find((b) => !b.end_time);
+@@ -486,7 +1169,6 @@ function AttendanceWidget({
+   const breakMins   = today.total_break_minutes ?? 0;
+   const canClockIn  = shiftApplicable || !!today.clockin_enabled;
+ 
+-  // Status badge color
+   const statusBg = today.status === "PRESENT"  ? "#22c55e"
+                  : today.status === "WFH"       ? "#2563eb"
+                  : today.status === "HALF_DAY"  ? "#f59e0b"
+@@ -583,40 +1265,49 @@ function AttendanceWidget({
+       )}
+ 
+       {/* WFH request + shift change — single row */}
+-      <div style={{ marginBottom: 10 }}>
+-        {!today.check_in && wfhStatus.approved_wfh_today && (
+-          <div style={{ textAlign: "center", padding: "6px 10px", marginBottom: 8, borderRadius: 8, background: "#f0fdf4", border: "1px solid #86efac", fontSize: 12, color: "#16a34a" }}>
+-            <CheckCircleOutlined style={{ marginRight: 6 }} />
+-            WFH approved for today — use the WFH button above to clock in
+-          </div>
+-        )}
+-        {!today.check_in && wfhStatus.pending_wfh_request && (
+-          <div style={{ textAlign: "center", padding: "6px 10px", marginBottom: 8, borderRadius: 8, background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)", fontSize: 12, color: "#d97706" }}>
+-            <ClockCircleOutlined style={{ marginRight: 6, color: "#d97706" }} />
+-            WFH request pending HR approval
+-          </div>
+-        )}
+-        <div style={{ display: "flex", gap: 8 }}>
+-          {!today.check_in && !wfhStatus.approved_wfh_today && !wfhStatus.pending_wfh_request && (
+-            <Button
+-              size="small"
+-              icon={<HomeOutlined />}
+-              onClick={onRequestWFH}
+-              style={{ flex: 1, borderRadius: 8, fontSize: 12, color: "#2563eb", borderColor: "#2563eb", background: "transparent", fontWeight: 500, whiteSpace: "nowrap", paddingInline: 8 }}
+-            >
+-              Work From Home
++
++      {/* WFH Request section */}
++      {!today.check_in && (
++        <div style={{ marginBottom: 10 }}>
++          {wfhStatus.approved_wfh_today ? (
++            <div style={{ textAlign: "center", padding: "6px 10px", borderRadius: 8, background: "#f0fdf4", border: "1px solid #86efac", fontSize: 12, color: "#16a34a" }}>
++              <CheckCircleOutlined style={{ marginRight: 6 }} />
++              WFH approved for today — use the WFH button above to clock in
++            </div>
++          ) : wfhStatus.pending_wfh_request ? (
++            <div style={{ textAlign: "center", padding: "6px 10px", borderRadius: 8, background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)", fontSize: 12, color: "#d97706" }}>
++              <ClockCircleOutlined style={{ marginRight: 6, color: "#d97706" }} />
++              WFH request pending HR approval
++            </div>
++          ) : (
++            <Button block icon={<HomeOutlined />} onClick={onRequestWFH}
++              style={{ borderRadius: 8, color: "#2563eb", borderColor: "#2563eb", background: "transparent", fontWeight: 500 }}>
++              Request Work From Home
+             </Button>
+           )}
+-          <Button
+-            size="small"
+-            icon={<ScheduleOutlined />}
+-            onClick={onRequestShiftChange}
+-            style={{ flex: 1, borderRadius: 8, fontSize: 12, color: "#7c3aed", borderColor: "#7c3aed", background: "transparent", whiteSpace: "nowrap", paddingInline: 8 }}
+-          >
+-            Shift Change
+-          </Button>
+         </div>
++      )}
++
++      {/* Shift change button */}
++      {/* Shift change button only */}
++      <div style={{ marginBottom: 10 }}>
++        <Button
++          block
++          size="small"
++          icon={<ScheduleOutlined />}
++          onClick={onRequestShiftChange}
++          style={{ borderRadius: 8, fontSize: 12, color: "#7c3aed", borderColor: "#7c3aed", background: "transparent" }}
++        >
++          Request Shift Change
++        </Button>
+       </div>
++      {/* Apply leave button — new */}
++<div style={{ marginBottom: 10 }}>
++  <Button block size="small" icon={<WalletOutlined />} onClick={onApplyLeave}
++    style={{ borderRadius: 8, fontSize: 12, color: "#059669", borderColor: "#059669", background: "transparent" }}>
++    Apply for Leave
++  </Button>
++</div>
+ 
+       {/* Break log */}
+       {breaks.length > 0 && (
+@@ -639,67 +1330,137 @@ function AttendanceWidget({
+       )}
+ 
+       {/* Monthly summary */}
+-      <Divider style={{ margin: "10px 0" }} />
+-      <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 8 }}>This month</Text>
+-      <div style={{ display: "flex", gap: 8 }}>
+-        {[
+-          { label: "Present", value: month.present,  color: "#16a34a" },
+-          { label: "WFH",     value: month.wfh,      color: "#2563eb" },
+-          { label: "Leave",   value: month.on_leave, color: "#7c3aed" },
+-        ].map(({ label, value, color }) => (
+-          <div key={label} style={{ flex: 1, textAlign: "center", padding: "6px 4px", background: color + "18", borderRadius: 8, border: `1px solid ${color}33` }}>
+-            <div style={{ fontSize: 18, fontWeight: 700, color }}>{value}</div>
+-            <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{label}</div>
+-          </div>
+-        ))}
+-      </div>
++      {/* Monthly summary */}
++<Divider style={{ margin: "10px 0" }} />
++<Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 8 }}>This month</Text>
++<div style={{ display: "flex", gap: 8 }}>
++  {[
++    { label: "Present",  value: month.present,                         color: "#16a34a" },
++    { label: "WFH",      value: month.wfh,                             color: "#2563eb" },
++    { label: "Leave",    value: (month.on_leave ?? (month as any).leave ?? 0), color: "#7c3aed" },
++  ].map(({ label, value, color }) => (
++    <div key={label} style={{ flex: 1, textAlign: "center", padding: "6px 4px", background: color + "18", borderRadius: 8, border: `1px solid ${color}33` }}>
++      <div style={{ fontSize: 18, fontWeight: 700, color }}>{value}</div>
++      <div style={{ fontSize: 10, color: "var(--pmt-text-3)" }}>{label}</div>
++    </div>
++  ))}
++</div>
+     </Widget>
+   );
+ }
+ 
+ // ── Leave widget ──────────────────────────────────────────────────────────────
+-function LeaveWidget({ balances, requests, onApply }: {
+-  balances: LeaveBalance[]; requests: LeaveRequest[]; onApply: () => void;
++function LeaveWidget({
++  balances, requests, onApply, onViewLeaves,
++}: {
++  balances: LeaveBalance[];
++  requests: LeaveRequest[];
++  onApply: () => void;
++  onViewLeaves: () => void;
+ }) {
+   return (
+-    <Widget title="Leave Management" icon={<WalletOutlined />} iconColor="#7c3aed" bgColor="#f5f3ff" borderColor="#ddd6fe"
+-      extra={<Button size="small" type="primary" icon={<PlusOutlined />}
+-        style={{ borderRadius: 20, fontSize: 12, background: "var(--pmt-surface-2)", borderColor: "var(--pmt-border)", color: "var(--pmt-text)" }}
+-        onClick={onApply}>Apply Leave</Button>}>
++    <Widget
++      title="Leave Management"
++      icon={<WalletOutlined />}
++      iconColor="#7c3aed"
++      bgColor="#f5f3ff"
++      borderColor="#ddd6fe"
++      extra={
++        <div style={{ display: "flex", gap: 8 }}>
++          {/* View assigned leaves button */}
++          <Button
++            size="small"
++            icon={<InfoCircleOutlined />}
++            onClick={onViewLeaves}
++            style={{
++              borderRadius: 20, fontSize: 12,
++              color: "#7c3aed", borderColor: "#ddd6fe",
++              background: "var(--pmt-surface-2)",
++            }}
++          >
++            View Leaves
++          </Button>
++          {/* Apply leave button */}
++          <Button
++            size="small"
++            type="primary"
++            icon={<PlusOutlined />}
++            style={{
++              borderRadius: 20, fontSize: 12,
++              background: "#7c3aed", borderColor: "#7c3aed",
++            }}
++            onClick={onApply}
++          >
++            Apply Leave
++          </Button>
++        </div>
++      }
++    >
++      {/* ── Balance summary ─────────────────────────────────────────────── */}
+       {balances.length > 0 ? (
+         <div style={{ marginBottom: 14 }}>
+-          <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 8 }}>Leave Balance — {new Date().getFullYear()}</Text>
++          <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 8 }}>
++            Leave Balance — {new Date().getFullYear()}
++          </Text>
+           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+             {balances.map((b) => (
+               <div key={b.code} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: b.color, flexShrink: 0 }} />
+                 <Text style={{ fontSize: 12, flex: 1 }}>{b.leave_type}</Text>
+                 <Text style={{ fontSize: 12, color: "var(--pmt-text-3)" }}>{b.used}/{b.total} used</Text>
+-                <div style={{ width: 60 }}><Progress percent={b.total > 0 ? Math.round((b.used / b.total) * 100) : 0} strokeColor={b.color} showInfo={false} size="small" /></div>
+-                <Text style={{ fontSize: 12, fontWeight: 600, color: b.color, minWidth: 32, textAlign: "right" }}>{b.remaining}d</Text>
++                <div style={{ width: 60 }}>
++                  <Progress
++                    percent={b.total > 0 ? Math.round((b.used / b.total) * 100) : 0}
++                    strokeColor={b.color}
++                    showInfo={false}
++                    size="small"
++                  />
++                </div>
++                <Text style={{ fontSize: 12, fontWeight: 600, color: b.color, minWidth: 32, textAlign: "right" }}>
++                  {b.remaining}d
++                </Text>
+               </div>
+             ))}
+           </div>
+         </div>
+       ) : (
+-        <Text style={{ fontSize: 12, color: "var(--pmt-text-3)", display: "block", marginBottom: 14 }}>No leave balance configured. Contact HR.</Text>
++        <Text style={{ fontSize: 12, color: "var(--pmt-text-3)", display: "block", marginBottom: 14 }}>
++          No leave balance configured. Contact HR.
++        </Text>
+       )}
++
+       <Divider style={{ margin: "10px 0" }} />
+       <Text style={{ fontSize: 11, color: "var(--pmt-text-3)", display: "block", marginBottom: 8 }}>Recent Requests</Text>
+       {requests.length === 0 ? (
+-        <div style={{ textAlign: "center", padding: "12px 0" }}><Text style={{ color: "#9ca3af", fontSize: 12 }}>No leave requests</Text></div>
++        <div style={{ textAlign: "center", padding: "12px 0" }}>
++          <Text style={{ color: "#9ca3af", fontSize: 12 }}>No leave requests</Text>
++        </div>
+       ) : (
+         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+           {requests.map((r) => (
+-            <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 8, background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)" }}>
++            <div key={r.id} style={{
++              display: "flex", justifyContent: "space-between", alignItems: "center",
++              padding: "8px 10px", borderRadius: 8,
++              background: "var(--pmt-surface-2)", border: "1px solid var(--pmt-border)",
++            }}>
+               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                 <div style={{ width: 6, height: 6, borderRadius: "50%", background: r.color, flexShrink: 0 }} />
+                 <div>
+                   <Text style={{ fontSize: 12, fontWeight: 500 }}>{r.leave_type}</Text>
+-                  <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>{r.start_date} → {r.end_date} <span style={{ marginLeft: 6 }}>({r.days_count}d)</span></div>
++                  <div style={{ fontSize: 11, color: "var(--pmt-text-3)" }}>
++                    {r.start_date} → {r.end_date}
++                    <span style={{ marginLeft: 6 }}>({r.days_count}d)</span>
++                  </div>
+                 </div>
+               </div>
+-              <span style={{ fontSize: 10, fontWeight: 600, borderRadius: 20, padding: "1px 8px", background: LEAVE_STATUS_COLOR[r.status] + "18", color: LEAVE_STATUS_COLOR[r.status], border: `1px solid ${LEAVE_STATUS_COLOR[r.status]}33` }}>{r.status}</span>
++              <span style={{
++                fontSize: 10, fontWeight: 600, borderRadius: 20, padding: "1px 8px",
++                background: LEAVE_STATUS_COLOR[r.status] + "18",
++                color: LEAVE_STATUS_COLOR[r.status],
++                border: `1px solid ${LEAVE_STATUS_COLOR[r.status]}33`,
++              }}>
++                {r.status}
++              </span>
+             </div>
+           ))}
+         </div>
+@@ -708,36 +1469,6 @@ function LeaveWidget({ balances, requests, onApply }: {
+   );
+ }
+ 
+-// ── Apply leave modal ─────────────────────────────────────────────────────────
+-function ApplyLeaveModal({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: () => void }) {
+-  const [form] = Form.useForm();
+-  const { data: leaveTypes } = useQuery<Array<{ id: string; name: string; code: string; color: string }>>({
+-    queryKey: ["leave-types"], queryFn: () => get("/leave/types/"), enabled: open,
+-  });
+-  const mutation = useMutation({
+-    mutationFn: (data: any) => post("/leave/requests/", data),
+-    onSuccess: () => { message.success("Leave request submitted"); form.resetFields(); onSuccess(); },
+-    onError: () => message.error("Failed to submit leave request"),
+-  });
+-  return (
+-    <Modal title="Apply for Leave" open={open} onCancel={onClose} footer={null} width={480}>
+-      <Form form={form} layout="vertical" onFinish={(v) => mutation.mutate({ leave_type: v.leave_type, start_date: v.dates[0].format("YYYY-MM-DD"), end_date: v.dates[1].format("YYYY-MM-DD"), reason: v.reason || "" })}>
+-        <Form.Item name="leave_type" label="Leave Type" rules={[{ required: true }]}>
+-          <Select placeholder="Select type">{(leaveTypes ?? []).map((t) => <Select.Option key={t.id} value={t.id}>{t.name}</Select.Option>)}</Select>
+-        </Form.Item>
+-        <Form.Item name="dates" label="Date Range" rules={[{ required: true }]}>
+-          <DatePicker.RangePicker style={{ width: "100%" }} disabledDate={(d) => d && d < dayjs().startOf("day")} />
+-        </Form.Item>
+-        <Form.Item name="reason" label="Reason"><Input.TextArea rows={3} placeholder="Optional reason" /></Form.Item>
+-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+-          <Button onClick={onClose}>Cancel</Button>
+-          <Button type="primary" htmlType="submit" loading={mutation.isPending} style={{ background: "#7c3aed", borderColor: "#7c3aed" }}>Submit Request</Button>
+-        </div>
+-      </Form>
+-    </Modal>
+-  );
+-}
+-
+ // ── Payslip widget ────────────────────────────────────────────────────────────
+ function PayslipWidget({ records, fy }: { records: EmpDashboard["payslips"]; fy: string }) {
+   const [amountVisible, setAmountVisible] = useState(false);
+@@ -845,11 +1576,15 @@ function ReportingChain({ managerName, managerCode, managerDesig, managerAvatar,
+ export default function EmployeeDashboardPage() {
+   const navigate    = useNavigate();
+   const queryClient = useQueryClient();
+-  const [leaveModalOpen,       setLeaveModalOpen]       = useState(false);
+-  const [wfhModalOpen,         setWfhModalOpen]         = useState(false);
+-  const [shiftChangeModalOpen, setShiftChangeModalOpen] = useState(false);
+-  const [calendarOpen,         setCalendarOpen]         = useState(false);
+-  const [followUpCalendarOpen, setFollowUpCalendarOpen] = useState(false);
++  const [leaveModalOpen,        setLeaveModalOpen]        = useState(false);
++  const [viewLeavesModalOpen,   setViewLeavesModalOpen]   = useState(false);
++  const [wfhModalOpen,          setWfhModalOpen]          = useState(false);
++  const [shiftChangeModalOpen,  setShiftChangeModalOpen]  = useState(false);
++  const [calendarOpen,          setCalendarOpen]          = useState(false);
++  const [followUpCalendarOpen,  setFollowUpCalendarOpen]  = useState(false);
++  // Tracks which leave type to pre-select when opening apply modal from "View Leaves"
++  const [prefillLeaveTypeId,    setPrefillLeaveTypeId]    = useState<string | null>(null);
++
+   const now = useGreetingClock();
+ 
+   const { data, isLoading, isError } = useQuery<EmpDashboard>({
+@@ -888,6 +1623,12 @@ export default function EmployeeDashboardPage() {
+     onError: (e: any) => message.error(e?.response?.data?.error || "Could not update follow-up"),
+   });
+ 
++  // Open apply leave modal, optionally pre-selecting a leave type
++  const openApplyLeave = (leaveTypeId?: string) => {
++    setPrefillLeaveTypeId(leaveTypeId ?? null);
++    setLeaveModalOpen(true);
++  };
++
+   if (isLoading) return <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 300 }}><Spin size="large" /></div>;
+   if (isError || !data) return <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}><Empty description="Failed to load your dashboard. Contact admin if this persists." /></div>;
+ 
+@@ -915,14 +1656,33 @@ export default function EmployeeDashboardPage() {
+ 
+   return (
+     <div style={{ minHeight: "100vh", background: "var(--pmt-bg)" }}>
+-      {/* Modals */}
+-      <ApplyLeaveModal  open={leaveModalOpen}       onClose={() => setLeaveModalOpen(false)}       onSuccess={() => { setLeaveModalOpen(false);       refresh(); }} />
++      {/* ── Modals ─────────────────────────────────────────────────────────── */}
++
++      {/* Apply Leave — enhanced with emergency + medical cert */}
++      <ApplyLeaveModal
++        open={leaveModalOpen}
++        onClose={() => { setLeaveModalOpen(false); setPrefillLeaveTypeId(null); }}
++        onSuccess={() => { setLeaveModalOpen(false); setPrefillLeaveTypeId(null); refresh(); }}
++        balances={leave_balances}
++        prefillLeaveTypeId={prefillLeaveTypeId}
++      />
++
++      {/* View assigned leave balances */}
++      <ViewLeavesModal
++        open={viewLeavesModalOpen}
++        onClose={() => setViewLeavesModalOpen(false)}
++        balances={leave_balances}
++        requests={leave_requests}
++        onApplyLeave={(leaveTypeId) => openApplyLeave(leaveTypeId)}
++      />
++
+       <WFHRequestModal  open={wfhModalOpen}         onClose={() => setWfhModalOpen(false)}         onSuccess={() => { setWfhModalOpen(false);         refresh(); }} />
+-      <ShiftChangeModal open={shiftChangeModalOpen} onClose={() => setShiftChangeModalOpen(false)} onSuccess={() => { setShiftChangeModalOpen(false); refresh(); } } employeeId={profile.id} />
++      <ShiftChangeModal open={shiftChangeModalOpen} onClose={() => setShiftChangeModalOpen(false)} onSuccess={() => { setShiftChangeModalOpen(false); refresh(); }} employeeId={profile.id} />
+       <Modal open={calendarOpen} onCancel={() => setCalendarOpen(false)} footer={null} width={860}
+         title={<div style={{ display: "flex", alignItems: "center", gap: 8 }}><ScheduleOutlined style={{ color: "#059669" }} /><span>My Attendance Calendar</span></div>}
+         styles={{ body: { padding: "20px 24px 24px" } }} destroyOnClose>
+-        <AttendanceCalendar employeeId={profile.id} />
++        <AttendanceCalendar employeeId={profile.id} 
++         onApplyLeave={() => { setCalendarOpen(false); openApplyLeave(); }}/>
+       </Modal>
+       <FollowUpCalendarModal
+         open={followUpCalendarOpen}
+@@ -1024,14 +1784,21 @@ export default function EmployeeDashboardPage() {
+                 onViewCalendar={() => setCalendarOpen(true)}
+                 onRequestWFH={() => setWfhModalOpen(true)}
+                 onRequestShiftChange={() => setShiftChangeModalOpen(true)}
++                 onApplyLeave={() => openApplyLeave()}
+               />
+             </Col>
+             <Col xs={24} lg={12}>
+               <WorkHoursStats stats={checkin_stats ?? { avg_working_hours: 0, avg_break_minutes: 0, total_working_hours: 0, total_break_minutes: 0, working_days_count: 0, on_time: 0, late: 0, early: 0 }} />
+             </Col>
+-           <Col span={24}>
+-  <LeaveWidget balances={leave_balances} requests={leave_requests} onApply={() => setLeaveModalOpen(true)} />
+-</Col>
++            <Col span={24}>
++              {/* ── Leave Management — two buttons: View Leaves + Apply Leave ── */}
++              <LeaveWidget
++                balances={leave_balances}
++                requests={leave_requests}
++                onApply={() => openApplyLeave()}
++                onViewLeaves={() => setViewLeavesModalOpen(true)}
++              />
++            </Col>
+             <Col span={24}>
+               <Widget title="My Active Projects" icon={<ProjectOutlined />} bgColor="#fffbeb" borderColor="#fde68a" iconColor="#d97706">
+                 {my_projects.length === 0 ? <Empty description="No active project allocations" image={Empty.PRESENTED_IMAGE_SIMPLE} /> : (
+@@ -1107,5 +1874,3 @@ export default function EmployeeDashboardPage() {
+     </div>
+   );
+ }
+-
+-// EyeOutlined is already imported above; duplicate import removed

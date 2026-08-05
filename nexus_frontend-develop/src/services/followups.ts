@@ -1,0 +1,92 @@
+import { get, post, patch, del } from "./api";
+
+export const FOLLOWUP_PRIORITIES = [
+  { value: "IMPORTANT", label: "Important", color: "#dc2626" },
+  { value: "HIGH",      label: "High",      color: "#ea580c" },
+  { value: "MEDIUM",    label: "Medium",    color: "#d97706" },
+  { value: "LOW",       label: "Low",       color: "#6b7280" },
+] as const;
+
+export interface FollowUpItem {
+  id: string;
+  title: string;
+  type: string;
+  type_label: string;
+  priority: string;
+  priority_label: string;
+  description: string;
+  comments: string;
+  assignee: string | null;
+  assignee_name: string | null;
+  reporter: string | null;
+  reporter_name: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  is_overdue: boolean;
+  workflow_state: string | null;
+  workflow_state_name: string;
+  workflow_state_slug: string;
+  workflow_state_color: string;
+  can_transition: boolean;
+  allowed_destination_slugs?: string[];
+  created_at: string;
+  updated_at: string;
+  available_states?: Array<{ id: string; name: string; slug: string; color: string }>;
+}
+
+export interface FollowUpCreate {
+  title: string;
+  type: string;
+  priority?: string;
+  description?: string;
+  comments?: string;
+  assignee?: string | null;
+  reporter?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+}
+
+export interface FollowUpBoardResponse {
+  columns: Record<string, FollowUpItem[]>;
+  count: number;
+}
+
+export interface PaginatedResponse<T> {
+  results: T[];
+  count: number;
+}
+
+export const followUpApi = {
+  list: async (params?: Record<string, string>) => {
+    const res = await get<PaginatedResponse<FollowUpItem> | FollowUpItem[]>("/followups/", {
+      ...params,
+      page_size: "500",
+    });
+    return Array.isArray(res) ? res : res.results;
+  },
+
+  retrieve: (id: string) =>
+    get<FollowUpItem>(`/followups/${id}/`),
+
+  create: (data: FollowUpCreate) =>
+    post<FollowUpItem>("/followups/", data),
+
+  update: (id: string, data: Partial<FollowUpCreate>) =>
+    patch<FollowUpItem>(`/followups/${id}/`, data),
+
+  delete: (id: string) =>
+    del(`/followups/${id}/`),
+
+  transition: (id: string, destination_state: string, comments = "") =>
+    post<{ message: string; workflow_state_name: string; workflow_state_slug: string }>(
+      `/followups/${id}/transition/`,
+      { destination_state, comments },
+    ),
+
+  board: (params?: Record<string, string>) =>
+    get<FollowUpBoardResponse>("/followups/board/", params),
+};
