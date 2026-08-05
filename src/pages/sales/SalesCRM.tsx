@@ -79,6 +79,16 @@ interface ClientRecord {
   createdAt: string;
 }
 
+const DEFAULT_BUSINESS_CATEGORIES: TrainingCategoryOption[] = [
+  { id: 1, name: 'Consulting & Audit' },
+  { id: 2, name: 'Corporate Training' },
+  { id: 3, name: 'Executive Coaching' },
+  { id: 4, name: 'Technical Certification' },
+  { id: 5, name: 'Software Development & IT' },
+  { id: 6, name: 'Cloud & Infrastructure' },
+  { id: 7, name: 'AI & Data Science' },
+];
+
 const mapQuotation = (q: any): Quotation => ({
   id: q.id,
   quoteNo: q.quote_no || '',
@@ -215,15 +225,19 @@ const SalesCRM: React.FC = () => {
   const [clientRecords, setClientRecords] = useState<ClientRecord[]>([]);
   const [quotes, setQuotes] = useState<Quotation[]>([]);
   const [sendingId, setSendingId] = useState<number | null>(null);
-  const [trainingCategories, setTrainingCategories] = useState<TrainingCategoryOption[]>([]);
+  const [trainingCategories, setTrainingCategories] = useState<TrainingCategoryOption[]>(DEFAULT_BUSINESS_CATEGORIES);
 
   const fetchTrainingCategories = useCallback(async () => {
     try {
       const data = await get<any>('/training-categories/');
       const list = Array.isArray(data) ? data : (data?.results ?? []);
-      setTrainingCategories(list.map((c: any) => ({ id: c.id, name: c.name, color: c.color })));
+      if (list.length > 0) {
+        setTrainingCategories(list.map((c: any) => ({ id: c.id, name: c.name, color: c.color })));
+      } else {
+        setTrainingCategories(DEFAULT_BUSINESS_CATEGORIES);
+      }
     } catch {
-      // Silently leave list empty
+      setTrainingCategories(DEFAULT_BUSINESS_CATEGORIES);
     }
   }, []);
 
@@ -532,12 +546,19 @@ const SalesCRM: React.FC = () => {
   };
 
   const handleSendMail = async (q: Quotation) => {
+    let targetEmail = q.clientEmail;
+    if (!targetEmail) {
+      const entered = window.prompt(`Enter recipient email address for Quotation ${q.quoteNo} (${q.clientName}):`);
+      if (!entered || !entered.trim()) return;
+      targetEmail = entered.trim();
+    }
+
     setSendingId(q.id);
     try {
-      const data = await post<any>(`/quotations/${q.id}/send_mail/`);
+      const data = await post<any>(`/quotations/${q.id}/send_mail/`, { email: targetEmail });
       if (data) {
         setQuotes(prev => prev.map(x => x.id === q.id ? mapQuotation(data) : x));
-        addToast(`Proposal emailed to ${data.client_details?.email || q.clientEmail}`, 'success');
+        addToast(`Proposal ${q.quoteNo} emailed successfully to ${data.client_details?.email || targetEmail}!`, 'success');
       }
     } catch (err: any) {
       addToast(err?.response?.data?.detail || 'Could not send the email — check SMTP settings.', 'error');
@@ -588,7 +609,7 @@ const SalesCRM: React.FC = () => {
           <button className={styles.btnPrimary} onClick={openAddOpportunityChooser} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Plus size={16} /> Add Opportunity
           </button>
-          <button className={styles.btnSecondary} onClick={() => openModal(<QuoteForm clients={clients} deals={deals} onSubmit={handleCreateQuote} onClose={closeModal} />, 'Generate Quotation')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <button className={styles.btnSecondary} onClick={() => openModal(<QuoteForm clients={clients} deals={deals} categories={trainingCategories} onSubmit={handleCreateQuote} onClose={closeModal} />, 'Generate Quotation')} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Plus size={16} /> Generate Quote
           </button>
         </div>
@@ -1459,7 +1480,7 @@ const QuoteForm = ({ clients = [], deals = [], categories = [], onSubmit, onClos
 }) => {
   const safeClients = clients || [];
   const safeDeals = deals || [];
-  const safeCategories = categories || [];
+  const safeCategories = (categories && categories.length > 0) ? categories : DEFAULT_BUSINESS_CATEGORIES;
 
   const allClients = React.useMemo(() => {
     const map = new Map<string, { id: string | number; name: string; email: string }>();
@@ -1512,7 +1533,7 @@ const QuoteForm = ({ clients = [], deals = [], categories = [], onSubmit, onClos
     }
   }, [selectedKey]);
 
-  const opportunity = safeDeals.find(d => String(d.id) === String(dealId)) || clientDeals[0] || null;
+  const opportunity = dealId ? (safeDeals.find(d => String(d.id) === String(dealId)) || null) : null;
   const cost = opportunity ? (parseFloat(opportunity.expectedValue) || 0) : (parseFloat(customCost) || 0);
 
   const selectedCategory = safeCategories.find(c => String(c.id) === selectedCategoryId) ||
