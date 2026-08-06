@@ -652,8 +652,15 @@ export default function AppLayout() {
     },
   ];
 
+  const isChatRoute = location.pathname.includes("/chat");
+
   return (
-    <Layout style={{ minHeight: "100vh", background: pageBg }}>
+    <Layout style={{
+      height: "100vh",
+      maxHeight: "100vh",
+      overflow: "hidden",
+      background: pageBg
+    }}>
       <a href="#pmt-main-content" className="pmt-skip-link">
         Skip to main content
       </a>
@@ -764,6 +771,10 @@ export default function AppLayout() {
         transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)",
         background: pageBg,
         height: "100vh",
+        maxHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
       }}>
 
         {/* Header */}
@@ -880,9 +891,13 @@ export default function AppLayout() {
           id="pmt-main-content"
           style={{
             background: pageBg,
-            overflow: "auto",
-            padding: 24,
+            overflow: location.pathname.includes("/chat") ? "hidden" : "auto",
+            padding: location.pathname.includes("/chat") ? 0 : 24,
             height: "calc(100vh - 64px)",
+            maxHeight: "calc(100vh - 64px)",
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <Outlet />

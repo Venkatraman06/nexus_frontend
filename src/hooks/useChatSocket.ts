@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ACCESS_TOKEN_KEY } from "@/store/auth";
+import { ACCESS_TOKEN_KEY, useAuthStore } from "@/store/auth";
 import { useChatStore } from "@/store/chat";
-import type { ChatMessage, PaginatedResponse } from "@/services/chat";
+import { chatApi, type ChatMessage, type PaginatedResponse } from "@/services/chat";
 
 type ServerEvent =
   | { type: "message:new" | "message:updated" | "message:deleted"; message: ChatMessage }
   | { type: "typing:update"; conversation_id: string; employee_id: string; is_typing: boolean }
   | { type: "presence:update"; employee_id: string; status: "online" | "offline" }
-  | { type: "notification:push"; notification: unknown };
+  | { type: "notification:push"; notification: unknown }
+  | { type: "chat.call.update"; call: unknown };
 
 const MAX_BACKOFF_MS = 15_000;
 
@@ -18,14 +19,6 @@ function wsUrl(): string {
   return `${proto}//${window.location.host}/pmt/ws/chat/?token=${encodeURIComponent(token)}`;
 }
 
-/**
- * Owns one WebSocket connection for the lifetime of the mounting component
- * (intended to be called once, from ChatPage). Sending happens over REST
- * (chatApi) so it works the same with or without a live socket and covers
- * attachments; this hook only handles the live inbound stream — new/edited/
- * deleted messages, typing, presence — by writing into the TanStack Query
- * cache and the chat Zustand store, plus exposes typing-indicator senders.
- */
 export function useChatSocket() {
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectAttempt = useRef(0);
@@ -37,18 +30,24 @@ export function useChatSocket() {
 
   const upsertMessageInCache = useCallback(
     (message: ChatMessage) => {
-      queryClient.setQueriesData<PaginatedResponse<ChatMessage>>(
-        { queryKey: ["chat", "messages", message.conversation] },
+      queryClient.setQueriesData<PaginatedResponse<ChatMessage> | ChatMessage[]>(
+        { queryKey: ["chat", "messages"] },
         (old) => {
           if (!old) return old;
-          const idx = old.results.findIndex((m) => m.id === message.id);
-          const results =
-            idx === -1
-              ? [...old.results, message]
-              : old.results.map((m) => (m.id === message.id ? message : m));
-          return { ...old, results };
+          if (Array.isArray(old)) {
+            const idx = old.findIndex((m) => m.id === message.id);
+            return idx === -1 ? [...old, message] : old.map((m) => (m.id === message.id ? message : m));
+          }
+          if ((old as any).results && Array.isArray((old as any).results)) {
+            const results = (old as any).results;
+            const idx = results.findIndex((m: ChatMessage) => m.id === message.id);
+            const newResults = idx === -1 ? [...results, message] : results.map((m: ChatMessage) => (m.id === message.id ? message : m));
+            return { ...old, results: newResults };
+          }
+          return old;
         }
       );
+      queryClient.invalidateQueries({ queryKey: ["chat", "messages"] });
       queryClient.invalidateQueries({ queryKey: ["chat", "conversations"] });
     },
     [queryClient]
@@ -58,6 +57,15 @@ export function useChatSocket() {
     (event: ServerEvent) => {
       switch (event.type) {
         case "message:new":
+          upsertMessageInCache(event.message);
+          const activeId = useChatStore.getState().activeConversationId;
+          const user = useAuthStore.getState().user;
+          const senderId = typeof event.message.sender === "string" ? event.message.sender : event.message.sender?.id;
+          const isFromMe = user?.id && senderId && String(senderId).toLowerCase() === String(user.id).toLowerCase();
+          if (activeId && activeId === event.message.conversation && !isFromMe) {
+            chatApi.markRead(event.message.conversation).catch(() => {});
+          }
+          break;
         case "message:updated":
         case "message:deleted":
           upsertMessageInCache(event.message);
@@ -70,6 +78,10 @@ export function useChatSocket() {
           break;
         case "notification:push":
           queryClient.invalidateQueries({ queryKey: ["notifications"] });
+          break;
+        case "chat.call.update":
+          queryClient.setQueryData(["chat", "activeCall"], event.call);
+          queryClient.invalidateQueries({ queryKey: ["chat", "callHistory"] });
           break;
       }
     },
@@ -90,10 +102,19 @@ export function useChatSocket() {
       setConnectionStatus("connecting");
       const socket = new WebSocket(wsUrl());
       socketRef.current = socket;
+      let pingInterval: any = null;
 
       socket.onopen = () => {
         reconnectAttempt.current = 0;
         setConnectionStatus("connected");
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: "presence:ping" }));
+        }
+        pingInterval = setInterval(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ type: "presence:ping" }));
+          }
+        }, 15000);
       };
 
       socket.onmessage = (evt) => {
@@ -105,6 +126,7 @@ export function useChatSocket() {
       };
 
       socket.onclose = () => {
+        if (pingInterval) clearInterval(pingInterval);
         setConnectionStatus("disconnected");
         if (cancelled) return;
         const delay = Math.min(1000 * 2 ** reconnectAttempt.current, MAX_BACKOFF_MS);
@@ -113,6 +135,7 @@ export function useChatSocket() {
       };
 
       socket.onerror = () => {
+        if (pingInterval) clearInterval(pingInterval);
         socket.close();
       };
     }

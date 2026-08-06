@@ -185,7 +185,7 @@ export default function App() {
         <Route path="master/workflow" element={<RequirePermission permission={PERMS.MASTER_WORKFLOW_VIEW}><MasterPage defaultTab="workflow" /></RequirePermission>} />
         <Route path="employees/hr-compliance" element={<RequirePermission permission={PERMS.HRMS_COMPLIANCE_VIEW}><HRCompliancePage /></RequirePermission>} />
         <Route path="policy-documents" element={<RequirePermission permission={PERMS.POLICY_VIEW}><PolicyDocumentsPage /></RequirePermission>} />
-        <Route path="chat" element={<RequirePermission permission={PERMS.CHAT_VIEW}><ChatPage /></RequirePermission>} />
+        <Route path="chat" element={<ChatPage />} />
         <Route path="finance/documents" element={<RequirePermission permission={PERMS.FINANCE_DOCUMENT_VIEW}><FinanceListPage /></RequirePermission>} />
         <Route path="finance/documents/new" element={<RequirePermission permission={PERMS.FINANCE_DOCUMENT_CREATE}><FinanceFormPage /></RequirePermission>} />
         <Route path="finance/documents/:id" element={<RequirePermission permission={PERMS.FINANCE_DOCUMENT_VIEW}><FinanceFormPage /></RequirePermission>} />

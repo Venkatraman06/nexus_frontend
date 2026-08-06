@@ -6,8 +6,10 @@
   --pmt-font: 'Inter', 'Roboto', 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-body {
+html, body, #root {
   margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: var(--pmt-font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
