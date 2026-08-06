@@ -91,6 +91,7 @@ const NAV_ITEMS_WITHOUT_DASHBOARD: NavItem[] = [
       { key: "/employees/leave-requests", icon: <CalendarOutlined />, label: "Leave Management", anyOf: [PERMS.DASHBOARD_OWN, PERMS.HRMS_LEAVE_VIEW] },
       { key: "/employees/payroll",        icon: <WalletOutlined />,            label: "Payroll",          permission: PERMS.HRMS_PAYROLL_VIEW },
       { key: "/employees/hr-compliance", icon: <SafetyCertificateOutlined />, label: "HR Compliance", permission: PERMS.HRMS_COMPLIANCE_VIEW },
+      { key: "/employees/offboarding", icon: <LogoutOutlined />, label: "Offboarding", permission: PERMS.HRMS_OFFBOARDING_VIEW },
     ],
   },
   {

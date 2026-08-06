@@ -58,6 +58,13 @@ export const PERMS = {
   HRMS_COMPLIANCE_UPDATE:     "bms.hrms.compliance.update",
   HRMS_COMPLIANCE_DELETE:     "bms.hrms.compliance.delete",
 
+  // HRMS — Offboarding
+  HRMS_OFFBOARDING_VIEW:      "bms.hrms.offboarding.view",
+  HRMS_OFFBOARDING_CREATE:    "bms.hrms.offboarding.create",
+  HRMS_OFFBOARDING_UPDATE:    "bms.hrms.offboarding.update",
+  HRMS_OFFBOARDING_DELETE:    "bms.hrms.offboarding.delete",
+  
+
   // Chat
   CHAT_VIEW:                  "bms.chat.view",
 
