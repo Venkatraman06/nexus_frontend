@@ -4,8 +4,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(74, 52, 42, 0.4); /* espresso with opacity */
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,9 +14,9 @@
 }
 
 .modal {
-  background-color: var(--pmt-surface, #ffffff);
-  background: var(--pmt-surface, #ffffff);
-  color: var(--pmt-text, #09090b);
+  background-color: var(--bms-surface, #ffffff);
+  background: var(--bms-surface, #ffffff);
+  color: var(--bms-text, #09090b);
   width: 100%;
   max-width: 580px;
   max-height: 90vh;
@@ -26,7 +26,7 @@
   flex-direction: column;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
-  border: 1px solid var(--pmt-border, #e4e4e7);
+  border: 1px solid var(--bms-border, #e4e4e7);
   isolation: isolate;
 }
 
@@ -39,24 +39,24 @@
 
 .header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--pmt-border, #e4e4e7);
+  border-bottom: 1px solid var(--bms-border, #e4e4e7);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--pmt-surface, #ffffff);
+  background-color: var(--bms-surface, #ffffff);
 }
 
 .title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--pmt-text, #09090b);
+  color: var(--bms-text, #09090b);
   margin: 0;
 }
 
 .closeBtn {
-  color: var(--pmt-text-2, #71717a);
-  background-color: var(--pmt-surface-2, #f4f4f5);
-  border: 1px solid var(--pmt-border, #e4e4e7);
+  color: var(--bms-text-2, #71717a);
+  background-color: var(--bms-surface-2, #f4f4f5);
+  border: 1px solid var(--bms-border, #e4e4e7);
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -68,13 +68,15 @@
 }
 
 .closeBtn:hover {
-  background-color: var(--pmt-border, #e4e4e7);
-  color: var(--pmt-text, #09090b);
+  background-color: var(--bms-border, #e4e4e7);
+  color: var(--bms-text, #09090b);
 }
 
 .content {
   padding: 1.5rem;
   overflow-y: auto;
+  background-color: var(--bms-surface, #ffffff);
+  color: var(--bms-text, #09090b);
 }
 
 @keyframes fadeIn {

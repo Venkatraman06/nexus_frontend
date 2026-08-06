@@ -13,6 +13,7 @@ interface Deal {
   title: string;
   clientId: number | null;
   clientName: string;
+  clientEmail?: string;
   trainingCategoryId: number | null;
   trainingCategoryName: string;
   description: string;
@@ -29,6 +30,7 @@ const mapDeal = (d: any): Deal => ({
   title: d.title,
   clientId: d.client,
   clientName: d.client_name || '',
+  clientEmail: d.client_email || d.client_details?.email || '',
   trainingCategoryId: d.training_category,
   trainingCategoryName: d.training_category_name || '',
   description: d.description || '',
@@ -80,13 +82,13 @@ interface ClientRecord {
 }
 
 const DEFAULT_BUSINESS_CATEGORIES: TrainingCategoryOption[] = [
-  { id: 1, name: 'Consulting & Audit' },
-  { id: 2, name: 'Corporate Training' },
-  { id: 3, name: 'Executive Coaching' },
-  { id: 4, name: 'Technical Certification' },
-  { id: 5, name: 'Software Development & IT' },
-  { id: 6, name: 'Cloud & Infrastructure' },
-  { id: 7, name: 'AI & Data Science' },
+  { id: 1, name: 'Consulting & Audit', color: '#2563eb' },
+  { id: 2, name: 'Corporate Training', color: '#7c3aed' },
+  { id: 3, name: 'Executive Coaching', color: '#059669' },
+  { id: 4, name: 'Technical Certification', color: '#d97706' },
+  { id: 5, name: 'Software Development & IT', color: '#dc2626' },
+  { id: 6, name: 'Cloud & Infrastructure', color: '#0891b2' },
+  { id: 7, name: 'AI & Data Science', color: '#4f46e5' },
 ];
 
 const mapQuotation = (q: any): Quotation => ({
@@ -293,12 +295,15 @@ const SalesCRM: React.FC = () => {
     return () => clearInterval(interval);
   }, [subTab, fetchQuotations]);
 
-  const handleCreateDeal = async (data: { title: string; client: string; description: string; expectedValue: string; stage: Deal['stage'] }) => {
-    if (!data.title || !data.expectedValue) {
-      addToast('Please enter deal title and value', 'error');
+  const handleCreateDeal = async (data: { title: string; client: string; clientEmail: string; description: string; expectedValue: string; stage: Deal['stage'] }) => {
+    if (!data.title || !data.expectedValue || !data.clientEmail) {
+      addToast('Please enter deal title, client email, and value', 'error');
       return;
     }
     try {
+      if (data.client && data.clientEmail) {
+        await patch(`/clients/${data.client}/`, { email: data.clientEmail }).catch(() => {});
+      }
       const res = await post<any>('/deals/', {
         title: data.title,
         client: data.client || null,
@@ -308,6 +313,7 @@ const SalesCRM: React.FC = () => {
       });
       if (res) {
         addToast('Deal recorded in sales pipeline!', 'success');
+        fetchClients();
         fetchDeals();
         closeModal();
       }
@@ -316,13 +322,16 @@ const SalesCRM: React.FC = () => {
     }
   };
 
-  const handleCreateTrainingDeal = async (data: { trainingCategoryId: string; client: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => {
-    if (!data.trainingCategoryId || !data.expectedValue) {
-      addToast('Please select a business category and enter a value', 'error');
+  const handleCreateTrainingDeal = async (data: { trainingCategoryId: string; client: string; clientEmail: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => {
+    if (!data.trainingCategoryId || !data.expectedValue || !data.clientEmail) {
+      addToast('Please select a business category, enter client email, and enter a value', 'error');
       return;
     }
     const category = trainingCategories.find(c => c.id === Number(data.trainingCategoryId));
     try {
+      if (data.client && data.clientEmail) {
+        await patch(`/clients/${data.client}/`, { email: data.clientEmail }).catch(() => {});
+      }
       const res = await post<any>('/deals/', {
         title: category ? category.name : 'Business Opportunity',
         training_category: Number(data.trainingCategoryId),
@@ -334,6 +343,7 @@ const SalesCRM: React.FC = () => {
       });
       if (res) {
         addToast('Business opportunity recorded in sales pipeline!', 'success');
+        fetchClients();
         fetchDeals();
         closeModal();
       }
@@ -353,6 +363,10 @@ const SalesCRM: React.FC = () => {
         addToast('Quotation generated successfully!', 'success');
         fetchQuotations();
         closeModal();
+
+        // Automatically send email to client upon generating quotation
+        const createdQuote = mapQuotation(res);
+        handleSendMail(createdQuote);
       }
     } catch (err: any) {
       addToast(formatApiError(err?.response?.data || err, err?.response?.status, 'generate quotation'), 'error');
@@ -390,8 +404,11 @@ const SalesCRM: React.FC = () => {
     }
   };
 
-  const handleFullEditDeal = async (id: number, data: { title: string; client: string; trainingCategoryId: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => {
+  const handleFullEditDeal = async (id: number, data: { title: string; client: string; clientEmail: string; trainingCategoryId: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => {
     try {
+      if (data.client && data.clientEmail) {
+        await patch(`/clients/${data.client}/`, { email: data.clientEmail }).catch(() => {});
+      }
       const res = await patch<any>(`/deals/${id}/`, {
         title: data.title,
         client: data.client || null,
@@ -403,6 +420,7 @@ const SalesCRM: React.FC = () => {
       });
       if (res) {
         addToast('Opportunity updated', 'success');
+        fetchClients();
         fetchDeals();
         closeModal();
       }
@@ -974,7 +992,7 @@ const SalesCRM: React.FC = () => {
                       <button
                         onClick={() => handleSendMail(q)}
                         disabled={sendingId === q.id}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--color-secondary)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: sendingId === q.id ? 'default' : 'pointer', opacity: sendingId === q.id ? 0.6 : 1, whiteSpace: 'nowrap' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--bms-primary, #2563eb)', color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: sendingId === q.id ? 'default' : 'pointer', opacity: sendingId === q.id ? 0.6 : 1, whiteSpace: 'nowrap' }}
                       >
                         <Mail size={13} /> {sendingId === q.id ? 'Sending...' : 'Send Mail'}
                       </button>
@@ -1158,17 +1176,26 @@ const OpportunityTypeChooser = ({ onSelectDeal, onSelectTraining }: { onSelectDe
   );
 };
 
-const TrainingDealForm = ({ categories, clients, onSubmit, onClose }: { categories: TrainingCategoryOption[]; clients: ClientOption[]; onSubmit: (data: { trainingCategoryId: string; client: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => void; onClose: () => void }) => {
+const TrainingDealForm = ({ categories, clients, onSubmit, onClose }: { categories: TrainingCategoryOption[]; clients: ClientOption[]; onSubmit: (data: { trainingCategoryId: string; client: string; clientEmail: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => void; onClose: () => void }) => {
   const [trainingCategoryId, setTrainingCategoryId] = useState('');
   const [clientId, setClientId] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
   const [description, setDescription] = useState('');
   const [value, setValue] = useState('');
   const [stage, setStage] = useState<Deal['stage']>('Active');
   const [trainingDate, setTrainingDate] = useState('');
 
+  const handleClientSelect = (id: string) => {
+    setClientId(id);
+    const found = clients.find(c => String(c.id) === id);
+    if (found && found.email) {
+      setClientEmail(found.email);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ trainingCategoryId, client: clientId, description, expectedValue: value, stage, trainingDate });
+    onSubmit({ trainingCategoryId, client: clientId, clientEmail, description, expectedValue: value, stage, trainingDate });
   };
 
   return (
@@ -1183,14 +1210,29 @@ const TrainingDealForm = ({ categories, clients, onSubmit, onClose }: { categori
           </select>
         </div>
       </div>
-      <div className="sales-form-group">
-        <label className="sales-form-label">Select Client</label>
-        <div className="sales-input-wrap">
-          <span className="sales-input-icon"><User size={18} /></span>
-          <select value={clientId} onChange={e => setClientId(e.target.value)}>
-            <option value="">Select a client...</option>
-            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+      <div className="sales-form-grid">
+        <div className="sales-form-group">
+          <label className="sales-form-label">Select Client</label>
+          <div className="sales-input-wrap">
+            <span className="sales-input-icon"><User size={18} /></span>
+            <select value={clientId} onChange={e => handleClientSelect(e.target.value)}>
+              <option value="">Select a client...</option>
+              {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="sales-form-group">
+          <label className="sales-form-label">Client Email *</label>
+          <div className="sales-input-wrap">
+            <span className="sales-input-icon"><Mail size={18} /></span>
+            <input
+              required
+              type="email"
+              value={clientEmail}
+              onChange={e => setClientEmail(e.target.value)}
+              placeholder="client@company.com"
+            />
+          </div>
         </div>
       </div>
       <div className="sales-form-group">
@@ -1237,16 +1279,25 @@ const TrainingDealForm = ({ categories, clients, onSubmit, onClose }: { categori
   );
 };
 
-const DealForm = ({ clients, onSubmit, onClose }: { clients: ClientOption[]; onSubmit: (data: { title: string; client: string; description: string; expectedValue: string; stage: Deal['stage'] }) => void; onClose: () => void }) => {
+const DealForm = ({ clients, onSubmit, onClose }: { clients: ClientOption[]; onSubmit: (data: { title: string; client: string; clientEmail: string; description: string; expectedValue: string; stage: Deal['stage'] }) => void; onClose: () => void }) => {
   const [title, setTitle] = useState('');
   const [clientId, setClientId] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
   const [description, setDescription] = useState('');
   const [value, setValue] = useState('');
   const [stage, setStage] = useState<Deal['stage']>('Active');
 
+  const handleClientSelect = (id: string) => {
+    setClientId(id);
+    const found = clients.find(c => String(c.id) === id);
+    if (found && found.email) {
+      setClientEmail(found.email);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ title, client: clientId, description, expectedValue: value, stage });
+    onSubmit({ title, client: clientId, clientEmail, description, expectedValue: value, stage });
   };
 
   return (
@@ -1258,14 +1309,29 @@ const DealForm = ({ clients, onSubmit, onClose }: { clients: ClientOption[]; onS
           <input required type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Fullstack Business" />
         </div>
       </div>
-      <div className="sales-form-group">
-        <label className="sales-form-label">Select Client</label>
-        <div className="sales-input-wrap">
-          <span className="sales-input-icon"><User size={18} /></span>
-          <select value={clientId} onChange={e => setClientId(e.target.value)}>
-            <option value="">Select a client...</option>
-            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+      <div className="sales-form-grid">
+        <div className="sales-form-group">
+          <label className="sales-form-label">Select Client</label>
+          <div className="sales-input-wrap">
+            <span className="sales-input-icon"><User size={18} /></span>
+            <select value={clientId} onChange={e => handleClientSelect(e.target.value)}>
+              <option value="">Select a client...</option>
+              {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="sales-form-group">
+          <label className="sales-form-label">Client Email *</label>
+          <div className="sales-input-wrap">
+            <span className="sales-input-icon"><Mail size={18} /></span>
+            <input
+              required
+              type="email"
+              value={clientEmail}
+              onChange={e => setClientEmail(e.target.value)}
+              placeholder="client@company.com"
+            />
+          </div>
         </div>
       </div>
       <div className="sales-form-group">
@@ -1309,21 +1375,31 @@ const EditDealForm = ({ deal, clients, categories, onSubmit, onClose }: {
   deal: Deal;
   clients: ClientOption[];
   categories: TrainingCategoryOption[];
-  onSubmit: (data: { title: string; client: string; trainingCategoryId: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => void;
+  onSubmit: (data: { title: string; client: string; clientEmail: string; trainingCategoryId: string; description: string; expectedValue: string; stage: Deal['stage']; trainingDate: string }) => void;
   onClose: () => void;
 }) => {
   const initialTitle = (deal.title && isNaN(Number(deal.title))) ? deal.title : (deal.clientName ? `${deal.clientName} Opportunity` : 'Business Opportunity');
+  const initialClient = clients.find(c => String(c.id) === String(deal.clientId));
   const [title, setTitle] = useState(initialTitle);
   const [clientId, setClientId] = useState(deal.clientId ? String(deal.clientId) : '');
+  const [clientEmail, setClientEmail] = useState(initialClient?.email || deal.clientEmail || '');
   const [trainingCategoryId, setTrainingCategoryId] = useState(deal.trainingCategoryId ? String(deal.trainingCategoryId) : '');
   const [description, setDescription] = useState(deal.description);
   const [value, setValue] = useState(deal.expectedValue);
   const [stage, setStage] = useState<Deal['stage']>(deal.stage);
   const [trainingDate, setTrainingDate] = useState(deal.trainingDate || '');
 
+  const handleClientSelect = (id: string) => {
+    setClientId(id);
+    const found = clients.find(c => String(c.id) === id);
+    if (found && found.email) {
+      setClientEmail(found.email);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ title, client: clientId, trainingCategoryId, description, expectedValue: value, stage, trainingDate });
+    onSubmit({ title, client: clientId, clientEmail, trainingCategoryId, description, expectedValue: value, stage, trainingDate });
   };
 
   return (
@@ -1340,21 +1416,34 @@ const EditDealForm = ({ deal, clients, categories, onSubmit, onClose }: {
           <label className="sales-form-label">Select Client</label>
           <div className="sales-input-wrap">
             <span className="sales-input-icon"><User size={18} /></span>
-            <select value={clientId} onChange={e => setClientId(e.target.value)}>
+            <select value={clientId} onChange={e => handleClientSelect(e.target.value)}>
               <option value="">Select a client...</option>
               {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
         </div>
         <div className="sales-form-group">
-          <label className="sales-form-label">Business Category</label>
+          <label className="sales-form-label">Client Email *</label>
           <div className="sales-input-wrap">
-            <span className="sales-input-icon"><Tag size={18} /></span>
-            <select value={trainingCategoryId} onChange={e => setTrainingCategoryId(e.target.value)}>
-              <option value="">No category</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <span className="sales-input-icon"><Mail size={18} /></span>
+            <input
+              required
+              type="email"
+              value={clientEmail}
+              onChange={e => setClientEmail(e.target.value)}
+              placeholder="client@company.com"
+            />
           </div>
+        </div>
+      </div>
+      <div className="sales-form-group">
+        <label className="sales-form-label">Business Category</label>
+        <div className="sales-input-wrap">
+          <span className="sales-input-icon"><Tag size={18} /></span>
+          <select value={trainingCategoryId} onChange={e => setTrainingCategoryId(e.target.value)}>
+            <option value="">No category</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
         </div>
       </div>
       <div className="sales-form-group">
