@@ -34,9 +34,9 @@ import {
   canClockInNow, canClockOutNow, clockInUnavailableReason, clockOutUnavailableReason,
 } from "@/utils/attendanceClockRules";
 import { HOURS_PIE_COLORS, ALLOCATION_PIE_COLORS } from "@/utils/chartColors";
-
+import ResignationModal from "@/components/common/ResignationModal";
+import { offboardingApi } from "@/services/offboarding";
 const { Text, Title } = Typography;
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface AttendanceBreak {
   id: string; break_type: string; break_type_label: string;
@@ -2134,6 +2134,7 @@ export default function EmployeeDashboardPage() {
   // Tracks which leave type to pre-select when opening apply modal from "View Leaves"
   const [prefillLeaveTypeId,    setPrefillLeaveTypeId]    = useState<string | null>(null);
   const [ticketWorkflowModal, setTicketWorkflowModal] = useState<TicketWorkflowState | null>(null);
+  const [resignModalOpen, setResignModalOpen] = useState(false);
 
   const now = useGreetingClock();
 
@@ -2142,6 +2143,15 @@ export default function EmployeeDashboardPage() {
     queryFn:  () => get<EmpDashboard>("/dashboard/employee/"),
     staleTime: 0,
   });
+
+  const { data: myOffboardingRecords } = useQuery({
+    queryKey: ["my-offboarding", data?.profile?.id],
+    queryFn: () => offboardingApi.list({ employee: data!.profile.id }),
+    enabled: !!data?.profile?.id,
+  });
+  const activeOffboarding = (myOffboardingRecords ?? []).find(
+    (r) => r.status !== "COMPLETED" && r.status !== "CANCELLED"
+  );
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["employee-dashboard"] });
 
@@ -2233,6 +2243,14 @@ export default function EmployeeDashboardPage() {
 
       <WFHRequestModal  open={wfhModalOpen}         onClose={() => setWfhModalOpen(false)}         onSuccess={() => { setWfhModalOpen(false);         refresh(); }} />
       <ShiftChangeModal open={shiftChangeModalOpen} onClose={() => setShiftChangeModalOpen(false)} onSuccess={() => { setShiftChangeModalOpen(false); refresh(); }} employeeId={profile.id} />
+      <ResignationModal
+        open={resignModalOpen}
+        onClose={() => setResignModalOpen(false)}
+        onSuccess={() => {
+          setResignModalOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["my-offboarding"] });
+        }}
+      />
       <TicketWorkflowModal
         state={ticketWorkflowModal}
         open={!!ticketWorkflowModal}
@@ -2246,11 +2264,22 @@ export default function EmployeeDashboardPage() {
          onApplyLeave={() => { setCalendarOpen(false); openApplyLeave(); }}/>
       </Modal>
 
-      <div className="emp-dashboard__greeting">
-        <Title level={4} style={{ margin: 0, color: "var(--bms-text)", fontWeight: 700 }}>
-          {getGreeting(now.getHours())} <span style={{ color: "#f97316" }}>{profile.full_name.trim().split(/\s+/)[0]},</span>
-        </Title>
-        <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>{dayjs(now).format("ddd DD MMM, hh:mm A")}</Text>
+      <div className="emp-dashboard__greeting" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <Title level={4} style={{ margin: 0, color: "var(--bms-text)", fontWeight: 700 }}>
+            {getGreeting(now.getHours())} <span style={{ color: "#f97316" }}>{profile.full_name.trim().split(/\s+/)[0]},</span>
+          </Title>
+          <Text style={{ color: "var(--bms-text-2)", fontSize: 13 }}>{dayjs(now).format("ddd DD MMM, hh:mm A")}</Text>
+        </div>
+        {activeOffboarding ? (
+          <Tag color="warning" style={{ borderRadius: 20, padding: "4px 12px", fontSize: 12 }}>
+            Resignation submitted — {activeOffboarding.status_display}
+          </Tag>
+        ) : (
+          <Button danger onClick={() => setResignModalOpen(true)}>
+            Resign
+          </Button>
+        )}
       </div>
 
       <Row gutter={[16, 16]} align="top" className="emp-dashboard__layout">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { Badge, Button, Empty, Modal, Popover, Spin, Tag, Tooltip, Typography, message, notification } from "antd";
+import { Badge, Button, Empty, Input, Modal, Popover, Progress, Spin, Tag, Tooltip, Typography, message, notification } from "antd";
 import {
   BellOutlined,
   CheckOutlined,
@@ -18,7 +18,10 @@ import {
   CloseCircleOutlined,
   SendOutlined,
   MessageOutlined,
+  LogoutOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
+import { Checkbox } from "antd";
 import { useNavigate } from "react-router-dom";
 import {
   fetchNotifications,
@@ -49,6 +52,7 @@ const CATEGORIES = [
   { key: "project", label: "Projects", prefix: "project.", icon: <ProjectOutlined /> },
   { key: "timesheet", label: "Timesheets", prefix: "timesheet.", icon: <ClockCircleOutlined /> },
   { key: "hr", label: "HR & People", prefixes: ["employee.", "leave.", "payroll."], icon: <TeamOutlined /> },
+  { key: "offboarding", label: "Offboarding", prefix: "offboarding.", icon: <LogoutOutlined /> },
   { key: "finance", label: "Finance", prefixes: ["invoice.", "milestone.", "payment."], icon: <WalletOutlined /> },
   { key: "social_feed", label: "Social Feed", prefix: "social_post.", icon: <FireOutlined /> },
 ] as const;
@@ -118,6 +122,18 @@ function compactTitle(notif: Notification): string {
     return "New chat message";
   }
 
+  if (notif.event_type === "offboarding.clearance_assigned") {
+    const meta = notif.metadata ?? {};
+    return meta.clearance_title ? `Clearance: ${meta.clearance_title}` : "Clearance Task Assigned";
+  }
+
+  if (notif.event_type === "offboarding.clearance_report") {
+    const meta = notif.metadata ?? {};
+    return meta.clearance_title
+      ? `Clearance Report: ${meta.clearance_title}`
+      : "Clearance Report Received";
+  }
+
   const meta = notif.metadata ?? {};
   const rawTitle = typeof meta.title === "string" ? meta.title : "";
   if (rawTitle) return rawTitle.replace(/^\[SEED-PMO\]\s*/, "").trim();
@@ -166,6 +182,8 @@ function compactSubtitle(notif: Notification): string | null {
   if (notif.event_type === "social_post.pending_approval") return "Pending approval";
   if (notif.event_type === "social_post.published") return "Published";
   if (notif.event_type === "chat.message.new") return "New message";
+  if (notif.event_type === "offboarding.clearance_assigned") return "Action required";
+  if (notif.event_type === "offboarding.clearance_report") return "Report received";
   return null;
 }
 
@@ -220,6 +238,172 @@ interface NotificationBellProps {
   iconColor?: string;
 }
 
+// ── Clearance Task Modal ────────────────────────────────────────────────────
+interface ClearanceTaskState {
+  notif: Notification;
+  title: string;
+  employeeName: string;
+  offboardingId: string;
+  items: string[];
+  checked: boolean[];
+  showReport: boolean;
+  reportText: string;
+  submitting: boolean;
+}
+
+function ClearanceTaskModal({
+  state,
+  onClose,
+  onDone,
+  onReport,
+  onChange,
+  onToggleReport,
+  onReportTextChange,
+}: {
+  state: ClearanceTaskState;
+  onClose: () => void;
+  onDone: () => void;
+  onReport: () => void;
+  onChange: (idx: number, checked: boolean) => void;
+  onToggleReport: () => void;
+  onReportTextChange: (v: string) => void;
+}) {
+  const checkedCount = state.checked.filter(Boolean).length;
+  const total = state.items.length;
+  const pct = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+  return (
+    <Modal
+      open
+      title={
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <LogoutOutlined style={{ color: "#6366f1" }} />
+          <span>Clearance Task</span>
+        </div>
+      }
+      onCancel={onClose}
+      footer={null}
+      width={480}
+    >
+      <div style={{ paddingTop: 4 }}>
+        {/* Employee + task info */}
+        <div style={{
+          padding: "10px 14px",
+          background: "var(--bms-surface-2, #f8fafc)",
+          borderRadius: 8,
+          marginBottom: 16,
+          border: "1px solid var(--bms-border, #e8edf3)",
+        }}>
+          <Typography.Text strong style={{ fontSize: 14, display: "block" }}>
+            {state.title}
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            Employee: <strong>{state.employeeName}</strong>
+          </Typography.Text>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+            <Typography.Text style={{ fontSize: 12, fontWeight: 600 }}>Clearance Progress</Typography.Text>
+            <Typography.Text style={{ fontSize: 12, color: pct === 100 ? "#10b981" : "#6366f1", fontWeight: 700 }}>
+              {checkedCount}/{total} done
+            </Typography.Text>
+          </div>
+          <Progress
+            percent={pct}
+            size="small"
+            strokeColor={pct === 100 ? "#10b981" : "linear-gradient(90deg,#6366f1,#8b5cf6)"}
+            status={pct === 100 ? "success" : "active"}
+          />
+        </div>
+
+        {/* Checklist */}
+        <div style={{ marginBottom: 16 }}>
+          <Typography.Text style={{ fontSize: 11, fontWeight: 600, color: "#64748b", display: "block", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.4 }}>
+            Checklist Items
+          </Typography.Text>
+          {state.items.length === 0 && (
+            <Typography.Text type="secondary" style={{ fontSize: 12 }}>No checklist items attached to this clearance.</Typography.Text>
+          )}
+          {state.items.map((item, idx) => (
+            <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
+              <Checkbox
+                checked={state.checked[idx] || false}
+                onChange={(e) => onChange(idx, e.target.checked)}
+                style={{ marginTop: 1 }}
+              />
+              <Typography.Text style={{
+                fontSize: 13,
+                flex: 1,
+                textDecoration: state.checked[idx] ? "line-through" : "none",
+                color: state.checked[idx] ? "#94a3b8" : "var(--bms-text, #1a2332)",
+                transition: "all 0.2s",
+              }}>{item}</Typography.Text>
+              {state.checked[idx] && <CheckCircleOutlined style={{ color: "#10b981", fontSize: 13 }} />}
+            </div>
+          ))}
+        </div>
+
+        {/* Report section */}
+        {state.showReport && (
+          <div style={{
+            padding: "12px 14px",
+            background: "rgba(99,102,241,0.05)",
+            borderRadius: 8,
+            border: "1px solid rgba(99,102,241,0.2)",
+            marginBottom: 16,
+          }}>
+            <Typography.Text style={{ fontSize: 12, fontWeight: 600, display: "block", marginBottom: 8 }}>
+              📝 Report Notes (sent to HR)
+            </Typography.Text>
+            <Input.TextArea
+              rows={3}
+              placeholder="Describe what was completed, any issues, or additional notes for HR..."
+              value={state.reportText}
+              onChange={(e) => onReportTextChange(e.target.value)}
+              style={{ borderRadius: 6 }}
+            />
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <Button onClick={onClose} style={{ borderRadius: 8 }}>Cancel</Button>
+          {!state.showReport ? (
+            <Button
+              icon={<SendOutlined />}
+              onClick={onToggleReport}
+              style={{ borderRadius: 8, borderColor: "#6366f1", color: "#6366f1" }}
+            >
+              Report
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              loading={state.submitting}
+              onClick={onReport}
+              style={{ borderRadius: 8, background: "#6366f1", borderColor: "#6366f1" }}
+            >
+              Send Report to HR
+            </Button>
+          )}
+          <Button
+            type="primary"
+            icon={<CheckOutlined />}
+            onClick={onDone}
+            style={{ borderRadius: 8, background: "#10b981", borderColor: "#10b981" }}
+          >
+            Done
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+
 export default function NotificationBell({ iconColor = "inherit" }: NotificationBellProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -231,6 +415,7 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
   const [socialPostData, setSocialPostData] = useState<SocialPostItem | null>(null);
   const [socialPostLoading, setSocialPostLoading] = useState(false);
   const [socialPostActioning, setSocialPostActioning] = useState<string | null>(null);
+  const [clearanceTask, setClearanceTask] = useState<ClearanceTaskState | null>(null);
   const navigate = useNavigate();
   const prevIdsRef = useRef<Set<string> | null>(null);
   const [api, contextHolder] = notification.useNotification();
@@ -310,6 +495,30 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
   };
 
   const handleClick = async (notif: Notification) => {
+    // Offboarding clearance task — open inline modal instead of navigating
+    if (notif.event_type === "offboarding.clearance_assigned") {
+      try {
+        await markNotificationRead(notif.id);
+        setItems((prev) => prev.filter((n) => n.id !== notif.id));
+        setUnreadCount((c) => Math.max(0, c - 1));
+      } catch { /* proceed */ }
+      setOpen(false);
+      const meta = notif.metadata ?? {};
+      const items: string[] = Array.isArray(meta.items) ? meta.items : [];
+      setClearanceTask({
+        notif,
+        title: (meta.clearance_title as string) || "Clearance Task",
+        employeeName: (meta.employee_name as string) || "Employee",
+        offboardingId: (meta.offboarding_id as string) || (notif.reference_id ?? ""),
+        items,
+        checked: items.map(() => false),
+        showReport: false,
+        reportText: "",
+        submitting: false,
+      });
+      return;
+    }
+
     // Social feed pending approval — show action modal
     if (notif.event_type === "social_post.pending_approval") {
       try {
@@ -356,6 +565,33 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
       targetUrl = notif.reference_id ? `/workspace/todos?id=${notif.reference_id}` : "/workspace/todos";
     }
     if (targetUrl) navigate(targetUrl);
+  };
+
+  // Clearance task handlers
+  const handleClearanceTaskDone = () => {
+    setClearanceTask(null);
+    message.success("Clearance task marked as done");
+  };
+
+  const handleClearanceReport = async () => {
+    if (!clearanceTask) return;
+    setClearanceTask((t) => t ? { ...t, submitting: true } : null);
+    try {
+      const { post } = await import("@/services/api");
+      const checkedItems = clearanceTask.items.filter((_, i) => clearanceTask.checked[i]);
+      await post("/offboarding/clearance-report/", {
+        offboarding_id: clearanceTask.offboardingId,
+        clearance_title: clearanceTask.title,
+        employee_name: clearanceTask.employeeName,
+        description: clearanceTask.reportText,
+        checked_items: checkedItems,
+      });
+      message.success("Report sent to HR successfully");
+      setClearanceTask(null);
+    } catch {
+      message.error("Failed to send report. Please try again.");
+      setClearanceTask((t) => t ? { ...t, submitting: false } : null);
+    }
   };
 
   const handleMarkAll = async () => {
@@ -654,6 +890,25 @@ export default function NotificationBell({ iconColor = "inherit" }: Notification
     <>
       {contextHolder}
       {socialPostModal}
+      {clearanceTask && (
+        <ClearanceTaskModal
+          state={clearanceTask}
+          onClose={() => setClearanceTask(null)}
+          onDone={handleClearanceTaskDone}
+          onReport={handleClearanceReport}
+          onChange={(idx, checked) =>
+            setClearanceTask((t) =>
+              t ? { ...t, checked: t.checked.map((v, i) => (i === idx ? checked : v)) } : null
+            )
+          }
+          onToggleReport={() =>
+            setClearanceTask((t) => (t ? { ...t, showReport: !t.showReport } : null))
+          }
+          onReportTextChange={(v) =>
+            setClearanceTask((t) => (t ? { ...t, reportText: v } : null))
+          }
+        />
+      )}
       <Popover
         content={content}
         trigger="click"

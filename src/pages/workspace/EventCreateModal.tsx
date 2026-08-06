@@ -428,7 +428,9 @@ function TodoForm({
           <TextArea rows={3} placeholder="Detailed comment" />
         </Form.Item>
         <Form.Item name="color" label="Event Color">
-          <GoogleColorPicker />
+          <GoogleColorPicker onChange={function (color: string | null): void {
+            throw new Error("Function not implemented.");
+          } } />
         </Form.Item>
       </Form>
       <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8 }}>
@@ -636,7 +638,10 @@ function FollowUpForm({
           </Col>
         </Row>
         <Form.Item name="priority" label="Priority" rules={[{ required: true }]}>
-          <PriorityPicker priorities={FOLLOWUP_PRIORITIES} />
+          {/* FOLLOWUP_PRIORITIES is a readonly tuple; map to a mutable array to satisfy PriorityPicker prop types */}
+          <PriorityPicker
+            priorities={FOLLOWUP_PRIORITIES.map((p) => ({ value: p.value, label: p.label, border: p.border, bg: p.bg, text: p.text }))}
+          />
         </Form.Item>
         <Form.Item name="assignees" label="Assignees" rules={[{ required: true, message: "Assignees are required" }]}>
           <Select
@@ -670,7 +675,9 @@ function FollowUpForm({
           <TextArea rows={3} placeholder="Detailed comment" />
         </Form.Item>
         <Form.Item name="color" label="Event Color">
-          <GoogleColorPicker />
+          <GoogleColorPicker onChange={function (color: string | null): void {
+            throw new Error("Function not implemented.");
+          } } />
         </Form.Item>
       </Form>
       <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8 }}>
@@ -832,7 +839,7 @@ function MeetingForm({
           </Col>
         </Row>
         <Form.Item name="priority" label="Priority" rules={[{ required: true }]}>
-          <PriorityPicker priorities={FOLLOWUP_PRIORITIES} />
+          <PriorityPicker priorities={FOLLOWUP_PRIORITIES as unknown as Array<{ value: string; label: string; border: string; bg: string; text: string }>} />
         </Form.Item>
         <Form.Item name="meeting_mode" label="Meeting Mode">
           <MeetingModePicker />
@@ -869,7 +876,9 @@ function MeetingForm({
           <TextArea rows={3} placeholder="Detailed comment" />
         </Form.Item>
         <Form.Item name="color" label="Event Color">
-          <GoogleColorPicker />
+          <GoogleColorPicker onChange={function (color: string | null): void {
+            throw new Error("Function not implemented.");
+          } } />
         </Form.Item>
       </Form>
       <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8 }}>

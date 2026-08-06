@@ -73,8 +73,11 @@ export default function WorkspaceCalendarPage({
 } = {}) {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const permissions = useAuthStore((s) => s.permissions);
-  const canCreateTodo = permissions.length === 0 || permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
+const permissions = useAuthStore((s) => s.permissions);
+const canViewCalendar =
+  permissions.includes(PERMS.WORKSPACE_CALENDAR_VIEW as never) ||
+  permissions.includes(PERMS.CRM_FOLLOWUP_VIEW as never);
+const canCreateTodo = permissions.length === 0 || permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
   const canCreateFollowup = permissions.length === 0 || permissions.includes(PERMS.CRM_FOLLOWUP_CREATE as never);
   const canCreateMeeting = permissions.length === 0 || permissions.includes(PERMS.CRM_MEETING_CREATE as never);
   const canUpdate = permissions.length === 0 || permissions.includes(PERMS.CRM_FOLLOWUP_UPDATE as never) || permissions.includes(PERMS.CRM_MEETING_UPDATE as never);
@@ -99,6 +102,7 @@ export default function WorkspaceCalendarPage({
     queryKey: ["workspace-calendar", viewMode, range.from, range.to],
     queryFn: () => workspaceApi.calendar(range.from, range.to),
     staleTime: 30_000,
+     enabled: canViewCalendar,
   });
 
   const { user } = useAuthStore();
@@ -221,12 +225,12 @@ export default function WorkspaceCalendarPage({
       if (ev.source === "todo") {
         const destination = isDoneNow ? "open" : "done";
         await todoApi.transition(ev.id, destination);
-      } else if (ev.source === "meeting") {
-        const destination = isDoneNow ? "planning" : "completed";
-        await meetingApi.transition(ev.id, destination);
-      } else {
+      } else if (ev.source === "followup") {
         const destination = isDoneNow ? "planning" : "completed";
         await followUpApi.transition(ev.id, destination);
+      } else {
+        const destination = isDoneNow ? "planning" : "completed";
+        await meetingApi.transition(ev.id, destination);
       }
     },
     onSuccess: () => {
@@ -807,13 +811,13 @@ export default function WorkspaceCalendarPage({
         onCancel={() => setSelected(null)}
         footer={selected?.is_due_reminder ? null : [
           <Button key="close" onClick={() => setSelected(null)}>Close</Button>,
-          selected && (
+              selected && (
             <Button key="open" type="primary" onClick={() => {
               onEmbeddedClose?.();
               navigate(
                 selected.source === "todo" 
                   ? `/workspace/todos?id=${selected.id}` 
-                  : selected.source === "meeting"
+                  : (selected as any).source === "meeting"
                     ? `/workspace/meetings?id=${selected.id}`
                     : `/workspace/followups?id=${selected.id}`
               );
