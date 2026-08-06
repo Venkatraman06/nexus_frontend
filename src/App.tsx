@@ -28,6 +28,7 @@ import ClientPage from "@/pages/clients/ClientPage";
 import MasterPage from "@/pages/master/MasterPage";
 import EmployeeDashboardPage from "@/pages/dashboard/EmployeeDashboardPage";
 import HRMSDashboardPage from "@/pages/dashboard/HRMSDashboardPage";
+import OffboardingPage from "@/pages/employees/OffboardingPage";
 import LeaveRequestsPage from "@/pages/employees/LeaveRequestsPage";
 import PayrollPage from "@/pages/employees/PayrollPage";
 import AttendanceTrackerPage from "@/pages/attendance/AttendanceTrackerPage";
@@ -195,6 +196,8 @@ export default function App() {
         <Route path="master/followup-type" element={<RequirePermission permission={PERMS.MASTER_PROJECT_VIEW}><MasterPage defaultTab="followup-type" /></RequirePermission>} />
         <Route path="master/workflow" element={<RequirePermission permission={PERMS.MASTER_WORKFLOW_VIEW}><MasterPage defaultTab="workflow" /></RequirePermission>} />
         <Route path="employees/hr-compliance" element={<RequirePermission permission={PERMS.HRMS_COMPLIANCE_VIEW}><HRCompliancePage /></RequirePermission>} />
+        <Route path="employees/offboarding" element={<RequirePermission permission={PERMS.HRMS_OFFBOARDING_VIEW}><OffboardingPage /></RequirePermission>} />
+        <Route path="employees/offboarding" element={<RequirePermission permission={PERMS.HRMS_OFFBOARDING_VIEW}><OffboardingPage /></RequirePermission>} />
         <Route path="policy-documents" element={<RequirePermission permission={PERMS.POLICY_VIEW}><PolicyDocumentsPage /></RequirePermission>} />
         <Route path="chat" element={<RequirePermission permission={PERMS.CHAT_VIEW}><ChatPage /></RequirePermission>} />
         <Route path="finance/documents" element={<RequirePermission permission={PERMS.FINANCE_DOCUMENT_VIEW}><FinanceListPage /></RequirePermission>} />
