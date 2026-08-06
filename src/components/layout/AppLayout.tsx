@@ -329,7 +329,7 @@ const SIDEBAR_CSS = `
                 margin 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .bms-children.expanded {
-    max-height: 285px;
+    max-height: 500px;
     opacity: 1;
     margin-top: 2px;
     margin-bottom: 4px;
