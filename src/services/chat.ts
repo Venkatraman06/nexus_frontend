@@ -125,6 +125,9 @@ export const chatApi = {
   markImportant: (id: string) =>
     post<{ is_important: boolean }>(`/chat/messages/${id}/important/`),
 
+  votePoll: (id: string, optionIndex: number) =>
+    post<ChatMessage>(`/chat/messages/${id}/vote-poll/`, { option_index: optionIndex }),
+
   myMentions: () => get<PaginatedResponse<ChatMessage>>("/chat/messages/mentions/"),
 
   starredMessages: () => get<PaginatedResponse<ChatMessage>>("/chat/messages/starred/"),
@@ -140,4 +143,33 @@ export const chatApi = {
 
   uploadToPresignedUrl: (uploadUrl: string, file: File) =>
     fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } }),
+
+  initiateCall: (data: { recipient_id: string; call_type: "VOICE" | "VIDEO"; conversation_id?: string }) =>
+    post<CallRecord>("/chat/calls/initiate/", data),
+
+  getActiveCall: () => get<CallRecord | null>("/chat/calls/active/"),
+
+  respondToCall: (data: { call_id: string; action: "ACCEPT" | "DECLINE" }) =>
+    post<CallRecord>("/chat/calls/respond/", data),
+
+  endCall: (data: { call_id: string; duration_seconds?: number }) =>
+    post<CallRecord>("/chat/calls/end/", data),
+
+  listCallHistory: () => get<CallRecord[]>("/chat/calls/history/"),
 };
+
+export interface CallRecord {
+  _id: string;
+  caller_id: string;
+  recipient_id: string;
+  call_type: "VOICE" | "VIDEO";
+  conversation_id: string | null;
+  status: "RINGING" | "ACCEPTED" | "DECLINED" | "ENDED" | "MISSED";
+  created_at: string;
+  accepted_at?: string | null;
+  ended_at: string | null;
+  duration_seconds: number;
+  caller?: ChatEmployee | null;
+  recipient?: ChatEmployee | null;
+}
+

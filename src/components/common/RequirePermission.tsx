@@ -22,7 +22,14 @@ export default function RequirePermission({ permission, anyOf, children }: Props
     return true;
   })();
 
-  if (!allowed) return null;
+  if (!allowed) {
+    return (
+      <div style={{ padding: 40, textAlign: "center", background: "#fff", borderRadius: 8, margin: 24 }}>
+        <h3 style={{ color: "#ff4d4f" }}>Access Denied</h3>
+        <p style={{ color: "#595959" }}>You do not have permission to view this section.</p>
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }
