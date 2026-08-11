@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useSta
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Drawer, Input, List, Avatar, Button, Modal, Spin, message as toast } from "antd";
 import {
-  SearchOutlined, TeamOutlined, UserAddOutlined, CloseOutlined, DeleteOutlined
+  SearchOutlined, TeamOutlined, UserAddOutlined, CloseOutlined, DeleteOutlined, MessageOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -136,18 +136,21 @@ export const ChatPage: React.FC = () => {
 
   const [currentCallId, setCurrentCallId] = useState<string | null>(null);
 
-  // Fetch Conversations List from API (live refetch every 2 seconds)
+  // Fetch Conversations List from API (cached memory for instant zero-delay navigation)
   const conversationsQuery = useQuery({
     queryKey: ["chat", "conversations"],
     queryFn: () => chatApi.listConversations().catch(() => []),
-    refetchInterval: 2000,
+    placeholderData: (prev) => prev,
+    staleTime: 60000,
+    refetchInterval: false,
   });
 
-  // Live Active Call Polling every 1 second
+  // Live Active Call Polling (lightweight background check)
   const activeCallQuery = useQuery({
     queryKey: ["chat", "activeCall"],
     queryFn: () => chatApi.getActiveCall().catch(() => null),
-    refetchInterval: 1000,
+    staleTime: 10000,
+    refetchInterval: 12000,
   });
 
   const activeCall = activeCallQuery.data;
@@ -156,7 +159,8 @@ export const ChatPage: React.FC = () => {
   const callHistoryQuery = useQuery({
     queryKey: ["chat", "callHistory"],
     queryFn: () => chatApi.listCallHistory().catch(() => []),
-    refetchInterval: 5000,
+    staleTime: 60000,
+    refetchInterval: false,
   });
 
   const callHistory = callHistoryQuery.data || [];
@@ -236,9 +240,8 @@ export const ChatPage: React.FC = () => {
         .catch(() => []);
     },
     enabled: !!activeConversationId,
-    placeholderData: (prev) => prev,
-    staleTime: 3000,
-    refetchInterval: 4000,
+    staleTime: 60000,
+    refetchInterval: false,
   });
 
   const rawServerMessages: ChatMessage[] = useMemo(() => {
@@ -247,6 +250,30 @@ export const ChatPage: React.FC = () => {
     if (Array.isArray((messagesQuery.data as any).results)) return (messagesQuery.data as any).results;
     return [];
   }, [messagesQuery.data]);
+
+  // Auto-sync fetched server messages into local memory map for 0ms instant switching
+  useEffect(() => {
+    if (activeConversationId && rawServerMessages.length > 0) {
+      setLocalMessagesMap((prev) => {
+        const existing = prev[activeConversationId] || [];
+        const existingMap = new Map(existing.map((m) => [m.id, m]));
+        let changed = false;
+
+        rawServerMessages.forEach((sm) => {
+          if (sm && sm.id && !existingMap.has(sm.id)) {
+            existingMap.set(sm.id, sm);
+            changed = true;
+          }
+        });
+
+        if (!changed) return prev;
+        return {
+          ...prev,
+          [activeConversationId]: Array.from(existingMap.values()),
+        };
+      });
+    }
+  }, [activeConversationId, rawServerMessages]);
 
   // Combine Server Messages + Local Sent Messages
   const messages: ChatMessage[] = useMemo(() => {
@@ -855,7 +882,6 @@ export const ChatPage: React.FC = () => {
           setLocalConversations((prev) =>
             prev.map((c) => (c.id === id ? { ...c, unread_count: 0 } : c))
           );
-          queryClient.invalidateQueries({ queryKey: ["chat", "conversations"] });
         }}
         onOpenNewChatModal={() => setNewChatModalOpen(true)}
         myId={myId}
@@ -928,9 +954,82 @@ export const ChatPage: React.FC = () => {
             }}
           >
             {messages.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 20px", color: isDark ? "#8696a0" : "#8c8c8c" }}>
-                <TeamOutlined style={{ fontSize: 42, color: isDark ? "#8696a0" : "#bfbfbf", marginBottom: 12 }} />
-                <div>No messages yet. Send a message to start chatting!</div>
+              <div
+                style={{
+                  height: "100%",
+                  minHeight: 320,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "20px",
+                }}
+              >
+                <div
+                  style={{
+                    background: isDark ? "rgba(32, 44, 51, 0.95)" : "rgba(255, 255, 255, 0.95)",
+                    border: isDark ? "1px solid #222d34" : "1px solid #e8ecef",
+                    borderRadius: 16,
+                    padding: "24px 32px",
+                    textAlign: "center",
+                    maxWidth: 380,
+                    boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 20px rgba(0,0,0,0.06)",
+                    backdropFilter: "blur(8px)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: "50%",
+                      background: isDark ? "rgba(0, 168, 132, 0.15)" : "#e6f7ff",
+                      color: isDark ? "#00a884" : "#1890ff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 16px auto",
+                      fontSize: 26,
+                    }}
+                  >
+                    <MessageOutlined />
+                  </div>
+                  <h4
+                    style={{
+                      margin: "0 0 6px 0",
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: isDark ? "#e9edef" : "#1f1f1f",
+                    }}
+                  >
+                    No messages yet
+                  </h4>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 13,
+                      color: isDark ? "#8696a0" : "#667781",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Send a message to start chatting!
+                  </p>
+                  <div
+                    style={{
+                      marginTop: 14,
+                      paddingTop: 12,
+                      borderTop: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #f0f0f0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      fontSize: 11,
+                      color: isDark ? "#00a884" : "#52c41a",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span>🔒 End-to-end encrypted chat</span>
+                  </div>
+                </div>
               </div>
             ) : (
               (() => {

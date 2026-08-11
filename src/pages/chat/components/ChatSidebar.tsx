@@ -154,7 +154,6 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
     { id: "unread", label: "Unread" },
     { id: "groups", label: "Groups" },
     { id: "projects", label: "Projects" },
-    { id: "pinned", label: "Pinned", icon: <PushpinOutlined /> },
   ];
 
   return (
@@ -454,7 +453,7 @@ interface ChatItemRowProps {
   onClearChat?: () => void;
 }
 
-const ChatItemRow: React.FC<ChatItemRowProps> = ({
+const ChatItemRow: React.FC<ChatItemRowProps> = React.memo(({
   conversation,
   isActive,
   title,
@@ -619,6 +618,6 @@ const ChatItemRow: React.FC<ChatItemRowProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default ChatSidebar;
